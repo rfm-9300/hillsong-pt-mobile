@@ -1,4 +1,4 @@
-rootProject.name = "ActiveHiveComposeApp"
+rootProject.name = "HillsongPtApp"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
@@ -40,4 +40,7 @@ include(":core:model")
 include(":core:navigation")
 include(":core:network")
 include(":core:preview")
+include(":core:test")
+
+include(":feature")
 include(":feature:home")

@@ -51,6 +51,7 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
+
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material)
@@ -81,11 +82,11 @@ kotlin {
 }
 
 android {
-    namespace = "rfm.activehive"
+    namespace = "rfm.hillsongptapp"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "rfm.activehive"
+        applicationId = "rfm.hillsongptapp"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1

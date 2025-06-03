@@ -22,14 +22,14 @@ kotlin{
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "feature.home"
+            baseName = "core.test"
             isStatic = true
         }
     }
 }
 
 android {
-    namespace = "rfm.hillsongptapp.feature.home"
+    namespace = "rfm.hillsongptapp.core.test"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
