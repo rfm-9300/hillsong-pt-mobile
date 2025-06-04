@@ -53,6 +53,7 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.core.designsystem)
             implementation(projects.core.navigation)
+            implementation(projects.feature.home)
 
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -72,6 +73,7 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             api(libs.koin.core)
+            implementation(libs.koin.coroutines)
 
             implementation(libs.bundles.ktor)
             implementation(libs.bundles.coil)
