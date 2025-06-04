@@ -52,6 +52,7 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(projects.core.designsystem)
+            implementation(projects.core.navigation)
 
             implementation(compose.runtime)
             implementation(compose.foundation)

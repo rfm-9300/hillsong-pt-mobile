@@ -6,11 +6,11 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
 }
 kotlin{
     androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
         }
@@ -24,6 +24,19 @@ kotlin{
         iosTarget.binaries.framework {
             baseName = "core.navigation"
             isStatic = true
+        }
+    }
+
+    sourceSets{
+        commonMain.dependencies {
+            implementation(libs.androidx.core.ktx)
+            implementation(libs.jetbrains.compose.navigation)
+            implementation(libs.kotlinx.serialization.json)
+
+            implementation(projects.feature.home)
+
+            api(libs.koin.core)
+            api(libs.koin.compose)
         }
     }
 }
