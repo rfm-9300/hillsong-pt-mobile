@@ -5,6 +5,6 @@ import rfm.hillsongptapp.feature.home.ui.screens.HomeViewModel
 
 val featureHomeModule = lazyModule {
     viewModel<HomeViewModel>{
-        HomeViewModel()
+        HomeViewModel(get())
     }
 }

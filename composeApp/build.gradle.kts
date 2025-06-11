@@ -54,6 +54,7 @@ kotlin {
             implementation(projects.core.designsystem)
             implementation(projects.core.navigation)
             implementation(projects.feature.home)
+            implementation(projects.core.data)
 
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -68,7 +69,6 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.jetbrains.compose.navigation)
             implementation(libs.kotlinx.serialization.json)
-            implementation(libs.androidx.room.runtime)
             implementation(libs.sqlite.bundled)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
@@ -77,9 +77,6 @@ kotlin {
 
             implementation(libs.bundles.ktor)
             implementation(libs.bundles.coil)
-        }
-        dependencies {
-            ksp(libs.androidx.room.compiler)
         }
     }
 

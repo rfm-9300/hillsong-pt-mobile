@@ -7,8 +7,26 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
+    alias(libs.plugins.serialization)
 }
 kotlin{
+    sourceSets{
+        commonMain.dependencies {
+            implementation(libs.koin.core)
+            implementation(libs.bundles.ktor)
+            implementation(libs.room.runtime)
+            implementation(libs.sqlite.bundled)
+            implementation(compose.runtime)
+        }
+        androidMain.dependencies {
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.koin.android)
+        }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
+        }
+    }
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
@@ -25,6 +43,15 @@ kotlin{
             baseName = "core.data"
             isStatic = true
         }
+    }
+}
+dependencies {
+    add("kspAndroid", libs.room.compiler)
+
+    if (hasProperty("kmp.enableIos")) {
+        add("kspIosSimulatorArm64", libs.room.compiler)
+        add("kspIosX64", libs.room.compiler)
+        add("kspIosArm64", libs.room.compiler)
     }
 }
 
@@ -49,4 +76,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }

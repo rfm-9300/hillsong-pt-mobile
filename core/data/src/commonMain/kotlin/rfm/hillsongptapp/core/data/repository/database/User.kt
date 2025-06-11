@@ -1,4 +1,4 @@
-package rfm.hillsongptapp.Data
+package rfm.hillsongptapp.core.data.repository.database
 
 import androidx.room.Dao
 import androidx.room.Delete
