@@ -47,7 +47,7 @@ val dataModule =
         // Api
         single {
             ApiService(
-                baseUrl = "https://activehive.pt:8080",
+                baseUrl = "https://activehive.pt:443",
                 httpClient = get(),
             )
         }

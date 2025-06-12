@@ -32,7 +32,7 @@ class HomeViewModel(
         viewModelScope.launch {
             try {
                 val response = userRepository.login(email, password)
-                if (response.sucess) {
+                if (response.success) {
                     println("Login successful: ${response.data.token}")
                 } else {
                     println("Login failed: ${response.message}")
