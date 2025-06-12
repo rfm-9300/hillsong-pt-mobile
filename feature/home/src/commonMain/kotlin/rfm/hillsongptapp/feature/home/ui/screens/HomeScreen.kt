@@ -1,5 +1,6 @@
 package rfm.hillsongptapp.feature.home.ui.screens
 
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import org.koin.compose.viewmodel.koinViewModel
@@ -13,4 +14,10 @@ fun homeScreen(
     Text(
         text = "Welcome to the Home Screen!",
     )
+
+    // button for login
+    Button(onClick = { viewModel.loginUser() }) {
+        Text(text = "login")
+    }
+
 }

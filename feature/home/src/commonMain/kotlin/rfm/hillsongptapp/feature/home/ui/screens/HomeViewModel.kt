@@ -28,4 +28,19 @@ class HomeViewModel(
 
     }
 
+    fun loginUser(email: String = "rodrigomartins@msn.com", password:String = "feller123") {
+        viewModelScope.launch {
+            try {
+                val response = userRepository.login(email, password)
+                if (response.sucess) {
+                    println("Login successful: ${response.data.token}")
+                } else {
+                    println("Login failed: ${response.message}")
+                }
+            } catch (e: Exception) {
+                println("Error during login: ${e.message}")
+            }
+        }
+    }
+
 }
