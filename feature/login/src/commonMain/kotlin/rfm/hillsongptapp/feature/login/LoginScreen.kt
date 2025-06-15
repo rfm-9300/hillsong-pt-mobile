@@ -3,58 +3,82 @@ package rfm.hillsongptapp.feature.login
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import org.koin.compose.viewmodel.koinViewModel
+
 
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = koinViewModel(),
-
+    navigator: NavHostController
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val uiState by viewModel.uiState.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Welcome Back",
-            style = MaterialTheme.typography.headlineMedium
-        )
+    val (username, setUsername) = rememberSaveable { mutableStateOf("") }
+    val (password, setPassword) = rememberSaveable { mutableStateOf("") }
 
-        Spacer(modifier = Modifier.height(32.dp))
+    LoginScreenMain(
+        uiState = uiState,
+        username = username,
+        setUsername = setUsername,
+        password = password,
+        setPassword = setPassword,
+        onEvent = viewModel::onEvent
+    )
+}
 
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
-        )
+@Composable
+fun LoginScreenMain(
+    uiState: LoginUiState,
+    username: String,
+    setUsername: (String) -> Unit,
+    password: String,
+    setPassword: (String) -> Unit,
+    onEvent: (LoginUiEvent) -> Unit
+) {
+    Scaffold(
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Password") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Button(
-            onClick = { viewModel.login(email, password) },
-            modifier = Modifier.fillMaxWidth()
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Login")
+            TextField(
+                value = username,
+                onValueChange = setUsername,
+                label = { Text("Username") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            TextField(
+                value = password,
+                onValueChange = setPassword,
+                label = { Text("Password") },
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { onEvent(LoginUiEvent.LoginButtonClicked(username, password)) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Login")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = {  },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Register")
+            }
         }
     }
-} 
+}

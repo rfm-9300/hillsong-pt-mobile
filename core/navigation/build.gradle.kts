@@ -29,7 +29,7 @@ kotlin{
     sourceSets{
         commonMain.dependencies {
             implementation(libs.androidx.core.ktx)
-            implementation(libs.jetbrains.compose.navigation)
+            implementation(libs.navigation.compose)
             implementation(libs.kotlinx.serialization.json)
 
             implementation(projects.feature.home)

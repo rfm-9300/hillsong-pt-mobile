@@ -7,7 +7,7 @@ import rfm.hillsongptapp.feature.login.LoginViewModel
 val featureLoginModule = lazyModule {
     viewModel<LoginViewModel> {
         LoginViewModel(
-
+            userRepository = get(),
         )
     }
 }
