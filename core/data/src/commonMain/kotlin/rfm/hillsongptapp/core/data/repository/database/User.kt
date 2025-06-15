@@ -15,7 +15,8 @@ data class User(
     val lastName: String,
     val email: String,
     val password: String,
-    val phone: String
+    val phone: String,
+    val token: String? = null,
 )
 
 @Dao

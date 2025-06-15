@@ -18,7 +18,7 @@ data class AuthResponse(
 data class LoginResponse(
     val success: Boolean,
     val message: String,
-    val data: AuthResponse? = null
+    val data: AuthResponse
 )
 
 @Serializable

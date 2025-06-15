@@ -6,12 +6,12 @@ import androidx.navigation.compose.rememberNavController
 
 @Composable
 fun RootNavigation() {
-   val rootNavController = rememberNavController()
+    val rootNavController = rememberNavController()
     NavHost(
-         navController = rootNavController,
-         startDestination = HomeGraph
+        navController = rootNavController,
+        startDestination = LoginGraph
     ) {
-         homeGraph(rootNavController)
-
+        loginGraph(rootNavController)
+        homeGraph(rootNavController)
     }
 }
