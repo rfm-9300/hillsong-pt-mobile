@@ -9,7 +9,6 @@ import org.koin.compose.viewmodel.koinViewModel
 fun homeScreen(
     viewModel: HomeViewModel = koinViewModel()
 ) {
-    viewModel.createUser() // Call the function to create a user
     // simple composable function for the home screen
     Text(
         text = "Welcome to the Home Screen!",

@@ -29,7 +29,12 @@ kotlin {
     }
 
     sourceSets {
+        androidMain.dependencies {
+            implementation(libs.androidx.ui.tooling)
+        }
         commonMain.dependencies {
+            implementation(projects.core.navigation)
+
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
@@ -39,11 +44,11 @@ kotlin {
             implementation(libs.navigation.compose)
 
             implementation(projects.core.data)
-
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
-
             implementation(libs.koin.coroutines)
+
+
 
             api(libs.koin.core)
             api(libs.koin.compose)

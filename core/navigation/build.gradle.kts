@@ -33,7 +33,6 @@ kotlin{
             implementation(libs.kotlinx.serialization.json)
 
             implementation(projects.feature.home)
-            implementation(projects.feature.login)
 
             api(libs.koin.core)
             api(libs.koin.compose)

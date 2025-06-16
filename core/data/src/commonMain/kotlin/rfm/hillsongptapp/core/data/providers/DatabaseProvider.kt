@@ -14,17 +14,6 @@ import rfm.hillsongptapp.core.data.repository.database.UserDao
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun userDao(): UserDao
-
-
-    fun getRoomDatabase(
-        builder: RoomDatabase.Builder<AppDatabase>
-    ): AppDatabase {
-        return builder
-            .fallbackToDestructiveMigrationOnDowngrade(false)
-            .setDriver(BundledSQLiteDriver())
-            .setQueryCoroutineContext(Dispatchers.IO)
-            .build()
-    }
 }
 
 @Suppress("TopLevelPropertyNaming")
