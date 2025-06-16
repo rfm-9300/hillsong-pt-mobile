@@ -42,7 +42,7 @@ class LoginViewModel(
         viewModelScope.launch {
             userRepository.login(username, password).let { response ->
                 if (response.success) {
-                    println("Login successful: ${response.data.token}")
+                    println("Login successful: ${response.data?.token}")
                     _uiState.value = _uiState.value.copy(
                         isAuthorized = true,
                         errorMessage = null

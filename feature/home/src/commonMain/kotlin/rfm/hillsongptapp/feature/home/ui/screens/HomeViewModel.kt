@@ -33,7 +33,7 @@ class HomeViewModel(
             try {
                 val response = userRepository.login(email, password)
                 if (response.success) {
-                    println("Login successful: ${response.data.token}")
+                    println("Login successful: ${response.data?.token}")
                 } else {
                     println("Login failed: ${response.message}")
                 }
