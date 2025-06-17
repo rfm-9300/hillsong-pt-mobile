@@ -8,8 +8,14 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.ksp)
 }
-
-kotlin {
+kotlin{
+    sourceSets {
+        commonMain.dependencies {
+            implementation(compose.runtime)
+            implementation(libs.kermit)
+            implementation(libs.koin.core)
+        }
+    }
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
@@ -23,43 +29,14 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "feature.login"
+            baseName = "util.logging"
             isStatic = true
-        }
-    }
-
-    sourceSets {
-        androidMain.dependencies {
-            implementation(libs.androidx.ui.tooling)
-        }
-        commonMain.dependencies {
-            implementation(projects.core.navigation)
-            implementation(projects.core.designsystem)
-
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
-            implementation(libs.navigation.compose)
-
-            implementation(projects.util.logging)
-            implementation(projects.core.data)
-            implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
-            implementation(libs.koin.coroutines)
-
-
-
-            api(libs.koin.core)
-            api(libs.koin.compose)
         }
     }
 }
 
 android {
-    namespace = "rfm.hillsongptapp.feature.login"
+    namespace = "rfm.hillsongptapp.util.logging"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
@@ -79,4 +56,4 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-} 
+}

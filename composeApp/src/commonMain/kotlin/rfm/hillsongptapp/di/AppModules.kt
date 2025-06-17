@@ -9,5 +9,5 @@ val featureModules = listOf(
 )
 
 val coreModules = listOf(
-    dataModule
+    dataModule,
 )

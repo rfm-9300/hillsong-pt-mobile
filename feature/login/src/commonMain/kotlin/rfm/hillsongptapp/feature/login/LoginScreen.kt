@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
+import rfm.hillsongptapp.core.designsystem.ui.components.AppSnackbarHost
 import rfm.hillsongptapp.core.navigation.HomeGraph
 import rfm.hillsongptapp.core.navigation.navigateToHome
 
@@ -51,8 +52,10 @@ fun LoginScreenMain(
     setPassword: (String) -> Unit,
     onEvent: (LoginUiEvent) -> Unit
 ) {
-    Scaffold(
+    val snackbarHostState = remember { SnackbarHostState() }
 
+    Scaffold(
+        snackbarHost = { AppSnackbarHost(hostState = snackbarHostState) },
     ) { paddingValues ->
         if (uiState.isLoading) {
             Box(
@@ -73,6 +76,18 @@ fun LoginScreenMain(
                 onEvent = onEvent
             )
         }
+
+        // Show snackbar if there is an error
+        LaunchedEffect(uiState.errorMessage) {
+            uiState.errorMessage?.let { message ->
+                snackbarHostState.showSnackbar(
+                    message = message,
+                    actionLabel = "Dismiss"
+                )
+                // Clear the error message after showing it
+                onEvent(LoginUiEvent.ErrorDismissed)
+            }
+        }
     }
 }
 
@@ -90,7 +105,8 @@ fun LoginScreenContent(
             .fillMaxSize()
             .padding(paddingValues)
             .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         TextField(
             value = username,

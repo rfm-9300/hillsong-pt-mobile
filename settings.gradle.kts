@@ -45,3 +45,5 @@ include(":core:test")
 include(":feature")
 include(":feature:home")
 include(":feature:login")
+
+include(":util:logging")

@@ -7,15 +7,17 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import rfm.hillsongptapp.core.data.repository.UserRepository
+import rfm.hillsongptapp.logging.LoggerHelper
 
 class LoginViewModel(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(this.defaultEmptyState())
     val uiState = _uiState.stateIn(viewModelScope, SharingStarted.Eagerly, _uiState.value)
 
     private fun defaultEmptyState() = LoginUiState.empty()
+
 
 
     fun onEvent(event: LoginUiEvent) {
@@ -42,13 +44,13 @@ class LoginViewModel(
         viewModelScope.launch {
             userRepository.login(username, password).let { response ->
                 if (response.success) {
-                    println("Login successful: ${response.data?.token}")
+                    LoggerHelper.logDebug("Login successful for user: $username")
                     _uiState.value = _uiState.value.copy(
                         isAuthorized = true,
                         errorMessage = null
                     )
                 } else {
-                    println("Login failed: ${response.message}")
+                    LoggerHelper.logError(Exception("Login failed: ${response.message}"))
                     _uiState.value = _uiState.value.copy(
                         isAuthorized = false,
                         errorMessage = response.message

@@ -54,6 +54,13 @@ kotlin {
             implementation(projects.core.designsystem)
             implementation(projects.core.navigation)
             implementation(projects.core.data)
+            implementation(projects.core.database)
+            implementation(projects.core.model)
+            implementation(projects.core.network)
+            implementation(projects.core.preview)
+            implementation(projects.core.test)
+
+            implementation(projects.util.logging)
 
 
             implementation(projects.feature.home)
