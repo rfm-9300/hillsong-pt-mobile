@@ -3,8 +3,12 @@ package rfm.hillsongptapp.core.data.repository
 import rfm.hillsongptapp.core.data.repository.database.User
 import rfm.hillsongptapp.core.data.repository.database.UserDao
 import rfm.hillsongptapp.core.data.repository.ktor.ApiService
+import rfm.hillsongptapp.core.data.repository.ktor.requests.FacebookAuthRequest
+import rfm.hillsongptapp.core.data.repository.ktor.requests.GoogleAuthRequest
 import rfm.hillsongptapp.core.data.repository.ktor.requests.LoginRequest
+import rfm.hillsongptapp.core.data.repository.ktor.requests.SignUpRequest
 import rfm.hillsongptapp.core.data.repository.ktor.responses.LoginResponse
+import rfm.hillsongptapp.core.data.repository.ktor.responses.SignUpResponse
 
 class UserRepository(
     private val api: ApiService,
@@ -32,5 +36,30 @@ class UserRepository(
             password = password
         )
         return api.login(apiRequest)
+    }
+
+    suspend fun googleLogin(idToken: String): LoginResponse {
+        val apiRequest = GoogleAuthRequest(
+            idToken = idToken
+        )
+        return api.googleLogin(apiRequest)
+    }
+
+    suspend fun facebookLogin(accessToken: String): LoginResponse {
+        val apiRequest = FacebookAuthRequest(
+            accessToken = accessToken
+        )
+        return api.facebookLogin(apiRequest)
+    }
+
+    suspend fun signUp(email: String, password: String, confirmPassword: String, firstName: String, lastName: String): SignUpResponse {
+        val apiRequest = SignUpRequest(
+            email = email,
+            password = password,
+            confirmPassword = confirmPassword,
+            firstName = firstName,
+            lastName = lastName
+        )
+        return api.signUp(apiRequest)
     }
 }

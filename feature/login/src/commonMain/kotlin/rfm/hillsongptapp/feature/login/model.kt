@@ -9,6 +9,7 @@ data class LoginUiState (
     val isRememberMeChecked : Boolean = false,
     val isAuthorized: Boolean = false,
     val errorMessage: String? = null,
+    val isSignupMode: Boolean = false, // Added to toggle between login and signup
 ) {
     companion object {
         fun empty() = LoginUiState(
@@ -26,9 +27,14 @@ data class LoginUiState (
 
 
 sealed class LoginUiEvent {
-    data class UsernameTextFieldChanged(val value: String): LoginUiEvent()
-    data class PasswordTextFieldChanged(val value: String): LoginUiEvent()
-    data object RememberMeCheckboxChanged: LoginUiEvent()
     data class LoginButtonClicked(val username:String, val password: String): LoginUiEvent()
+    data class SignupButtonClicked(
+        val email: String,
+        val password: String,
+        val confirmPassword: String,
+        val firstName: String,
+        val lastName: String
+    ): LoginUiEvent()
     data object ErrorDismissed : LoginUiEvent()
+    data object ToggleSignupMode : LoginUiEvent() // Event to toggle between login and signup
 }
