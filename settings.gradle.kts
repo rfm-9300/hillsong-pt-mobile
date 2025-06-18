@@ -2,6 +2,7 @@ rootProject.name = "HillsongPtApp"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
         google {
             mavenContent {
@@ -13,9 +14,6 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
-    
-    // Add build-logic to includeBuild
-    includeBuild("build-logic")
 }
 
 dependencyResolutionManagement {

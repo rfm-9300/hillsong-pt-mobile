@@ -1,14 +1,14 @@
 [versions]
-agp = "8.5.2"
+agp = "8.9.3"
 android-compileSdk = "35"
-android-minSdk = "24"
+android-minSdk = "28"
 android-targetSdk = "35"
 kermit-version = "2.0.5"
 androidx-activityCompose = "1.10.1"
 androidx-core-ktx = "1.15.0"
 androidx-lifecycle = "2.8.4"
 compose-multiplatform = "1.7.3"
-
+gradle = "8.9.1"
 kotlin = "2.1.10"
 navigationCompose = "2.8.0-alpha10"
 kotlinSerialization = "1.7.3"
@@ -20,7 +20,7 @@ sqlite = "2.5.0"
 room = "2.7.0"
 jetbrainsKotlinJvm = "2.1.10"
 uiTooling = "1.8.2"
-
+popcorn_guineapig = "3.1.2"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
@@ -29,6 +29,8 @@ androidx-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit-version" }
 navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref= "navigationCompose"}
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerialization" }
+kotlin_gradle_plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+
 
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
@@ -58,9 +60,14 @@ sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sql
 
 # Gradle plugins - for build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
-kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 compose-gradlePlugin = { group = "org.jetbrains.compose", name = "compose-gradle-plugin", version.ref = "compose-multiplatform" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "uiTooling" }
+gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "gradle" }
+com-google-devtools-ksp-gradle-plugin = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
+popcorn_guineapig = { group = "io.github.codandotv", name = "popcornguineapig", version.ref = "popcorn_guineapig" }
+
+
+
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

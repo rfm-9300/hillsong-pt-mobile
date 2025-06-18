@@ -2,12 +2,12 @@ import org.gradle.kotlin.dsl.dependencies
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
-class KmpLibraryPlugin:  Plugin<Project> {
+class CmpLibraryPlugin:  Plugin<Project> {
     override fun apply(target: org.gradle.api.Project) {
         with(target) {
             pluginManager.apply {
-                apply("com.android.application")
-                apply("org.jetbrains.kotlin.android")
+                apply("org.jetbrains.kotlin.multiplatform")
+
             }
 
             dependencies {
