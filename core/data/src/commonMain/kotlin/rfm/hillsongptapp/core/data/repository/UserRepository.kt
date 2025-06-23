@@ -2,6 +2,8 @@ package rfm.hillsongptapp.core.data.repository
 
 import rfm.hillsongptapp.core.data.repository.database.User
 import rfm.hillsongptapp.core.data.repository.database.UserDao
+import rfm.hillsongptapp.core.data.repository.database.UserProfile
+import rfm.hillsongptapp.core.data.repository.database.UserProfileDao
 import rfm.hillsongptapp.core.data.repository.ktor.ApiService
 import rfm.hillsongptapp.core.data.repository.ktor.requests.FacebookAuthRequest
 import rfm.hillsongptapp.core.data.repository.ktor.requests.GoogleAuthRequest
@@ -12,7 +14,8 @@ import rfm.hillsongptapp.core.data.repository.ktor.responses.SignUpResponse
 
 class UserRepository(
     private val api: ApiService,
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val userProfileDao: UserProfileDao
 ) {
     suspend fun insertUser(user: User) {
         userDao.insertUser(user)
@@ -61,5 +64,19 @@ class UserRepository(
             lastName = lastName
         )
         return api.signUp(apiRequest)
+    }
+
+
+    // UserProfile management
+    suspend fun insertUserProfile(profile: UserProfile) {
+        userProfileDao.insertUserProfile(profile)
+    }
+
+    suspend fun getUserProfileByUserId(userId: Long): UserProfile? {
+        return userProfileDao.getUserProfileByUserId(userId)
+    }
+
+    suspend fun deleteUserProfile(profile: UserProfile) {
+        userProfileDao.deleteUserProfile(profile)
     }
 }

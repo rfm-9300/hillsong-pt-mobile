@@ -11,12 +11,10 @@ import androidx.room.Upsert
 @Entity
 data class User(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val firstName: String,
-    val lastName: String,
     val email: String,
     val password: String,
-    val phone: String,
     val token: String? = null,
+    val expiryAt: Long? = null, // Store as epoch millis
 )
 
 @Dao

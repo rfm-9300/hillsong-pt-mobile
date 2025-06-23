@@ -13,21 +13,6 @@ class HomeViewModel(
         println("AQUIII")
     }
 
-    fun createUser() {
-        viewModelScope.launch {
-            val user = User(
-                firstName = "Rodrigo",
-                lastName = "Fernandes",
-                email = "rodrigo",
-                password = "123123",
-                phone = "333"
-            )
-            userRepository.insertUser(user)
-            println("User created: $user")
-        }
-
-    }
-
     fun loginUser(email: String = "rodrigomartins@msn.com", password:String = "feller123") {
         viewModelScope.launch {
             try {

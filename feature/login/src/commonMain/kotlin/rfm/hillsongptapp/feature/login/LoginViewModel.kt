@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import rfm.hillsongptapp.core.data.repository.UserRepository
+import rfm.hillsongptapp.core.data.repository.database.User
+import rfm.hillsongptapp.core.data.repository.ktor.responses.LoginResponse
 import rfm.hillsongptapp.logging.LoggerHelper
 
 class LoginViewModel(
@@ -50,6 +52,16 @@ class LoginViewModel(
             userRepository.login(username, password).let { response ->
                 if (response.success) {
                     LoggerHelper.logDebug("Login successful for user: $username", "LoginFlow")
+                    val token = response.data?.token
+                    if (token == null) {
+                        LoggerHelper.logDebug("Login response did not contain token", "LoginFlow")
+                        _uiState.value = _uiState.value.copy(
+                            isAuthorized = false,
+                            errorMessage = "Login failed: No token received"
+                        )
+                        return@let
+                    }
+                    saveUser(username, password, token )
                     _uiState.value = _uiState.value.copy(
                         isAuthorized = true,
                         errorMessage = null
@@ -63,6 +75,17 @@ class LoginViewModel(
                 }
             }
         }
+    }
+    private suspend fun saveUser(username: String, password: String, token: String) {
+        LoggerHelper.logDebug("Saving user: $username", "LoginFlow")
+        val user = User(
+            email = username,
+            password = password,
+            token = token,
+            expiryAt = null
+        )
+        userRepository.insertUser(user)
+        LoggerHelper.logDebug("User saved: ${user.email}", "LoginFlow")
     }
 
     private fun doSignup(
@@ -82,10 +105,7 @@ class LoginViewModel(
             ).let { response ->
                 if (response.success) {
                     LoggerHelper.logDebug("Signup successful for user: $email", "SignupFlow")
-                    _uiState.value = _uiState.value.copy(
-                        isAuthorized = true,
-                        errorMessage = null
-                    )
+                    doLogin(email, password)
                 } else {
                     LoggerHelper.logDebug("Signup failed: ${response.message}", "SignupFlow")
                     _uiState.value = _uiState.value.copy(

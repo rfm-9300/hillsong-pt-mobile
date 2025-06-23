@@ -16,6 +16,7 @@ import rfm.hillsongptapp.core.data.providers.databaseInstance
 import rfm.hillsongptapp.core.data.providers.httpClientEngine
 import rfm.hillsongptapp.core.data.repository.UserRepository
 import rfm.hillsongptapp.core.data.repository.database.UserDao
+import rfm.hillsongptapp.core.data.repository.database.UserProfileDao
 import rfm.hillsongptapp.core.data.repository.ktor.ApiService
 
 val dataModule =
@@ -23,6 +24,9 @@ val dataModule =
         // Db
         single<UserDao> {
             databaseInstance().userDao()
+        }
+        single<UserProfileDao> {
+            databaseInstance().userProfileDao()
         }
 
         // Api
@@ -38,6 +42,7 @@ val dataModule =
             UserRepository(
                 userDao = get<UserDao>(),
                 api = get(),
+                userProfileDao = get<UserProfileDao>(),
             )
         }
 
