@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import rfm.hillsongptapp.core.data.repository.UserRepository
 import rfm.hillsongptapp.core.data.repository.database.User
-import rfm.hillsongptapp.core.data.repository.ktor.responses.LoginResponse
 import rfm.hillsongptapp.logging.LoggerHelper
 
 class LoginViewModel(
@@ -39,10 +38,17 @@ class LoginViewModel(
                 )
             }
             is LoginUiEvent.ErrorDismissed -> {
-                _uiState.value = _uiState.value.copy(errorMessage = null)
+                _uiState.value = _uiState.value.copy()
             }
             LoginUiEvent.ToggleSignupMode -> {
-                _uiState.value = _uiState.value.copy(isSignupMode = !_uiState.value.isSignupMode)
+                _uiState.value = _uiState.value.copy(isSignupMode = !_uiState.value.isSignupMode,)
+            }
+            is LoginUiEvent.GoogleLoginClicked -> {
+                // Handle Google login click
+                _uiState.value = _uiState.value.copy(isGoogleLoginInProgress = true)
+            }
+            is LoginUiEvent.GoogleLoginResult -> {
+
             }
         }
     }
@@ -56,21 +62,18 @@ class LoginViewModel(
                     if (token == null) {
                         LoggerHelper.logDebug("Login response did not contain token", "LoginFlow")
                         _uiState.value = _uiState.value.copy(
-                            isAuthorized = false,
-                            errorMessage = "Login failed: No token received"
+                            errorMessage = "Login failed: No token received",
                         )
                         return@let
                     }
                     saveUser(username, password, token )
                     _uiState.value = _uiState.value.copy(
                         isAuthorized = true,
-                        errorMessage = null
                     )
                 } else {
                     LoggerHelper.logDebug("Login failed: ${response.message}", "LoginFlow")
                     _uiState.value = _uiState.value.copy(
-                        isAuthorized = false,
-                        errorMessage = response.message
+                        errorMessage = response.message,
                     )
                 }
             }
@@ -109,8 +112,31 @@ class LoginViewModel(
                 } else {
                     LoggerHelper.logDebug("Signup failed: ${response.message}", "SignupFlow")
                     _uiState.value = _uiState.value.copy(
-                        isAuthorized = false,
-                        errorMessage = response.message
+                        errorMessage = response.message,
+                    )
+                }
+            }
+        }
+    }
+
+    private fun doGoogleLogin(idToken: String) {
+        viewModelScope.launch {
+            userRepository.googleLogin(idToken).let { response ->
+                if (response.success) {
+                    val token = response.data?.token
+                    if (token == null) {
+                        _uiState.value = _uiState.value.copy(
+                            errorMessage = "Google login failed: No token received",
+                        )
+                        return@let
+                    }
+                    saveUser("google", "", token)
+                    _uiState.value = _uiState.value.copy(
+                        isAuthorized = true,
+                    )
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        errorMessage = response.message,
                     )
                 }
             }

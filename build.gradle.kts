@@ -10,4 +10,5 @@ plugins {
     alias(libs.plugins.room) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
+    kotlin("native.cocoapods") version "2.0.0"
 }

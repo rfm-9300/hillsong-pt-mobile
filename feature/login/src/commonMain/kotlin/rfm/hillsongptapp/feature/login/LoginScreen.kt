@@ -323,7 +323,11 @@ fun LoginScreenContent(
             ) {
                 Text("Login")
             }
-            
+
+            GoogleSignInButton(onGoogleSignInResult = { googleUser ->
+                onEvent(LoginUiEvent.GoogleLoginResult(googleUser)) },
+                modifier = Modifier.fillMaxWidth())
+
             TextButton(
                 onClick = { onEvent(LoginUiEvent.ToggleSignupMode) },
                 modifier = Modifier.fillMaxWidth()
