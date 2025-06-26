@@ -48,7 +48,19 @@ class LoginViewModel(
                 _uiState.value = _uiState.value.copy(isGoogleLoginInProgress = true)
             }
             is LoginUiEvent.GoogleLoginResult -> {
-
+                if (event.googleAccount != null) {
+                    LoggerHelper.logDebug("Google login successful for user: ${event.googleAccount.displayName}", "GoogleLoginFlow")
+                    doGoogleLogin(event.googleAccount)
+                    _uiState.value = _uiState.value.copy(
+                        isGoogleLoginInProgress = false,
+                    )
+                } else {
+                    LoggerHelper.logDebug("Google login failed: No account information received", "GoogleLoginFlow")
+                    _uiState.value = _uiState.value.copy(
+                        errorMessage = "Google login failed: No account information received",
+                        isGoogleLoginInProgress = false
+                    )
+                }
             }
         }
     }
@@ -119,9 +131,9 @@ class LoginViewModel(
         }
     }
 
-    private fun doGoogleLogin(idToken: String) {
+    private fun doGoogleLogin(googleAccount: GoogleAccount) {
         viewModelScope.launch {
-            userRepository.googleLogin(idToken).let { response ->
+            userRepository.googleLogin(googleAccount.token).let { response ->
                 if (response.success) {
                     val token = response.data?.token
                     if (token == null) {
@@ -130,7 +142,7 @@ class LoginViewModel(
                         )
                         return@let
                     }
-                    saveUser("google", "", token)
+                    saveUser(googleAccount.displayName, "", token)
                     _uiState.value = _uiState.value.copy(
                         isAuthorized = true,
                     )

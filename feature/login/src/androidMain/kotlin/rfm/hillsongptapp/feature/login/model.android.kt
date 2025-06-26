@@ -19,15 +19,53 @@ actual class GoogleAuthUiProvider(
     private val credentialManager: CredentialManager
 ) {
     actual suspend fun signIn(): GoogleAccount? = try {
-        LoggerHelper.logDebug( "signIn() called")
-        val credential = credentialManager.getCredential(
-            context = activityContext,
-            request = getCredentialRequest()
-        ).credential
-        LoggerHelper.logDebug( "Credential received: $credential")
-        handleSignIn(credential)
+        LoggerHelper.logDebug("signIn() called")
+        val request = getCredentialRequest()
+
+        try {
+            val credential = credentialManager.getCredential(
+                context = activityContext,
+                request = request
+            ).credential
+            LoggerHelper.logDebug("Credential received: $credential")
+            handleSignIn(credential)
+        } catch (e: Exception) {
+            when {
+                // Handle the specific NoCredentialException case
+                e.javaClass.simpleName == "NoCredentialException" -> {
+                    LoggerHelper.logDebug("No credentials available - attempting to show sign-in UI explicitly")
+
+                    // Create a request that forces the UI to show
+                    val fallbackRequest = GetCredentialRequest.Builder()
+                        .addCredentialOption(
+                            GetGoogleIdOption.Builder()
+                                .setFilterByAuthorizedAccounts(false)
+                                .setAutoSelectEnabled(false) // Force UI to show
+                                .setServerClientId("1033467061192-m3dcm1ieebgp26fbijigfj7gqant7mdg.apps.googleusercontent.com")
+                                .build()
+                        )
+                        .build()
+
+                    try {
+                        val fallbackCredential = credentialManager.getCredential(
+                            context = activityContext,
+                            request = fallbackRequest
+                        ).credential
+                        LoggerHelper.logDebug("Fallback credential received: $fallbackCredential")
+                        handleSignIn(fallbackCredential)
+                    } catch (fallbackException: Exception) {
+                        LoggerHelper.logDebug("Fallback authentication failed: ${fallbackException.message}")
+                        null
+                    }
+                }
+                else -> {
+                    LoggerHelper.logDebug("Authentication exception: ${e.javaClass.simpleName} - ${e.message}")
+                    null
+                }
+            }
+        }
     } catch (e: Exception) {
-        LoggerHelper.logDebug( "Exception: ${e.message}")
+        LoggerHelper.logDebug("Unexpected exception during sign-in flow: ${e.javaClass.simpleName} - ${e.message}")
         null
     }
 
@@ -54,7 +92,7 @@ actual class GoogleAuthUiProvider(
     private fun getGoogleIdOption(): GetGoogleIdOption = GetGoogleIdOption.Builder()
         .setFilterByAuthorizedAccounts(false)
         .setAutoSelectEnabled(true)
-        .setServerClientId("1033467061192-r10l64e9rui96nr6qo0m1h46u4u6up3i.apps.googleusercontent.com")
+        .setServerClientId("1033467061192-m3dcm1ieebgp26fbijigfj7gqant7mdg.apps.googleusercontent.com")
         .build()
 }
 
