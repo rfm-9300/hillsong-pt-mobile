@@ -1,3 +1,4 @@
+# Your existing content...
 .gradle
 .gradle/*
 build/
@@ -327,3 +328,34 @@ $RECYCLE.BIN/
 /app/preprodptPt/release/output-metadata.json
 /app/proptPt/release/output-metadata.json
 /app/uatptPt/release/output-metadata.json
+
+#################################
+# ADDED FOR iOS and KMP         #
+#################################
+
+### Xcode ###
+#
+# General
+build/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# User-specific settings
+*.xcscheme
+xcuserdata/
+*.xcworkspace/contents.xcworkspacedata
+
+### CocoaPods ###
+#
+# We recommend against adding the Pods directory to your .gitignore.
+# The contents of this directory are downloaded and managed by CocoaPods.
+#
+Pods/
+
+# It's good practice to keep the Podfile and Podfile.lock in version control.
+# If you have them in gitignore, remove them:
+# !Podfile
+# !Podfile.lock
