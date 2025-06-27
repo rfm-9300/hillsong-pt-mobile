@@ -16,6 +16,18 @@ class LoginViewModel(
 
     init {
         LoggerHelper.setTag("Login")
+        viewModelScope.launch {
+            val user = userRepository.getUserById(1)
+            if (user != null) {
+                LoggerHelper.logDebug("User already exists: ${user.email}", "LoginFlow")
+                _uiState.value = _uiState.value.copy(
+                    isAuthorized = true,
+                )
+            } else {
+                LoggerHelper.logDebug("No user found, initializing empty state", "LoginFlow")
+                _uiState.value = defaultEmptyState()
+            }
+        }
     }
 
     private val _uiState = MutableStateFlow(this.defaultEmptyState())

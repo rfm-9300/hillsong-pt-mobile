@@ -36,6 +36,8 @@ kotlin{
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
 
+            implementation(projects.core.designsystem)
+
             implementation(projects.core.data)
 
             implementation(libs.koin.compose)
