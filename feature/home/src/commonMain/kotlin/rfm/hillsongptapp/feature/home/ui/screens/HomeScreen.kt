@@ -18,9 +18,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -37,21 +40,29 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.painterResource
+import androidx.navigation.NavHostController
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import rfm.hillsongptapp.core.designsystem.BottomBarDestination
 import rfm.hillsongptapp.core.designsystem.HillsongBottomAppBar
 import rfm.hillsongptapp.core.designsystem.HillsongTopAppBar
+import rfm.hillsongptapp.core.navigation.navigateToSettings
+import rfm.hillsongptapp.core.navigation.navigateToStream
+import rfm.hillsongptapp.core.navigation.navigateToProfile
+import rfm.hillsongptapp.core.navigation.navigateToMinistries
+import rfm.hillsongptapp.core.navigation.navigateToKids
+import rfm.hillsongptapp.core.navigation.navigateToGroups
+import rfm.hillsongptapp.core.navigation.navigateToGiving
+import rfm.hillsongptapp.core.navigation.navigateToFeed
+import rfm.hillsongptapp.core.navigation.navigateToEvents
 
 @Composable
 fun homeScreen(
+    navController: NavHostController,
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     var currentRoute by remember { mutableStateOf(BottomBarDestination.Home.route) }
@@ -70,9 +81,9 @@ fun homeScreen(
             ) {
                 DropdownMenuItem(
                     text = { Text("Settings") },
-                    onClick = { 
+                    onClick = {
                         showMenu = false
-                        // Handle settings click
+                        navController.navigateToSettings()
                     }
                 )
                 DropdownMenuItem(
@@ -100,12 +111,34 @@ fun homeScreen(
             )
         }
     ) { paddingValues ->
-        HomeContent(paddingValues = paddingValues)
+        HomeContent(
+            paddingValues = paddingValues,
+            onStream = { navController.navigateToStream() },
+            onSettings = { navController.navigateToSettings() },
+            onProfile = { navController.navigateToProfile() },
+            onMinistries = { navController.navigateToMinistries() },
+            onKids = { navController.navigateToKids() },
+            onGroups = { navController.navigateToGroups() },
+            onGiving = { navController.navigateToGiving() },
+            onFeed = { navController.navigateToFeed() },
+            onEvents = { navController.navigateToEvents() }
+        )
     }
 }
 
 @Composable
-fun HomeContent(paddingValues: PaddingValues) {
+fun HomeContent(
+    paddingValues: PaddingValues,
+    onStream: () -> Unit = {},
+    onSettings: () -> Unit = {},
+    onProfile: () -> Unit = {},
+    onMinistries: () -> Unit = {},
+    onKids: () -> Unit = {},
+    onGroups: () -> Unit = {},
+    onGiving: () -> Unit = {},
+    onFeed: () -> Unit = {},
+    onEvents: () -> Unit = {}
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -118,11 +151,21 @@ fun HomeContent(paddingValues: PaddingValues) {
         UpcomingServiceCard()
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Connect With Us",
+            text = "Explore Modules",
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
-        QuickActionCards()
+        ModuleActionCards(
+            onStream = onStream,
+            onSettings = onSettings,
+            onProfile = onProfile,
+            onMinistries = onMinistries,
+            onKids = onKids,
+            onGroups = onGroups,
+            onGiving = onGiving,
+            onFeed = onFeed,
+            onEvents = onEvents
+        )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "Daily Scripture",
@@ -235,28 +278,44 @@ fun UpcomingServiceCard() {
 }
 
 @Composable
-fun QuickActionCards() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        ActionCard(
-            icon = Icons.Default.Person,
-            title = "Connect Groups",
-            modifier = Modifier.weight(1f)
-        )
-        Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-        ActionCard(
-            icon = Icons.Default.Favorite,
-            title = "Give",
-            modifier = Modifier.weight(1f)
-        )
-        Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-        ActionCard(
-            icon = Icons.Default.PlayArrow,
-            title = "Sermons",
-            modifier = Modifier.weight(1f)
-        )
+fun ModuleActionCards(
+    onStream: () -> Unit = {},
+    onSettings: () -> Unit = {},
+    onProfile: () -> Unit = {},
+    onMinistries: () -> Unit = {},
+    onKids: () -> Unit = {},
+    onGroups: () -> Unit = {},
+    onGiving: () -> Unit = {},
+    onFeed: () -> Unit = {},
+    onEvents: () -> Unit = {}
+) {
+    val modules = listOf(
+        Triple("Stream", Icons.Default.Settings, onStream),
+        Triple("Settings", Icons.Default.Settings, onSettings),
+        Triple("Profile", Icons.Default.AccountCircle, onProfile),
+        Triple("Ministries", Icons.Default.AccountCircle, onMinistries),
+        Triple("Kids", Icons.Default.Person, onKids),
+        Triple("Groups", Icons.Default.Person, onGroups),
+        Triple("Giving", Icons.Default.Clear, onGiving),
+        Triple("Feed", Icons.Default.Create, onFeed),
+        Triple("Events", Icons.Default.ShoppingCart, onEvents),
+    )
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        for (row in modules.chunked(3)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                for ((title, icon, onClick) in row) {
+                    ActionCard(
+                        icon = icon,
+                        title = title,
+                        modifier = Modifier.weight(1f),
+                        onClick = onClick
+                    )
+                }
+                repeat(3 - row.size) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
     }
 }
 
@@ -264,12 +323,14 @@ fun QuickActionCards() {
 fun ActionCard(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
 ) {
     Card(
         modifier = modifier,
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        onClick = onClick
     ) {
         Column(
             modifier = Modifier
@@ -330,7 +391,18 @@ fun ScriptureCard() {
 fun HomeScreenPreview() {
     MaterialTheme {
         Surface {
-            HomeContent(paddingValues = PaddingValues(16.dp))
+            HomeContent(
+                paddingValues = PaddingValues(16.dp),
+                onStream = {},
+                onSettings = {},
+                onProfile = {},
+                onMinistries = {},
+                onKids = {},
+                onGroups = {},
+                onGiving = {},
+                onFeed = {},
+                onEvents = {}
+            )
         }
     }
 }

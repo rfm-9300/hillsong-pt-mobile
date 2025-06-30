@@ -32,8 +32,6 @@ kotlin{
             implementation(libs.navigation.compose)
             implementation(libs.kotlinx.serialization.json)
 
-            implementation(projects.feature.home)
-
             api(libs.koin.core)
             api(libs.koin.compose)
         }

@@ -10,6 +10,17 @@ import rfm.hillsongptapp.core.navigation.homeGraph
 import rfm.hillsongptapp.core.navigation.loginGraph
 import rfm.hillsongptapp.feature.login.LoginScreen
 
+import rfm.hillsongptapp.feature.stream.StreamScreen
+import rfm.hillsongptapp.feature.settings.SettingsScreen
+import rfm.hillsongptapp.feature.profile.ProfileScreen
+import rfm.hillsongptapp.feature.ministries.MinistriesScreen
+import rfm.hillsongptapp.feature.kids.KidsScreen
+import rfm.hillsongptapp.feature.groups.GroupsScreen
+import rfm.hillsongptapp.feature.giving.GivingScreen
+import rfm.hillsongptapp.feature.feed.FeedScreen
+import rfm.hillsongptapp.feature.events.EventsScreen
+import rfm.hillsongptapp.feature.home.ui.screens.homeScreen
+
 @Composable
 @Preview
 fun RootApp() {
@@ -24,6 +35,18 @@ fun RootNavigation() {
         startDestination = LoginGraph
     ) {
         loginGraph(content = { LoginScreen(navigator = rootNavController) }, rootNavController = rootNavController)
-        homeGraph(rootNavController)
+        homeGraph(
+            stream = { StreamScreen() },
+            settings = { SettingsScreen() },
+            profile = { ProfileScreen() },
+            ministries = { MinistriesScreen() },
+            kids = { KidsScreen() },
+            groups = { GroupsScreen() },
+            giving = { GivingScreen() },
+            feed = { FeedScreen() },
+            events = { EventsScreen() },
+            homeScreen = { homeScreen(navController = rootNavController) },
+            rootNavController = rootNavController
+        )
     }
 }

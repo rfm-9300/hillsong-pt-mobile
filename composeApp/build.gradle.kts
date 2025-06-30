@@ -73,6 +73,16 @@ kotlin {
 
             implementation(projects.feature.home)
             implementation(projects.feature.login)
+            implementation(projects.feature.home)
+            implementation(projects.feature.profile)
+            implementation(projects.feature.stream)
+            implementation(projects.feature.ministries)
+            implementation(projects.feature.settings)
+            implementation(projects.feature.kids)
+            implementation(projects.feature.events)
+            implementation(projects.feature.feed)
+            implementation(projects.feature.giving)
+            implementation(projects.feature.groups)
 
             implementation(compose.runtime)
             implementation(compose.foundation)

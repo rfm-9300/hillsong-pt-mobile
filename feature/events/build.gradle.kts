@@ -22,21 +22,19 @@ kotlin{
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "feature.home"
+            baseName = "feature.feed"
             isStatic = true
         }
     }
 
     sourceSets{
         commonMain.dependencies {
-            implementation(projects.core.navigation)
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-            implementation(libs.navigation.compose)
 
             implementation(projects.core.designsystem)
 
@@ -55,7 +53,7 @@ kotlin{
 }
 
 android {
-    namespace = "rfm.hillsongptapp.feature.home"
+    namespace = "rfm.hillsongptapp.feature.events"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
