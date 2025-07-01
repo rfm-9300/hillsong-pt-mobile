@@ -62,7 +62,6 @@ kotlin {
             implementation(projects.core.designsystem)
             implementation(projects.core.navigation)
             implementation(projects.core.data)
-            implementation(projects.core.database)
             implementation(projects.core.model)
             implementation(projects.core.network)
             implementation(projects.core.preview)
@@ -102,7 +101,7 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             api(libs.koin.core)
             implementation(libs.koin.coroutines)
-
+            implementation(libs.kamel)
             implementation(libs.bundles.ktor)
             implementation(libs.bundles.coil)
         }

@@ -6,9 +6,9 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.ksp)
 }
-kotlin{
+
+kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
@@ -16,19 +16,17 @@ kotlin{
         }
     }
 
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "feature.feed"
-            isStatic = true
-        }
-    }
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
 
-    sourceSets{
+    sourceSets {
+        androidMain.dependencies {
+            implementation(libs.androidx.ui.tooling)
+        }
         commonMain.dependencies {
+            implementation(projects.core.designsystem)
+
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
@@ -36,19 +34,16 @@ kotlin{
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
 
-            implementation(projects.core.designsystem)
-
+            implementation(projects.util.logging)
             implementation(projects.core.data)
-
             implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
-
             implementation(libs.koin.coroutines)
+            implementation(libs.koin.compose.viewmodel)
 
             api(libs.koin.core)
             api(libs.koin.compose)
+            implementation(libs.kamel)
         }
-
     }
 }
 

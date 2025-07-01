@@ -72,4 +72,8 @@ class ApiService(
 
     private suspend inline fun <reified T> fetchData(endpoint: String): T =
         httpClient.get("$baseUrl/$endpoint").body()
+
+    suspend fun getPosts(): ApiResponse<PostListResponse> {
+        return httpClient.get("$baseUrl/api/posts").body()
+    }
 }

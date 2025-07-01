@@ -14,6 +14,7 @@ import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 import rfm.hillsongptapp.core.data.providers.databaseInstance
 import rfm.hillsongptapp.core.data.providers.httpClientEngine
+import rfm.hillsongptapp.core.data.repository.PostRepository
 import rfm.hillsongptapp.core.data.repository.UserRepository
 import rfm.hillsongptapp.core.data.repository.database.UserDao
 import rfm.hillsongptapp.core.data.repository.database.UserProfileDao
@@ -32,7 +33,8 @@ val dataModule =
         // Api
         single {
             ApiService(
-                baseUrl = "https://activehive.pt:443",
+                baseUrl =  "http://192.168.1.67:8080", // For physical device to connect to host machine
+                //baseUrl = "https://activehive.pt:443",
                 httpClient = get(),
             )
         }
@@ -43,6 +45,12 @@ val dataModule =
                 userDao = get<UserDao>(),
                 api = get(),
                 userProfileDao = get<UserProfileDao>(),
+            )
+        }
+
+        single {
+            PostRepository(
+                api = get(),
             )
         }
 
