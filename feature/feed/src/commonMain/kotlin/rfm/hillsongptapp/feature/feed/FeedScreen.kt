@@ -28,12 +28,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import io.kamel.image.KamelImage
-import io.kamel.image.asyncPainterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
-import org.koin.core.logger.Logger
-import rfm.hillsongptapp.logging.LoggerHelper
+import rfm.hillsongptapp.util.media.AsyncImage
 
 @Composable
 fun FeedScreen(viewModel: FeedViewModel = koinInject()) {
@@ -85,7 +82,6 @@ private fun FeedScreenContent(
 
 @Composable
 private fun FeedItemCard(item: FeedItem) {
-    LoggerHelper.logDebug(item.imageUrl)
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -93,11 +89,25 @@ private fun FeedItemCard(item: FeedItem) {
             .padding(horizontal = 16.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            KamelImage(
-                resource = asyncPainterResource(data = item.imageUrl),
+            AsyncImage(
+                imageUrl = item.imageUrl,
                 contentDescription = item.title,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black,
+                            ),
+                            startY = 0f,
+                            endY = 400f,
+                        )
+                    )
             )
             Column(
                 modifier = Modifier

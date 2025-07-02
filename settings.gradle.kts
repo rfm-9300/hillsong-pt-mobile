@@ -55,3 +55,4 @@ include(":feature:prayer")
 
 
 include(":util:logging")
+include(":util:media")

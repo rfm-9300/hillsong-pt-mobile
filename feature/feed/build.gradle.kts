@@ -26,6 +26,7 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(projects.core.designsystem)
+            implementation(projects.util.media)
 
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -42,7 +43,6 @@ kotlin {
 
             api(libs.koin.core)
             api(libs.koin.compose)
-            implementation(libs.kamel)
         }
     }
 }

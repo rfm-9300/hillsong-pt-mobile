@@ -101,7 +101,6 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             api(libs.koin.core)
             implementation(libs.koin.coroutines)
-            implementation(libs.kamel)
             implementation(libs.bundles.ktor)
             implementation(libs.bundles.coil)
         }
