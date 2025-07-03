@@ -70,6 +70,7 @@ object Routes {
         object Profile {
             const val GET = "/api/profile"
             const val UPDATE = "/api/profile/update"
+            const val LIST = "/api/users"
         }
     }
 

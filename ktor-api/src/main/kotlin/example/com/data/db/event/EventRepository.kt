@@ -2,6 +2,7 @@ package example.com.data.db.event
 
 import example.com.data.db.user.UserProfile
 
+
 interface EventRepository {
     suspend fun addEvent(event: Event) : Int?
     suspend fun getAllEvents(): List<Event>

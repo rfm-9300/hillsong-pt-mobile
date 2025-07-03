@@ -1,13 +1,14 @@
 package example.com.data.db.post
 
-import example.com.data.db.user.UserProfilesTable
-import example.com.data.db.user.UserTable
+
 import example.com.data.utils.LocalDateTimeSerializer
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.`java-time`.datetime
 import java.time.LocalDateTime
+import example.com.data.db.user.UserProfilesTable
+import example.com.data.db.user.UserTable
 
 @Serializable
 data class Post(

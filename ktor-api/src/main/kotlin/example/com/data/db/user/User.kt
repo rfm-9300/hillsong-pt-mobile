@@ -13,6 +13,8 @@ import org.jetbrains.exposed.sql.`java-time`.datetime
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import java.time.LocalDateTime
 
+
+
 @Serializable
 data class User(
     val id: Int? = null,
@@ -30,6 +32,7 @@ data class User(
     val resetToken: String? = null,
     val resetTokenExpiresAt: Long? = null
 )
+
 
 enum class AuthProvider {
     LOCAL, GOOGLE, FACEBOOK

@@ -2,6 +2,7 @@ package example.com.routes
 
 
 import example.com.data.db.user.UserRepository
+import example.com.data.responses.ApiResponseData
 import example.com.plugins.Logger
 import example.com.web.pages.profilePage.profilePage
 import io.ktor.http.*
@@ -16,6 +17,17 @@ import kotlinx.io.readByteArray
 fun Route.profileRoutes(
     userRepository: UserRepository
 ){
+    authenticate {
+        get(Routes.Api.Profile.LIST) {
+            val userId = getUserIdFromRequestToken(call) ?: return@get respondHelper(call, false, "User not found", statusCode = HttpStatusCode.Unauthorized)
+            if (!isUserAdmin(userId)) {
+                return@get respondHelper(call, false, "Unauthorized", statusCode = HttpStatusCode.Unauthorized)
+            }
+            val users = userRepository.getAllUsers()
+            respondHelper(call, true, "Users fetched successfully", data = ApiResponseData.UserListResponse(users))
+        }
+    }
+
 
     /**
      * UI Routes

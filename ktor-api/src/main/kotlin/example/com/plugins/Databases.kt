@@ -7,9 +7,9 @@ import example.com.data.db.image.ImageHashTable
 import example.com.data.db.post.PostCommentTable
 import example.com.data.db.post.PostLikeTable
 import example.com.data.db.post.PostTable
-import example.com.data.db.user.PasswordResetTable
-import example.com.data.db.user.UserProfilesTable
 import example.com.data.db.user.UserTable
+import example.com.data.db.user.UserProfilesTable
+import example.com.data.db.user.PasswordResetTable
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.config.*
@@ -18,7 +18,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import java.sql.*
 import kotlinx.coroutines.*
-import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction

@@ -1,5 +1,6 @@
 package example.com.data.db.event
 
+
 import example.com.data.db.user.*
 import example.com.plugins.Logger
 import org.jetbrains.exposed.sql.*

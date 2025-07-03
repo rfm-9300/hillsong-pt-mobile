@@ -1,6 +1,7 @@
 package example.com.data.responses
 
 import example.com.data.db.post.Post
+import example.com.data.db.user.User
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -13,7 +14,11 @@ data class ApiResponse(
 @Serializable
 sealed class ApiResponseData {
     @Serializable
-    data class AuthResponse (val token: String) : ApiResponseData()
+    data class AuthResponse(val token: String) : ApiResponseData()
+
     @Serializable
     data class PostListResponse(val postList: List<Post>) : ApiResponseData()
+
+    @Serializable
+    data class UserListResponse(val users: List<User>) : ApiResponseData()
 }

@@ -44,4 +44,5 @@ interface UserRepository {
     suspend fun revokeAllUserTokens(userId: Int): Boolean
     suspend fun findTokenByRefreshToken(refreshToken: String): TokenPair?
     suspend fun refreshAccessToken(refreshToken: String, config: TokenConfig, vararg claims: TokenClaim): RefreshResult?
+    suspend fun getAllUsers(): List<User>
 }

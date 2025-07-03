@@ -7,6 +7,7 @@ import example.com.security.token.*
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+
 import java.time.LocalDateTime
 
 class UserRepositoryImpl (
@@ -541,4 +542,8 @@ class UserRepositoryImpl (
     }
     private suspend fun <T> dbQuery(block: suspend () -> T): T =
         newSuspendedTransaction(Dispatchers.IO) { block() }
+
+    override suspend fun getAllUsers(): List<User> = suspendTransaction {
+        UserTable.selectAll().map { it.toUser() }
+    }
 }
