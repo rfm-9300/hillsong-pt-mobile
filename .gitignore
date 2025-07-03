@@ -1,29 +1,28 @@
 # Your existing content...
-.gradle
-.gradle/*
-build/
-!gradle/wrapper/gradle-wrapper.jar
+mobileApp/.gradle
+mobileApp/.gradle/*
+mobileApp/build/
+!mobileApp/gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 
 ### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+mobileApp/.apt_generated
+mobileApp/.classpath
+mobileApp/.factorypath
+mobileApp/.project
+mobileApp/.settings
+mobileApp/.springBeans
+mobileApp/.sts4-cache
+mobileApp/bin/
 
-compose-app/.kotlin/*
-compose-app/.gradle/*
+
+mobileApp/.kotlin/*
+mobileApp/.gradle/*
 
 
 ### IntelliJ IDEA ###
-.idea
+ktor-api/.idea
 *.iws
 *.iml
 *.ipr
@@ -31,20 +30,11 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
 
 ### VS Code ###
 .vscode/
 
 .env
-
-# Created by https://www.gitignore.io/api/java,linux,macos,android,windows,androidstudio
-# Edit at https://www.gitignore.io/?templates=java,linux,macos,android,windows,androidstudio
 
 ### Android ###
 # Built application files
@@ -64,8 +54,9 @@ gen/
 out/
 
 # Gradle files
-.gradle/
-build/
+ktor-api/.gradle/
+ktor-api/build/
+ktor-api/temp_env.sh
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -78,20 +69,20 @@ proguard/
 *.log
 
 # Android Studio Navigation editor temp files
-.navigation/
+mobileApp/.navigation/
 
 # Android Studio captures folder
 captures/
 
 # IntelliJ
 *.iml
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/gradle.xml
-.idea/assetWizardSettings.xml
-.idea/dictionaries
-.idea/libraries
-.idea/caches
+ktor-api/.idea/workspace.xml
+ktor-api/.idea/tasks.xml
+ktor-api/.idea/gradle.xml
+ktor-api/.idea/assetWizardSettings.xml
+ktor-api/.idea/dictionaries
+ktor-api/.idea/libraries
+ktor-api/.idea/caches
 # Android Studio 3 in .gitignore file.
 .idea/caches/build_file_checksums.ser
 .idea/modules.xml
@@ -359,3 +350,7 @@ Pods/
 # If you have them in gitignore, remove them:
 # !Podfile
 # !Podfile.lock
+
+
+#ktor uploads##
+ktor-api/app/files/uploads/images

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/feature/login/HillsongPtApp.feature.login.main.iml" filepath="$PROJECT_DIR$/.idea/modules/feature/login/HillsongPtApp.feature.login.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/util/media/HillsongPtApp.util.media.main.iml" filepath="$PROJECT_DIR$/.idea/modules/util/media/HillsongPtApp.util.media.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/HillsongPtAppXcode.iml" filepath="$PROJECT_DIR$/.idea/HillsongPtAppXcode.iml" />
+    </modules>
+  </component>
+</project>
