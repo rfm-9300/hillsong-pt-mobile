@@ -23,6 +23,7 @@ mobileApp/.gradle/*
 
 ### IntelliJ IDEA ###
 ktor-api/.idea
+mobileApp/.idea
 *.iws
 *.iml
 *.ipr
