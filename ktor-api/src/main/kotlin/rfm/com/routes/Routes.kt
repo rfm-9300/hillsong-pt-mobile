@@ -50,7 +50,7 @@ object Routes {
         }
 
         object Post {
-            const val CREATE = "/api/posts"
+            const val CREATE = "/api/posts/create"
             const val GET = "/api/posts/{id}"
             const val UPDATE = "/api/posts/update"
             const val DELETE = "/api/posts/delete"

@@ -9,12 +9,22 @@
 
     onMount(async () => {
         const postId = $page.params.id;
+        console.log(`Fetching post with ID: ${postId}`);
         const response = await fetch(`/api/posts/${postId}`);
+        console.log('Response OK:', response.ok);
         if (response.ok) {
             const data = await response.json();
-            post = data.data;
-            title = post.title;
-            content = post.content;
+            console.log('Received data:', data);
+            if (data.data && data.data.post) {
+                post = data.data.post;
+                title = post.title;
+                content = post.content;
+                console.log('Post assigned:', post);
+            } else {
+                console.error('Post data not found in response:', data);
+            }
+        } else {
+            console.error('Failed to fetch post. Status:', response.status);
         }
     });
 

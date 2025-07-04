@@ -22,7 +22,7 @@ fun Application.configureRouting(
     emailService: EmailService
 )  {
     routing {
-        homeRoutes( eventRepository, userRepository, postRepository )
+        postRoutes( eventRepository, userRepository, postRepository )
         loginRoutes(hashingService, userRepository, tokenService, tokenConfig, emailService)
         eventRoutes(eventRepository, userRepository)
         dynamicJsProcessing()

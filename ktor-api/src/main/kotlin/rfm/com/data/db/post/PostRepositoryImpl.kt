@@ -4,6 +4,7 @@ import rfm.com.data.db.user.suspendTransaction
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 
 class PostRepositoryImpl: PostRepository {
@@ -33,6 +34,19 @@ class PostRepositoryImpl: PostRepository {
                 headerImagePath = it[PostTable.headerImagePath] // Retrieve image path
             )
         }
+    }
+
+    override suspend fun getPostById(postId: Int): Post? = suspendTransaction {
+        PostTable.select { PostTable.id eq postId }.map {
+            Post(
+                id = it[PostTable.id].value,
+                title = it[PostTable.title],
+                content = it[PostTable.content],
+                date = it[PostTable.date],
+                userId = it[PostTable.userId].value,
+                headerImagePath = it[PostTable.headerImagePath]
+            )
+        }.singleOrNull()
     }
 
     override suspend fun deletePost(postId: Int): Boolean = suspendTransaction {

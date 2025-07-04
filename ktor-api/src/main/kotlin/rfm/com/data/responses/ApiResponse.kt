@@ -15,9 +15,10 @@ data class ApiResponse(
 sealed class ApiResponseData {
     @Serializable
     data class AuthResponse(val token: String) : ApiResponseData()
-
     @Serializable
     data class PostListResponse(val postList: List<Post>) : ApiResponseData()
+    @Serializable
+    data class SinglePostResponse(val post: Post) : ApiResponseData()
 
     @Serializable
     data class UserListResponse(val users: List<User>) : ApiResponseData()
