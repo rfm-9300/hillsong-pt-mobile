@@ -4,7 +4,6 @@ import rfm.com.data.db.event.EventRepository
 import rfm.com.data.db.post.Post
 import rfm.com.data.db.post.PostRepository
 import rfm.com.data.db.user.UserRepository
-import rfm.com.data.requests.CreatePostRequest
 import rfm.com.data.requests.PostRequest
 import rfm.com.data.responses.ApiResponseData
 import rfm.com.data.utils.Strings
@@ -15,6 +14,8 @@ import io.ktor.server.auth.*
 import io.ktor.server.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.utils.io.readRemaining
+import kotlinx.io.readByteArray
 import java.io.File
 
 fun Route.postRoutes(
@@ -73,15 +74,9 @@ fun Route.postRoutes(
                         }
                         is PartData.FileItem -> {
                             if (part.name == "image") {
-                                val fileName = part.originalFileName as String
-                                val fileBytes = part.streamProvider().readBytes()
-                                val uploadDir = File("uploads/posts")
-                                if (!uploadDir.exists()) {
-                                    uploadDir.mkdirs()
-                                }
-                                val serverFile = File(uploadDir, fileName)
-                                serverFile.writeBytes(fileBytes)
-                                imagePath = "uploads/posts/$fileName"
+                                val fileName = part.originalFileName ?: "unnamed.jpg"
+                                val fileBytes = part.provider().readRemaining().readByteArray()
+                                imagePath = ImageFileHandler.saveImage(fileBytes, fileName)
                             }
                         }
                         else -> {}
@@ -135,6 +130,67 @@ fun Route.postRoutes(
         } catch (e: Exception) {
             Logger.d("Error fetching post: ${e.message}")
             respondHelper(success = false, message = e.message ?: "Error fetching post", call = call, statusCode = HttpStatusCode.InternalServerError)
+        }
+    }
+
+    post(Routes.Api.Post.UPDATE){
+        Logger.d("Update post request")
+        try {
+            val userId = "1" // For testing purposes, replace with getUserIdFromRequestToken(call) in production
+            if (!isUserAdmin(userId)) {
+                return@post respondHelper(success = false, message = "Unauthorized", call = call, statusCode = HttpStatusCode.Unauthorized)
+            }
+            Logger.d("User $userId is authorized to update post")
+
+            val multiPart = call.receiveMultipart()
+            var postId: Int? = null
+            var title: String? = null
+            var content: String? = null
+            var imagePath: String? = null
+
+            multiPart.forEachPart { part ->
+                when (part) {
+                    is PartData.FormItem -> {
+                        when (part.name) {
+                            "postId" -> postId = part.value.toIntOrNull()
+                            "title" -> title = part.value
+                            "content" -> content = part.value
+                        }
+                    }
+                    is PartData.FileItem -> {
+                        if (part.name == "image") {
+                            val fileName = part.originalFileName ?: "unnamed.jpg"
+                            val fileBytes = part.provider().readRemaining().readByteArray()
+                            imagePath = ImageFileHandler.saveImage(fileBytes, fileName)
+                        }
+                    }
+                    else -> {}
+                }
+                part.dispose()
+            }
+
+            if (postId == null || title.isNullOrEmpty() || content.isNullOrEmpty()) {
+                return@post respondHelper(success = false, message = "Missing post ID, title or content", call = call, statusCode = HttpStatusCode.BadRequest)
+            }
+
+            val updatedPost = Post(
+                id = postId,
+                userId = userId.toInt(),
+                title = title,
+                content = content,
+                headerImagePath = imagePath ?: "default-header.jpg"
+            )
+            val success = postRepository.updatePost(updatedPost)
+
+            respondHelper(
+                success = success,
+                data = null,
+                call = call,
+                message = if (success) "Post updated successfully" else "Error updating post",
+                statusCode = if (success) HttpStatusCode.OK else HttpStatusCode.InternalServerError
+            )
+        } catch (e: Exception) {
+            respondHelper(success = false, message = e.message ?: "Error updating post", call = call, statusCode = HttpStatusCode.InternalServerError)
         }
     }
 
