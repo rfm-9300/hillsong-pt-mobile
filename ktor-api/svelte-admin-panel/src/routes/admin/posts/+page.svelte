@@ -1,24 +1,9 @@
 <script>
-    import { onMount } from 'svelte';
     import { fade, fly } from 'svelte/transition';
 
-    let posts = [];
-    let loading = true;
+    export let data;
+    let posts = data.posts;
     let deleteConfirmation = { show: false, postId: null };
-
-    onMount(async () => {
-        try {
-            const response = await fetch('/api/posts');
-            if (response.ok) {
-                const data = await response.json();
-                posts = data.data.postList;
-            }
-        } catch (error) {
-            console.error("Failed to load posts:", error);
-        } finally {
-            loading = false;
-        }
-    });
 
     async function deletePost(postId) {
         try {
@@ -79,11 +64,7 @@
         </a>
     </div>
 
-    {#if loading}
-        <div class="flex justify-center items-center h-64">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
-        </div>
-    {:else if posts.length === 0}
+    {#if posts.length === 0}
         <div in:fade class="bg-gray-50 rounded-lg p-12 text-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -110,7 +91,7 @@
                                 src={getImageUrl(post.headerImagePath)} 
                                 alt={post.title} 
                                 class="w-full h-full object-cover"
-                                on:error={(e) => e.target.src = '/images/placeholder.png'}
+                                on:error={(e) => e.target.src = 'http://localhost:8080/resources/uploads/images/eea87a90-ca30-4129-b3a9-c7265a1b4960.jpg'}
                             />
                         {:else}
                             <div class="w-full h-full bg-gradient-to-r from-blue-100 to-indigo-100 flex items-center justify-center">

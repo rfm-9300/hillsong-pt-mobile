@@ -58,7 +58,6 @@ fun Application.module() {
         tokenConfig = tokenConfig,
         eventRepository = get(),
         postRepository = get(),
-        emailService = emailService
+        emailService = emailService,
     )
 }
-

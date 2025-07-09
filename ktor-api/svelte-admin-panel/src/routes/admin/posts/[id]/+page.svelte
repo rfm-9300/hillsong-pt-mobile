@@ -6,13 +6,13 @@
     import Cropper from 'cropperjs';
     import 'cropperjs/dist/cropper.css';
 
-    let post = null;
-    let title = '';
-    let content = '';
-    let headerImagePath = '';
+    export let data;
+    let post = data.post;
+    let title = post.title;
+    let content = post.content;
+    let headerImagePath = post.headerImagePath || '';
     let image = null;
-    let imagePreview = null;
-    let loading = true;
+    let imagePreview = getImageUrl(headerImagePath);
     let saving = false;
     let errorMessage = '';
     let successMessage = '';
@@ -23,33 +23,6 @@
         if (!imagePath) return null;
         return `http://localhost:8080/resources/uploads/images/${imagePath}`;
     }
-
-    onMount(async () => {
-        try {
-            const postId = $page.params.id;
-            const response = await fetch(`/api/posts/${postId}`);
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.data && data.data.post) {
-                    post = data.data.post;
-                    title = post.title;
-                    content = post.content;
-                    headerImagePath = post.headerImagePath || '';
-                    imagePreview = getImageUrl(headerImagePath);
-                } else {
-                    errorMessage = 'Post data not found in response';
-                }
-            } else {
-                errorMessage = `Failed to fetch post. Status: ${response.status}`;
-            }
-        } catch (error) {
-            errorMessage = `Error loading post: ${error.message}`;
-            console.error(error);
-        } finally {
-            loading = false;
-        }
-    });
 
     async function updatePost() {
         saving = true;
@@ -159,18 +132,14 @@
         <h1 class="text-3xl font-bold text-gray-800">Edit Post</h1>
     </div>
 
-    {#if loading}
-        <div class="flex justify-center items-center h-64" in:fade>
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
-        </div>
-    {:else if errorMessage && !post}
+    {#if !post}
         <div in:fade class="bg-red-50 text-red-700 p-4 rounded-lg mb-6">
-            <p>{errorMessage}</p>
+            <p>Post not found</p>
             <button on:click={goBack} class="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
                 Return to Posts
             </button>
         </div>
-    {:else if post}
+    {:else}
         <div in:fly={{ y: 20, duration: 300 }} class="bg-white rounded-xl shadow-lg p-6 space-y-8">
             {#if successMessage}
                 <div class="bg-green-50 text-green-700 p-4 rounded-lg mb-6 flex items-center">

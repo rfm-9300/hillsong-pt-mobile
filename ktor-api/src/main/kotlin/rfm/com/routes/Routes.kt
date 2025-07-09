@@ -67,10 +67,13 @@ object Routes {
             const val RESET_PASSWORD = "/api/auth/reset-password"
         }
 
+        object User {
+            const val LIST = "/api/users"
+        }
+
         object Profile {
             const val GET = "/api/profile"
             const val UPDATE = "/api/profile/update"
-            const val LIST = "/api/users"
         }
     }
 

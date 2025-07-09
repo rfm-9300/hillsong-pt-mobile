@@ -19,17 +19,6 @@ fun Route.profileRoutes(
     /**
      * Api Routes
      */
-
-    authenticate {
-        get(Routes.Api.Profile.LIST) {
-            val userId = getUserIdFromRequestToken(call) ?: return@get respondHelper(call, false, "User not found", statusCode = HttpStatusCode.Unauthorized)
-            if (!isUserAdmin(userId)) {
-                return@get respondHelper(call, false, "Unauthorized", statusCode = HttpStatusCode.Unauthorized)
-            }
-            val users = userRepository.getAllUsers()
-            respondHelper(call, true, "Users fetched successfully", data = ApiResponseData.UserListResponse(users))
-        }
-    }
     authenticate {
         post(Routes.Api.Profile.UPDATE){
             val userId = getUserIdFromRequestToken(call) ?: return@post respondHelper(call, false, "User not found", statusCode = HttpStatusCode.Unauthorized)

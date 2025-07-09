@@ -19,7 +19,7 @@ fun Application.configureRouting(
     tokenConfig: TokenConfig,
     eventRepository: EventRepository,
     postRepository: PostRepository,
-    emailService: EmailService
+    emailService: EmailService,
 )  {
     routing {
         postRoutes( eventRepository, userRepository, postRepository )
@@ -27,5 +27,6 @@ fun Application.configureRouting(
         eventRoutes(eventRepository, userRepository)
         dynamicJsProcessing()
         profileRoutes(userRepository)
+        userRoutes(userRepository)
     }
 }

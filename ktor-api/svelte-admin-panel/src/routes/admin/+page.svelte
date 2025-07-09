@@ -1,15 +1,3 @@
-<script>
-    import { onMount } from 'svelte';
-    import { goto } from '$app/navigation';
-
-    onMount(() => {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            goto('/login');
-        }
-    });
-</script>
-
 <div class="p-8">
     <h1 class="text-2xl font-bold">Admin Dashboard</h1>
     <div class="grid grid-cols-1 gap-4 mt-8 md:grid-cols-3">

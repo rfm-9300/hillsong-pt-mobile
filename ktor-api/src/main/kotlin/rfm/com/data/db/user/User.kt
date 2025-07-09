@@ -11,6 +11,7 @@ import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.`java-time`.datetime
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import rfm.com.plugins.Logger
 import java.time.LocalDateTime
 
 
@@ -145,3 +146,28 @@ fun ResultRow.toUserProfile() = UserProfile(
     profileImagePath = this[UserProfilesTable.imagePath],
     isAdmin = this[UserProfilesTable.isAdmin]
 )
+
+fun ResultRow.toUserWithProfile(): User {
+    val userProfile = try {
+        this.toUserProfile()
+    } catch (e: Exception) {
+        Logger.d("Error converting ResultRow to UserProfile: ${e.message}")
+        null // Handle cases where a user might not have a profile
+    }
+
+    return User(
+        id = this[UserTable.id].value,
+        email = this[UserTable.email],
+        password = this[UserTable.password],
+        salt = this[UserTable.salt],
+        verified = this[UserTable.verified],
+        createdAt = this[UserTable.createdAt],
+        verificationToken = this[UserTable.verificationToken],
+        profile = userProfile,
+        googleId = this[UserTable.googleId],
+        facebookId = this[UserTable.facebookId],
+        authProvider = AuthProvider.valueOf(this[UserTable.authProvider]),
+        resetToken = this[UserTable.resetToken],
+        resetTokenExpiresAt = this[UserTable.resetTokenExpiresAt]
+    )
+}

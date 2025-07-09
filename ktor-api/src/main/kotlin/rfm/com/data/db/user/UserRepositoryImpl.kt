@@ -9,6 +9,7 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 import java.time.LocalDateTime
+import kotlin.text.get
 
 class UserRepositoryImpl (
     private val tokenService: TokenService
@@ -355,7 +356,6 @@ class UserRepositoryImpl (
             null
         }
     }
-
     override suspend fun updateUserProfile(userProfile: UserProfile): Boolean = suspendTransaction {
         try {
             UserProfilesTable.update({ UserProfilesTable.userId eq userProfile.userId }) {
@@ -544,6 +544,31 @@ class UserRepositoryImpl (
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
     override suspend fun getAllUsers(): List<User> = suspendTransaction {
-        UserTable.selectAll().map { it.toUser() }
+        val usersRow = UserTable.selectAll()
+        val users = mutableListOf<User>()
+        for (row in usersRow) {
+            val userId = row[UserTable.id].value
+            val profile = try {
+                UserProfilesTable.select { UserProfilesTable.userId eq userId }.single().toUserProfile()
+            } catch (e: Exception) {
+                null
+            }
+            users.add(
+                User(
+                    id = userId,
+                    email = row[UserTable.email],
+                    password = row[UserTable.password],
+                    salt = row[UserTable.salt],
+                    verified = row[UserTable.verified],
+                    verificationToken = row[UserTable.verificationToken],
+                    googleId = row[UserTable.googleId],
+                    facebookId = row[UserTable.facebookId],
+                    authProvider = AuthProvider.valueOf(row[UserTable.authProvider]),
+                    profile = profile
+                )
+            )
+        }
+        users
     }
 }
+

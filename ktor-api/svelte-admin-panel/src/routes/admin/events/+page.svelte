@@ -1,15 +1,6 @@
 <script>
-    import { onMount } from 'svelte';
-
-    let events = [];
-
-    onMount(async () => {
-        const response = await fetch('/api/events');
-        if (response.ok) {
-            const data = await response.json();
-            events = data.data;
-        }
-    });
+    export let data;
+    let events = data.events;
 
     async function deleteEvent(eventId) {
         const token = localStorage.getItem('authToken');

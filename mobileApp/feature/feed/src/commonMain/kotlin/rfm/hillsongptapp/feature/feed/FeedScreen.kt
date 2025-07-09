@@ -95,20 +95,7 @@ private fun FeedItemCard(item: FeedItem) {
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
             )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.Black,
-                            ),
-                            startY = 0f,
-                            endY = 400f,
-                        )
-                    )
-            )
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()

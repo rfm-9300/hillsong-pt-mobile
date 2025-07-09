@@ -1,29 +1,15 @@
 <script>
-    import { onMount } from 'svelte';
     import { page } from '$app/stores';
     import { goto } from '$app/navigation';
 
-    let event = null;
-    let title = '';
-    let description = '';
-    let date = '';
-    let location = '';
-    let maxAttendees = 0;
+    export let data;
+    let event = data.event;
+    let title = event.title;
+    let description = event.description;
+    let date = new Date(event.date).toISOString().slice(0, 16);
+    let location = event.location;
+    let maxAttendees = event.maxAttendees;
     let image = null;
-
-    onMount(async () => {
-        const eventId = $page.params.id;
-        const response = await fetch(`/api/events/${eventId}`);
-        if (response.ok) {
-            const data = await response.json();
-            event = data.data;
-            title = event.title;
-            description = event.description;
-            date = new Date(event.date).toISOString().slice(0, 16);
-            location = event.location;
-            maxAttendees = event.maxAttendees;
-        }
-    });
 
     async function updateEvent() {
         const token = localStorage.getItem('authToken');
