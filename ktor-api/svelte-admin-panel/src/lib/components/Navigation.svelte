@@ -20,8 +20,7 @@
 </script>
 
 <nav class="flex-1 px-2 py-4 space-y-1">
-	<a
-		href="/admin"
+	<a href="/admin"
 		class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors {isActive('/admin') ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : ''}"
 		onclick={onLinkClick}
 	>
@@ -30,8 +29,7 @@
 		</svg>
 		Dashboard
 	</a>
-	<a
-		href="/admin/posts"
+	<a href="/admin/posts"
 		class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors {isActive('/admin/posts') ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : ''}"
 		onclick={onLinkClick}
 	>
@@ -50,8 +48,7 @@
 		</svg>
 		Events
 	</a>
-	<a
-		href="/admin/users"
+	<a href="/admin/users"
 		class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors {isActive('/admin/users') ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : ''}"
 		onclick={onLinkClick}
 	>
