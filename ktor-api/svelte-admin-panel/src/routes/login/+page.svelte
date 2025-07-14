@@ -1,6 +1,7 @@
 <script>
     import { goto } from '$app/navigation';
     import { fade } from 'svelte/transition';
+	import { auth } from '$lib/authStore';
 
     let email = '';
     let password = '';
@@ -22,7 +23,7 @@
             if (response.ok) {
                 const data = await response.json();
                 if (data.success) {
-                    localStorage.setItem('authToken', data.data.token);
+                    auth.login(data.data.token);
                     goto('/admin');
                 } else {
                     errorMessage = data.message;
