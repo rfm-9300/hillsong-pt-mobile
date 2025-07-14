@@ -1,8 +1,9 @@
 import { redirect } from '@sveltejs/kit';
 import { browser } from '$app/environment';
+import { apiFetch } from '$lib/api';
 
 /** @type {import('./$types').PageLoad} */
-export async function load() {
+export async function load({ fetch }) {
     if (browser) {
         const token = localStorage.getItem('authToken');
         if (!token) {
@@ -10,38 +11,30 @@ export async function load() {
         }
     }
     try {
-        const token = 'your-token-here'; // Replace with actual token retrieval logic, e.g., from cookies or session
         const stats = {
             posts: { count: 0, loading: false },
             events: { count: 0, loading: false },
             users: { count: 0, loading: false }
         };
 
-        // Fetch posts count
-        const postsRes = await fetch('/api/posts', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (postsRes.ok) {
-            const postsData = await postsRes.json();
-            stats.posts.count = postsData.data?.postList?.length || 0;
-        }
+        // Use Promise.allSettled to prevent one failed request from failing the whole load
+        const results = await Promise.allSettled([
+            apiFetch('/posts', { customFetch: fetch }),
+            apiFetch('/events', { customFetch: fetch }),
+            apiFetch('/users', { customFetch: fetch })
+        ]);
 
-        // Fetch events count
-        const eventsRes = await fetch('/api/events', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (eventsRes.ok) {
-            const eventsData = await eventsRes.json();
-            stats.events.count = eventsData.data?.length || 0;
+        // Handle each result independently
+        if (results[0].status === 'fulfilled') {
+            stats.posts.count = results[0].value?.data?.postList?.length || 0;
         }
-
-        // Fetch users count
-        const usersRes = await fetch('/api/users', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (usersRes.ok) {
-            const usersData = await usersRes.json();
-            stats.users.count = usersData.data?.users?.length || 0;
+        
+        if (results[1].status === 'fulfilled') {
+            stats.events.count = results[1].value?.data?.length || 0;
+        }
+        
+        if (results[2].status === 'fulfilled') {
+            stats.users.count = results[2].value?.data?.users?.length || 0;
         }
 
         return { stats };

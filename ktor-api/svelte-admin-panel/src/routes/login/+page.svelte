@@ -2,6 +2,7 @@
     import { goto } from '$app/navigation';
     import { fade } from 'svelte/transition';
 	import { auth } from '$lib/authStore';
+    import { apiFetch } from '$lib/api';
 
     let email = '';
     let password = '';
@@ -12,28 +13,15 @@
         loading = true;
         errorMessage = '';
         try {
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success) {
-                    auth.login(data.data.token);
-                    goto('/admin');
-                } else {
-                    errorMessage = data.message;
-                }
+            const data = await apiFetch('/auth/login', 'POST', { email, password });
+            if (data.success) {
+                auth.login(data.data.token);
+                goto('/admin');
             } else {
-                errorMessage = 'Login failed. Please check your credentials.';
+                errorMessage = data.message;
             }
         } catch (error) {
-            errorMessage = 'An error occurred during login.';
-            console.error(error);
+            errorMessage = error.message || 'An error occurred during login.';
         } finally {
             loading = false;
         }
