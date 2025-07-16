@@ -1,5 +1,6 @@
 <script>
     import { fade, fly } from 'svelte/transition';
+    import { api } from '$lib/api';
     export let data;
     let events = data.events;
     let deleteConfirmation = { show: false, eventId: null };
@@ -25,19 +26,10 @@
     
     async function deleteEvent(eventId) {
         try {
-            const token = localStorage.getItem('authToken');
-            const response = await fetch('/api/events/delete', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ eventId })
-            });
-
-            if (response.ok) {
-                events = events.filter(event => event.id !== eventId);
-            }
+            await api.deleteEvent(eventId);
+            events = events.filter(event => event.id !== eventId);
+        } catch (error) {
+            console.error('Failed to delete event:', error);
         } finally {
             deleteConfirmation = { show: false, eventId: null };
         }

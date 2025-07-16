@@ -3,6 +3,7 @@
     import { fade, fly } from 'svelte/transition';
     import Cropper from 'cropperjs';
     import 'cropperjs/dist/cropper.css';
+    import { api } from '$lib/api';
 
     let title = '';
     let content = '';
@@ -20,7 +21,6 @@
         message = '';
 
         try {
-            const token = localStorage.getItem('authToken');
             const formData = new FormData();
             formData.append('title', title);
             formData.append('content', content);
@@ -32,10 +32,10 @@
                 });
                 canvas.toBlob(async (blob) => {
                     formData.append('image', blob, 'cropped-image.jpg');
-                    await sendFormData(formData, token);
+                    await sendFormData(formData);
                 }, 'image/jpeg');
             } else {
-                await sendFormData(formData, token);
+                await sendFormData(formData);
             }
         } catch (error) {
             isError = true;
@@ -45,26 +45,17 @@
         }
     }
 
-    async function sendFormData(formData, token) {
-        const response = await fetch('/api/posts/create', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
+    async function sendFormData(formData) {
+        try {
+            const result = await api.createPost(formData);
             isError = false;
             message = result.message || 'Post created successfully!';
             setTimeout(() => {
                 goto('/admin/posts');
             }, 2000);
-        } else {
+        } catch (error) {
             isError = true;
-            message = result.message || 'Failed to create post';
+            message = error.message || 'Failed to create post';
         }
         loading = false;
     }
@@ -173,8 +164,8 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Featured Image</label>
                 {#if imagePreview}
                 <div class="relative rounded-lg overflow-hidden mb-3 bg-gray-100">
-                    <img src={imagePreview} alt="Image preview" bind:this={imageElement} class="w-full">
-                    <button type="button" on:click={removeImage} class="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors cursor-pointer" title="Remove image">
+                    <img src={imagePreview} alt="Post featured image preview" bind:this={imageElement} class="w-full">
+                    <button type="button" on:click={removeImage} class="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors cursor-pointer" title="Remove image" aria-label="Remove image">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>

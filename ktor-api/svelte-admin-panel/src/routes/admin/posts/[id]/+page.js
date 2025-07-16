@@ -1,13 +1,13 @@
 import { error } from '@sveltejs/kit';
-import { apiFetch } from '$lib/api';
+import { api } from '$lib/api';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({ params, fetch }) {
     const postId = params.id;
-    
+
     try {
-        const data = await apiFetch(`/posts/${postId}`, { customFetch: fetch });
-        
+        const data = await api.getPost(postId, fetch);
+
         if (data.data && data.data.post) {
             return {
                 post: data.data.post

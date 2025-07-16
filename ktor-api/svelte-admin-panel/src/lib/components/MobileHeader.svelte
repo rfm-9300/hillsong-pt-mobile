@@ -5,7 +5,8 @@
 <div class="md:hidden fixed top-0 left-0 right-0 z-20 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
 	<div class="flex items-center justify-between h-16 px-4">
 		<button
-			on:click={onMenuClick}
+			onclick={onMenuClick}
+			aria-label="Open menu"
 			class="p-1 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
 		>
 			<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

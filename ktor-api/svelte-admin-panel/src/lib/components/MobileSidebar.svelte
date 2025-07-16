@@ -11,10 +11,9 @@
 		transition:fade={{duration: 150}}
 		class="md:hidden fixed inset-0 z-20 bg-black bg-opacity-50"
 		aria-label="Close sidebar overlay"
-		role="button"
 		tabindex="0"
-		on:click={onClose}
-		on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { onClose(); } }}
+		onclick={onClose}
+		onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { onClose(); } }}
 		style="background: none; border: none; padding: 0; margin: 0;"
 	></button>
 	
@@ -25,7 +24,7 @@
 		<div class="flex flex-col h-full">
 			<div class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700 bg-blue-600 dark:bg-blue-700">
 				<div class="text-xl font-bold text-white">Admin Panel</div>
-				<button on:click={onClose} class="p-1 text-white">
+				<button onclick={onClose} class="p-1 text-white" aria-label="Close sidebar">
 					<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
 					</svg>

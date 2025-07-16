@@ -2,7 +2,7 @@
     import { goto } from '$app/navigation';
     import { fade } from 'svelte/transition';
 	import { auth } from '$lib/authStore';
-    import { apiFetch } from '$lib/api';
+    import { api } from '$lib/api';
 
     let email = '';
     let password = '';
@@ -13,10 +13,10 @@
         loading = true;
         errorMessage = '';
         try {
-            const data = await apiFetch('/auth/login', 'POST', { email, password });
+            const data = await api.login(email, password);
             if (data.success) {
                 auth.login(data.data.token);
-                goto('/admin');
+                goto('/admin/dashboard');
             } else {
                 errorMessage = data.message;
             }

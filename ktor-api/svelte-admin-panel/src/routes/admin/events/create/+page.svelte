@@ -1,6 +1,7 @@
 <script>
     import { goto } from '$app/navigation';
     import { fade, fly } from 'svelte/transition';
+    import { api } from '$lib/api';
 
     let title = '';
     let description = '';
@@ -20,7 +21,6 @@
         message = '';
 
         try {
-            const token = localStorage.getItem('authToken');
             const formData = new FormData();
             formData.append('title', title);
             formData.append('description', description);
@@ -33,26 +33,13 @@
                 formData.append('image', image);
             }
 
-            const response = await fetch('/api/events', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                isError = false;
-                message = result.message || 'Event created successfully!';
-                setTimeout(() => {
-                    goto('/admin/events');
-                }, 2000);
-            } else {
-                isError = true;
-                message = result.message || 'Failed to create event';
-            }
+            const result = await api.createEvent(formData);
+            
+            isError = false;
+            message = result.message || 'Event created successfully!';
+            setTimeout(() => {
+                goto('/admin/events');
+            }, 2000);
         } catch (error) {
             isError = true;
             message = `Error: ${error.message}`;

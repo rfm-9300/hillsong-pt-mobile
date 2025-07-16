@@ -1,5 +1,5 @@
 <script>
-    import { apiFetch } from '$lib/api';
+    import { api } from '$lib/api';
     import PostsList from './PostsList.svelte';
     import DeleteConfirmation from './DeleteConfirmation.svelte';
 
@@ -9,10 +9,7 @@
 
     async function deletePost(postId) {
         try {
-            await apiFetch('/posts/delete', {
-                method: 'POST',
-                body: { postId },
-            });
+            await api.deletePost(postId);
             posts = posts.filter(post => post.id !== postId);
         } catch (error) {
             console.error("Failed to delete post:", error);

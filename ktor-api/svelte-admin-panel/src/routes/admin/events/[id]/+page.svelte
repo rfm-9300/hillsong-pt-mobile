@@ -1,6 +1,7 @@
 <script>
     import { page } from '$app/stores';
     import { goto } from '$app/navigation';
+    import { api } from '$lib/api';
 
     export let data;
     let event = data.event;
@@ -12,7 +13,6 @@
     let image = null;
 
     async function updateEvent() {
-        const token = localStorage.getItem('authToken');
         const eventId = $page.params.id;
         const formData = new FormData();
         formData.append('eventId', eventId);
@@ -25,16 +25,11 @@
             formData.append('image', image[0]);
         }
 
-        const response = await fetch('/api/events/update', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
-
-        if (response.ok) {
+        try {
+            await api.updateEvent(formData);
             goto('/admin/events');
+        } catch (error) {
+            console.error('Failed to update event:', error);
         }
     }
 </script>

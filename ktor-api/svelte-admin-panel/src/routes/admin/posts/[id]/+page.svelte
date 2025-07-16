@@ -5,6 +5,7 @@
     import { fade, fly } from 'svelte/transition';
     import Cropper from 'cropperjs';
     import 'cropperjs/dist/cropper.css';
+    import { api } from '$lib/api';
 
     export let data;
     let post = data.post;
@@ -30,7 +31,6 @@
         successMessage = '';
 
         try {
-            const token = localStorage.getItem('authToken');
             const postId = $page.params.id;
             const formData = new FormData();
             formData.append('postId', postId);
@@ -44,10 +44,10 @@
                 });
                 canvas.toBlob(async (blob) => {
                     formData.append('image', blob, 'cropped-image.jpg');
-                    await sendFormData(formData, token);
+                    await sendFormData(formData);
                 }, 'image/jpeg');
             } else {
-                await sendFormData(formData, token);
+                await sendFormData(formData);
             }
         } catch (error) {
             errorMessage = `Error updating post: ${error.message}`;
@@ -56,21 +56,13 @@
         }
     }
 
-    async function sendFormData(formData, token) {
-        const response = await fetch('/api/posts/update', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
-
-        if (response.ok) {
+    async function sendFormData(formData) {
+        try {
+            await api.updatePost(formData);
             successMessage = 'Post updated successfully!';
             setTimeout(() => goto('/admin/posts'), 1500);
-        } else {
-            const errorData = await response.json();
-            errorMessage = errorData.message || 'Failed to update post';
+        } catch (error) {
+            errorMessage = error.message || 'Failed to update post';
         }
         saving = false;
     }

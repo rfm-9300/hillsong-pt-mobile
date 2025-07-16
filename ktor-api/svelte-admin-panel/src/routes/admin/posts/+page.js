@@ -1,10 +1,10 @@
 import { error } from '@sveltejs/kit';
-import { apiFetch } from '$lib/api';
+import { api } from '$lib/api';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({ fetch }) {
     try {
-        const data = await apiFetch('/posts', { customFetch: fetch });
+        const data = await api.getPosts(fetch);
         
         if (data.data && data.data.postList) {
             return {

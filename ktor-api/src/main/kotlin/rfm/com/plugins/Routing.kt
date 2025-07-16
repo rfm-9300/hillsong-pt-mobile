@@ -10,6 +10,8 @@ import rfm.com.security.token.TokenService
 import rfm.com.services.EmailService
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
+import rfm.com.data.db.checkin.CheckInRepository
+import rfm.com.data.db.kid.KidRepository
 
 
 fun Application.configureRouting(
@@ -20,6 +22,8 @@ fun Application.configureRouting(
     eventRepository: EventRepository,
     postRepository: PostRepository,
     emailService: EmailService,
+    kidRepository: KidRepository,
+    checkInRepository: CheckInRepository
 )  {
     routing {
         postRoutes( eventRepository, userRepository, postRepository )
@@ -28,5 +32,7 @@ fun Application.configureRouting(
         dynamicJsProcessing()
         profileRoutes(userRepository)
         userRoutes(userRepository)
+        kidRoutes(kidRepository)
+        checkInRoutes(checkInRepository)
     }
 }

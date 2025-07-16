@@ -1,18 +1,19 @@
 import { error } from '@sveltejs/kit';
+import { api } from '$lib/api';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({ params, fetch }) {
     const eventId = params.id;
-    const response = await fetch(`/api/events/${eventId}`);
-
-    if (response.ok) {
-        const data = await response.json();
+    
+    try {
+        const data = await api.getEvent(eventId, fetch);
         if (data.data) {
             return {
                 event: data.data
             };
         }
         throw error(404, 'Event not found');
+    } catch (err) {
+        throw error(err.status || 500, err.message || 'Failed to fetch event');
     }
-    throw error(response.status, 'Failed to fetch event');
 }

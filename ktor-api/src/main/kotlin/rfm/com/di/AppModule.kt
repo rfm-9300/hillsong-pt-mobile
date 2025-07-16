@@ -11,10 +11,17 @@ import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
+import rfm.com.data.db.checkin.CheckInRepository
+import rfm.com.data.db.checkin.CheckInRepositoryImpl
+import rfm.com.data.db.kid.KidRepository
+import rfm.com.data.db.kid.KidRepositoryImpl
+
 val appModule = module {
     singleOf(::EventRepositoryImpl) { bind<EventRepository>() }
     singleOf(::JwtTokenService) { bind<TokenService>() }
     singleOf(::PostRepositoryImpl) { bind<PostRepository>() }
+    singleOf(::KidRepositoryImpl) { bind<KidRepository>() }
+    singleOf(::CheckInRepositoryImpl) { bind<CheckInRepository>() }
 
     // Define UserRepositoryImpl with TokenService as a dependency
     single<UserRepository> {

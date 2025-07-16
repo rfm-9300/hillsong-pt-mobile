@@ -7,7 +7,7 @@
 	const currentPath = $derived($page.url.pathname);
 
 	function isActive(path) {
-		if (path === '/admin' && currentPath !== '/admin') {
+		if (path === '/admin/dashboard' && currentPath !== '/admin/dashboard') {
 			return false;
 		}
 		return currentPath.startsWith(path);
@@ -20,8 +20,8 @@
 </script>
 
 <nav class="flex-1 px-2 py-4 space-y-1">
-	<a href="/admin"
-		class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors {isActive('/admin') ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : ''}"
+	<a href="/admin/dashboard"
+		class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors {isActive('/admin/dashboard') ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : ''}"
 		onclick={onLinkClick}
 	>
 		<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

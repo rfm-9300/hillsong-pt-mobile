@@ -59,5 +59,7 @@ fun Application.module() {
         eventRepository = get(),
         postRepository = get(),
         emailService = emailService,
+        kidRepository = get(),
+        checkInRepository = get()
     )
 }
