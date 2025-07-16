@@ -3,6 +3,7 @@ package rfm.com.data.responses
 import rfm.com.data.db.post.Post
 import rfm.com.data.db.user.User
 import kotlinx.serialization.Serializable
+import rfm.com.data.db.event.Event
 
 @Serializable
 data class ApiResponse(
@@ -19,7 +20,10 @@ sealed class ApiResponseData {
     data class PostListResponse(val postList: List<Post>) : ApiResponseData()
     @Serializable
     data class SinglePostResponse(val post: Post) : ApiResponseData()
-
     @Serializable
     data class UserListResponse(val users: List<User>) : ApiResponseData()
+    @Serializable
+    data class EventListResponse(val events: List<Event>) : ApiResponseData()
+    @Serializable
+    data class SingleEventResponse(val event: Event) : ApiResponseData()
 }

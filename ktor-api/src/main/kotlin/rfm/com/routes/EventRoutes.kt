@@ -17,6 +17,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.utils.io.*
 import kotlinx.io.readByteArray
+import rfm.com.data.responses.ApiResponseData
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -27,6 +28,62 @@ fun Route.eventRoutes(
     /**
      * API Routes
      */
+
+    // api get all events
+    authenticate {
+        get(Routes.Api.Event.LIST) {
+            try {
+                val events = eventRepository.getAllEvents()
+                if (events.isEmpty()) {
+                    return@get respondHelper(success = false, message = "No events found", call = call)
+                }
+                Logger.d("Events fetched successfully: ${events.size} events found")
+                respondHelper(
+                    call = call,
+                    success = true,
+                    message = "Events fetched successfully",
+                    data = ApiResponseData.EventListResponse(events)
+                )
+            } catch (e: Exception) {
+                Logger.d("Error fetching events: ${e.message}")
+                call.respond(
+                    HttpStatusCode.InternalServerError, CreateEventResponse(
+                        success = false,
+                        message = "Error fetching events: ${e.message}"
+                    )
+                )
+            }
+        }
+    }
+    // api get event by id
+    authenticate {
+        get(Routes.Api.Event.GET) {
+            try {
+                Logger.d("Fetching event by ID")
+                val eventId = call.parameters["id"]?.toIntOrNull()
+                if (eventId == null) {
+                    Logger.d("Invalid event ID")
+                    return@get respondHelper(success = false, message = "Invalid event ID", call = call)
+                }
+                val event = eventRepository.getEvent(eventId) ?: return@get respondHelper(success = false, message = "Event not found", call = call)
+                Logger.d("Event fetched successfully: $event")
+                respondHelper(
+                    call = call,
+                    success = true,
+                    message = "Event fetched successfully",
+                    data = ApiResponseData.SingleEventResponse(event)
+                )
+            } catch (e: Exception) {
+                Logger.d("Error fetching event: ${e.message}")
+                call.respond(
+                    HttpStatusCode.InternalServerError, CreateEventResponse(
+                        success = false,
+                        message = "Error fetching event: ${e.message}"
+                    )
+                )
+            }
+        }
+    }
 
     // api approve user
     authenticate {

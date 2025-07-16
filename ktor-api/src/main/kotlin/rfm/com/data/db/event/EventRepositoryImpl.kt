@@ -32,7 +32,6 @@ class EventRepositoryImpl: EventRepository {
 
     override suspend fun getAllEvents(): List<Event> = suspendTransaction {
         val eventsList = mutableListOf<Event>()
-        Logger.d("List: $eventsList")
         val events = EventTable.selectAll().map {
             Event(
                 id = it[EventTable.id].value,
@@ -47,25 +46,20 @@ class EventRepositoryImpl: EventRepository {
                 maxAttendees = it[EventTable.maxAttendees]
             )
         }
-        Logger.d("Events: $events")
         events.forEach { event ->
             // Fetch attendees for each event
             val attendeesQuery = EventAttendeeTable.select { EventAttendeeTable.eventId eq event.id }
-            Logger.d("Attendees Query: $attendeesQuery")
             attendeesQuery.forEach { attendeeRow ->
                 val userId = attendeeRow[EventAttendeeTable.userId].value
                 val userProfile = UserProfilesTable.select { UserProfilesTable.userId eq userId }
                     .firstOrNull()?.toUserProfile()
-                Logger.d("User: $userProfile")
                 userProfile?.let { user ->
                     // Reassign the list with the new user added using the + operator
                     event.attendees = event.attendees + user
                 }
             }
             eventsList.add(event)
-            Logger.d("Event: $event")
         }
-
         eventsList
     }
 

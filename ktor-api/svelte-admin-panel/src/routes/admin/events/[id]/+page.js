@@ -2,12 +2,18 @@ import { error } from '@sveltejs/kit';
 import { api } from '$lib/api';
 
 /** @type {import('./$types').PageLoad} */
+export const ssr = false; // Disable server-side rendering for this route
 export async function load({ params, fetch }) {
     const eventId = params.id;
-    
+
     try {
         const data = await api.getEvent(eventId, fetch);
-        if (data.data) {
+        if (data.data && data.data.event) {
+            return {
+                event: data.data.event
+            };
+        } else if (data.data) {
+            // Fallback to the old structure if the new one isn't available
             return {
                 event: data.data
             };

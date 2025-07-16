@@ -2,12 +2,13 @@ import { error } from '@sveltejs/kit';
 import { api } from '$lib/api';
 
 /** @type {import('./$types').PageLoad} */
+export const ssr = false; // Disable server-side rendering for this route
 export async function load({ fetch }) {
     try {
         const data = await api.getEvents(fetch);
-        if (data.data) {
+        if (data.data && data.data.events) {
             return {
-                events: data.data
+                events: data.data.events
             };
         }
         throw error(404, 'Events not found');
