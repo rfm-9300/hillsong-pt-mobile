@@ -19,9 +19,9 @@ export async function load({ fetch }) {
 
         // Use Promise.allSettled to prevent one failed request from failing the whole load
         const results = await Promise.allSettled([
-            api.getPosts(fetch),
-            api.getEvents(fetch),
-            api.getUsers(fetch)
+            api.get(api.endpoints.POSTS, fetch),
+            api.get(api.endpoints.EVENTS, fetch),
+            api.get(api.endpoints.USERS, fetch)
         ]);
 
         // Handle each result independently

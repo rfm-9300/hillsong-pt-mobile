@@ -4,7 +4,7 @@ import { api } from '$lib/api';
 /** @type {import('./$types').PageLoad} */
 export async function load({ fetch }) {
     try {
-        const data = await api.getPosts(fetch);
+        const data = await api.get(api.endpoints.POSTS, fetch);
         
         if (data.data && data.data.postList) {
             return {

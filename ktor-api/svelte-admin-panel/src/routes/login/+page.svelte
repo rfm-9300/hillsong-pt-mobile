@@ -13,7 +13,7 @@
         loading = true;
         errorMessage = '';
         try {
-            const data = await api.login(email, password);
+            const data = await api.post(api.endpoints.LOGIN, { email, password });
             if (data.success) {
                 auth.login(data.data.token);
                 goto('/admin/dashboard');

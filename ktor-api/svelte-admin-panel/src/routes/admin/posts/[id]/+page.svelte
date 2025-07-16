@@ -58,7 +58,7 @@
 
     async function sendFormData(formData) {
         try {
-            await api.updatePost(formData);
+            await api.postForm(api.endpoints.POST_UPDATE, formData);
             successMessage = 'Post updated successfully!';
             setTimeout(() => goto('/admin/posts'), 1500);
         } catch (error) {

@@ -6,7 +6,7 @@ export async function load({ params, fetch }) {
     const postId = params.id;
 
     try {
-        const data = await api.getPost(postId, fetch);
+        const data = await api.get(api.endpoints.POST_BY_ID(postId), fetch);
 
         if (data.data && data.data.post) {
             return {

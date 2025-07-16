@@ -24,7 +24,7 @@
             const formData = new FormData();
             formData.append('title', title);
             formData.append('description', description);
-            formData.append('date', new Date(date).toISOString());
+            formData.append('date', date); // Send the local datetime format without timezone
             formData.append('location', location);
             formData.append('maxAttendees', maxAttendees);
             formData.append('needsApproval', needsApproval);
@@ -33,7 +33,7 @@
                 formData.append('image', image);
             }
 
-            const result = await api.createEvent(formData);
+            const result = await api.postForm(api.endpoints.EVENTS, formData);
             
             isError = false;
             message = result.message || 'Event created successfully!';

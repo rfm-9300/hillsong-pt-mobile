@@ -18,7 +18,7 @@
         formData.append('eventId', eventId);
         formData.append('title', title);
         formData.append('description', description);
-        formData.append('date', new Date(date).toISOString());
+        formData.append('date', date); // Send the local datetime format without timezone
         formData.append('location', location);
         formData.append('maxAttendees', maxAttendees);
         if (image) {
@@ -26,7 +26,7 @@
         }
 
         try {
-            await api.updateEvent(formData);
+            await api.postForm(api.endpoints.EVENT_UPDATE, formData);
             goto('/admin/events');
         } catch (error) {
             console.error('Failed to update event:', error);

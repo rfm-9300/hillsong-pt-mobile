@@ -5,7 +5,7 @@ import { api } from '$lib/api';
 export const ssr = false; // Disable server-side rendering for this route
 export async function load({ fetch }) {
     try {
-        const data = await api.getEvents(fetch);
+        const data = await api.get(api.endpoints.EVENTS, fetch);
         if (data.data && data.data.events) {
             return {
                 events: data.data.events

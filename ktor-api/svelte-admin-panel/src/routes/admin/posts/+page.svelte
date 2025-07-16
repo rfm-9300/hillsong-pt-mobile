@@ -9,7 +9,7 @@
 
     async function deletePost(postId) {
         try {
-            await api.deletePost(postId);
+            await api.post(api.endpoints.POST_DELETE, { postId });
             posts = posts.filter(post => post.id !== postId);
         } catch (error) {
             console.error("Failed to delete post:", error);

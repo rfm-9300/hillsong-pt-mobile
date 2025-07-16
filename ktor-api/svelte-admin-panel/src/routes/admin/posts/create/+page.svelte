@@ -47,7 +47,7 @@
 
     async function sendFormData(formData) {
         try {
-            const result = await api.createPost(formData);
+            const result = await api.postForm(api.endpoints.POST_CREATE, formData);
             isError = false;
             message = result.message || 'Post created successfully!';
             setTimeout(() => {

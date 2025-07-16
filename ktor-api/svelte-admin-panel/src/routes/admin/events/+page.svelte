@@ -26,7 +26,7 @@
     
     async function deleteEvent(eventId) {
         try {
-            await api.deleteEvent(eventId);
+            await api.post(api.endpoints.EVENT_DELETE, { eventId });
             events = events.filter(event => event.id !== eventId);
         } catch (error) {
             console.error('Failed to delete event:', error);

@@ -10,7 +10,7 @@ export async function load({ fetch }) {
             throw error(401, 'Unauthorized');
         }
         try {
-            const data = await api.getUsers(fetch);
+            const data = await api.get(api.endpoints.USERS, fetch);
             if (data.data && data.data.users) {
                 return {
                     users: data.data.users

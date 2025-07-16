@@ -7,7 +7,7 @@ export async function load({ params, fetch }) {
     const eventId = params.id;
 
     try {
-        const data = await api.getEvent(eventId, fetch);
+        const data = await api.get(api.endpoints.EVENT_BY_ID(eventId), fetch);
         if (data.data && data.data.event) {
             return {
                 event: data.data.event
