@@ -75,6 +75,34 @@ object Routes {
             const val GET = "/api/profile"
             const val UPDATE = "/api/profile/update"
         }
+
+        object Service {
+            const val LIST = "/api/services"
+            const val ACTIVE = "/api/services/active"
+            const val GET = "/api/services/{id}"
+            const val BY_TYPE = "/api/services/type/{type}"
+            const val CREATE = "/api/services"
+            const val UPDATE = "/api/services/{id}"
+            const val DELETE = "/api/services/{id}"
+            const val ACTIVATE = "/api/services/{id}/activate"
+            const val DEACTIVATE = "/api/services/{id}/deactivate"
+        }
+
+        object KidsService {
+            const val LIST = "/api/kids-services"
+            const val ACTIVE = "/api/kids-services/active"
+            const val GET = "/api/kids-services/{id}"
+            const val BY_SERVICE = "/api/kids-services/service/{serviceId}"
+            const val CREATE = "/api/kids-services"
+            const val UPDATE = "/api/kids-services/{id}"
+            const val DELETE = "/api/kids-services/{id}"
+            const val CAPACITY = "/api/kids-services/{id}/capacity"
+            const val CHECK_IN = "/api/kids-services/check-in"
+            const val CHECK_OUT = "/api/kids-services/check-out"
+            const val ACTIVE_CHECKINS = "/api/kids-services/{id}/active-checkins"
+            const val CHECKIN_HISTORY = "/api/kids-services/checkin-history/{kidId}"
+            const val UPDATE_CHECKIN_STATUS = "/api/kids-services/checkin/{id}/status"
+        }
     }
 
     object DynamicJs{

@@ -6,7 +6,6 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.`java-time`.date
 import rfm.com.data.db.user.UserTable
-import java.time.LocalDate
 
 @Serializable
 data class Kid(
@@ -19,7 +18,7 @@ data class Kid(
     val notes: String? = null
 )
 
-object KidsTable : IntIdTable("kid") {
+object KidTable : IntIdTable("kid") {
     val familyId = reference("family_id", UserTable)
     val firstName = varchar("first_name", 64)
     val lastName = varchar("last_name", 64)
@@ -29,11 +28,11 @@ object KidsTable : IntIdTable("kid") {
 }
 
 fun ResultRow.toKid() = Kid(
-    id = this[KidsTable.id].value,
-    familyId = this[KidsTable.familyId].value,
-    firstName = this[KidsTable.firstName],
-    lastName = this[KidsTable.lastName],
-    dateOfBirth = this[KidsTable.dateOfBirth].toString(),
-    allergies = this[KidsTable.allergies],
-    notes = this[KidsTable.notes]
+    id = this[KidTable.id].value,
+    familyId = this[KidTable.familyId].value,
+    firstName = this[KidTable.firstName],
+    lastName = this[KidTable.lastName],
+    dateOfBirth = this[KidTable.dateOfBirth].toString(),
+    allergies = this[KidTable.allergies],
+    notes = this[KidTable.notes]
 )

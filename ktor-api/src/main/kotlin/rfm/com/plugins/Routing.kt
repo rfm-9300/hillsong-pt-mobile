@@ -3,6 +3,8 @@ package rfm.com.plugins
 import rfm.com.data.db.event.EventRepository
 import rfm.com.data.db.post.PostRepository
 import rfm.com.data.db.user.UserRepository
+import rfm.com.data.db.service.ServiceRepository
+import rfm.com.data.db.kidsservice.KidsServiceRepository
 import rfm.com.routes.*
 import rfm.com.security.hashing.HashingService
 import rfm.com.security.token.TokenConfig
@@ -10,7 +12,6 @@ import rfm.com.security.token.TokenService
 import rfm.com.services.EmailService
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
-import rfm.com.data.db.checkin.CheckInRepository
 import rfm.com.data.db.kid.KidRepository
 
 
@@ -23,7 +24,8 @@ fun Application.configureRouting(
     postRepository: PostRepository,
     emailService: EmailService,
     kidRepository: KidRepository,
-    checkInRepository: CheckInRepository
+    serviceRepository: ServiceRepository,
+    kidsServiceRepository: KidsServiceRepository
 )  {
     routing {
         postRoutes( eventRepository, userRepository, postRepository )
@@ -33,6 +35,7 @@ fun Application.configureRouting(
         profileRoutes(userRepository)
         userRoutes(userRepository)
         kidRoutes(kidRepository)
-        checkInRoutes(checkInRepository)
+        serviceRoutes(serviceRepository)
+        kidsServiceRoutes(kidsServiceRepository)
     }
 }

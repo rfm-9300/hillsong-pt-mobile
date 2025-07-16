@@ -13,20 +13,20 @@ class KidRepositoryImpl : KidRepository {
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
     override suspend fun getKid(kidId: Int): Kid? = dbQuery {
-        KidsTable
-            .select { KidsTable.id eq kidId }
+        KidTable
+            .select { KidTable.id eq kidId }
             .map { it.toKid() }
             .singleOrNull()
     }
 
     override suspend fun getKidsByFamily(familyId: Int): List<Kid> = dbQuery {
-        KidsTable
-            .select { KidsTable.familyId eq familyId }
+        KidTable
+            .select { KidTable.familyId eq familyId }
             .map { it.toKid() }
     }
 
     override suspend fun addKid(kid: Kid): Boolean = dbQuery {
-        KidsTable.insert {
+        KidTable.insert {
             it[familyId] = kid.familyId
             it[firstName] = kid.firstName
             it[lastName] = kid.lastName
@@ -37,7 +37,7 @@ class KidRepositoryImpl : KidRepository {
     }
 
     override suspend fun updateKid(kid: Kid): Boolean = dbQuery {
-        KidsTable.update({ KidsTable.id eq kid.id }) {
+        KidTable.update({ KidTable.id eq kid.id }) {
             it[familyId] = kid.familyId
             it[firstName] = kid.firstName
             it[lastName] = kid.lastName
@@ -48,6 +48,6 @@ class KidRepositoryImpl : KidRepository {
     }
 
     override suspend fun deleteKid(kidId: Int): Boolean = dbQuery {
-        KidsTable.deleteWhere { KidsTable.id eq kidId } > 0
+        KidTable.deleteWhere { KidTable.id eq kidId } > 0
     }
 }

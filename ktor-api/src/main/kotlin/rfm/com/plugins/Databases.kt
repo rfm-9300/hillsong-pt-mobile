@@ -4,9 +4,12 @@ import rfm.com.data.db.event.EventAttendeeTable
 import rfm.com.data.db.event.EventTable
 import rfm.com.data.db.event.EventWaitingListTable
 import rfm.com.data.db.image.ImageHashTable
+import rfm.com.data.db.kidsservice.KidsCheckInTable
+import rfm.com.data.db.kidsservice.KidsServiceTable
 import rfm.com.data.db.post.PostCommentTable
 import rfm.com.data.db.post.PostLikeTable
 import rfm.com.data.db.post.PostTable
+import rfm.com.data.db.service.ServiceTable
 import rfm.com.data.db.user.UserTable
 import rfm.com.data.db.user.UserProfilesTable
 import rfm.com.data.db.user.PasswordResetTable
@@ -46,7 +49,10 @@ fun Application.configureDatabases(config: ApplicationConfig) {
             PostCommentTable,
             EventWaitingListTable,
             ImageHashTable,
-            PasswordResetTable
+            PasswordResetTable,
+            ServiceTable,
+            KidsServiceTable,
+            KidsCheckInTable
         )
         SchemaUtils.createMissingTablesAndColumns(
             UserTable,
@@ -58,7 +64,10 @@ fun Application.configureDatabases(config: ApplicationConfig) {
             PostCommentTable,
             EventWaitingListTable,
             ImageHashTable,
-            PasswordResetTable
+            PasswordResetTable,
+            ServiceTable,
+            KidsServiceTable,
+            KidsCheckInTable
         )
     }
 }
