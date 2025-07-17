@@ -63,7 +63,7 @@ class EventRepositoryImpl: EventRepository {
         eventsList
     }
 
-    override suspend fun getEvent(eventId: Int): Event? = suspendTransaction {
+    override suspend fun getEventById(eventId: Int): Event? = suspendTransaction {
         val event = EventTable.select { EventTable.id eq eventId }.firstOrNull()?.toEvent()
         val attendeesQuery = EventAttendeeTable.select { EventAttendeeTable.eventId eq eventId }
         val waitingListQuery = EventWaitingListTable.select { EventWaitingListTable.eventId eq eventId }

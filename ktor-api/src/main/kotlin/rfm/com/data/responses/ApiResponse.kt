@@ -6,12 +6,15 @@ import rfm.com.data.db.event.Event
 import rfm.com.data.db.service.Service
 import rfm.com.data.db.kidsservice.KidsService
 import rfm.com.data.db.kidsservice.KidsCheckIn
+import rfm.com.data.db.attendance.Attendance
+import rfm.com.data.db.attendance.AttendanceWithDetails
+import rfm.com.data.db.attendance.AttendanceStats
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class ApiResponse(
     val success : Boolean,
-    val message : String,
+    val message : String = "",
     val data: ApiResponseData? = null
 )
 
@@ -43,4 +46,12 @@ sealed class ApiResponseData {
     data class KidsCheckInListResponse(val checkIns: List<KidsCheckIn>) : ApiResponseData()
     @Serializable
     data class SingleKidsCheckInResponse(val checkIn: KidsCheckIn) : ApiResponseData()
+    
+    // New attendance-related response types
+    @Serializable
+    data class AttendanceResponse(val attendance: Attendance) : ApiResponseData()
+    @Serializable
+    data class AttendanceListResponse(val attendances: List<AttendanceWithDetails>) : ApiResponseData()
+    @Serializable
+    data class AttendanceStatsResponse(val stats: AttendanceStats) : ApiResponseData()
 }

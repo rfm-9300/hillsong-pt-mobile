@@ -61,6 +61,7 @@ fun Application.module() {
         emailService = emailService,
         serviceRepository = get(),
         kidRepository = get(),
-        kidsServiceRepository = get()
+        kidsServiceRepository = get(),
+        attendanceService = get()
     )
 }

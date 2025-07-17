@@ -9,6 +9,7 @@ import rfm.com.routes.*
 import rfm.com.security.hashing.HashingService
 import rfm.com.security.token.TokenConfig
 import rfm.com.security.token.TokenService
+import rfm.com.services.AttendanceService
 import rfm.com.services.EmailService
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
@@ -25,7 +26,8 @@ fun Application.configureRouting(
     emailService: EmailService,
     kidRepository: KidRepository,
     serviceRepository: ServiceRepository,
-    kidsServiceRepository: KidsServiceRepository
+    kidsServiceRepository: KidsServiceRepository,
+    attendanceService: AttendanceService
 )  {
     routing {
         postRoutes( eventRepository, userRepository, postRepository )
@@ -37,5 +39,6 @@ fun Application.configureRouting(
         kidRoutes(kidRepository)
         serviceRoutes(serviceRepository)
         kidsServiceRoutes(kidsServiceRepository)
+        attendanceRoutes(attendanceService)
     }
 }

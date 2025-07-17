@@ -65,7 +65,7 @@ fun Route.eventRoutes(
                     Logger.d("Invalid event ID")
                     return@get respondHelper(success = false, message = "Invalid event ID", call = call)
                 }
-                val event = eventRepository.getEvent(eventId) ?: return@get respondHelper(success = false, message = "Event not found", call = call)
+                val event = eventRepository.getEventById(eventId) ?: return@get respondHelper(success = false, message = "Event not found", call = call)
                 Logger.d("Event fetched successfully: $event")
                 respondHelper(
                     call = call,
@@ -96,7 +96,7 @@ fun Route.eventRoutes(
                     return@post respondHelper(success = false, message = "Unauthorized", call = call)
                 }
 
-                val event = eventRepository.getEvent(request.eventId) ?: return@post respondHelper(success = false, message = "Event not found", call = call)
+                val event = eventRepository.getEventById(request.eventId) ?: return@post respondHelper(success = false, message = "Event not found", call = call)
 
                 val user = userRepository.getUserById(requestUserId.toInt()) ?: return@post respondHelper(success = false, message = "User not found", call = call)
 
@@ -131,7 +131,7 @@ fun Route.eventRoutes(
                     return@post respondHelper(success = false, message = "Unauthorized", call = call)
                 }
 
-                val event = eventRepository.getEvent(request.eventId) ?: return@post respondHelper(success = false, message = "Event not found", call = call)
+                val event = eventRepository.getEventById(request.eventId) ?: return@post respondHelper(success = false, message = "Event not found", call = call)
 
                 // Make sure the requester is either an admin or the event organizer
                 if(requestUserId.toInt() != event.organizerId && !isUserAdmin(requestUserId)) {
@@ -351,7 +351,7 @@ fun Route.eventRoutes(
             val attendees = eventRepository.getEventAttendees(eventId)
             Logger.d("Attendees: $attendees")
 
-            val event = eventRepository.getEvent(eventId) ?: return@post respondHelper(success = false, message = "Event not found", call = call)
+            val event = eventRepository.getEventById(eventId) ?: return@post respondHelper(success = false, message = "Event not found", call = call)
 
             // check if event is full
             if (event.attendees.size >= event.maxAttendees) {
