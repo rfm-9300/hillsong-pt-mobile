@@ -12,13 +12,7 @@
 
 {#if show}
     <div 
-        class="
-            {fullScreen ? 'fixed inset-0 z-50' : 'absolute inset-0 z-10'} 
-            flex items-center justify-center 
-            {transparent ? 'bg-white/70 dark:bg-gray-900/70' : 'bg-white/90 dark:bg-gray-900/90'}
-            backdrop-blur-sm transition-opacity duration-300
-            {className}
-        "
+        class="{fullScreen ? 'fixed inset-0 z-50' : 'absolute inset-0 z-10'} flex items-center justify-center {transparent ? 'bg-white/70 dark:bg-gray-900/70' : 'bg-white/90 dark:bg-gray-900/90'} backdrop-blur-sm transition-opacity duration-300 {className}"
         {...props}
     >
         <div class="flex flex-col items-center">

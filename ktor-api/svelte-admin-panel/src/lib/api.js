@@ -24,6 +24,13 @@ const ENDPOINTS = {
     // Kids
     KIDS: '/kids',
     
+    // Services
+    SERVICES: '/services',
+    SERVICE_BY_ID: (id) => `/services/${id}`,
+    SERVICE_CREATE: '/services/create',
+    SERVICE_UPDATE: '/services/update',
+    SERVICE_DELETE: '/services/delete',
+    
     // Attendance
     ATTENDANCE_EVENT: (eventId) => `/attendance/event/${eventId}`,
     ATTENDANCE_SERVICE: (serviceId) => `/attendance/service/${serviceId}`,

@@ -1,5 +1,4 @@
 <script>
-    import { createEventDispatcher } from 'svelte';
     import { AttendanceStatus } from '../../types/attendance';
     import { attendanceService } from '../../services/attendanceService';
     import Button from '../Button.svelte';
@@ -11,20 +10,21 @@
         currentStatus,
         notes = '',
         showConfirmation = true,
+        onupdate = () => {},
+        oncancel = () => {},
+        oncomplete = () => {},
         class: className = '',
         ...props
     } = $props();
     
     // State
-    let loading = false;
-    let error = null;
-    let success = false;
-    let selectedStatus = currentStatus;
-    let updatedNotes = notes;
-    let confirmDialogOpen = false;
-    let statusToConfirm = null;
-    
-    const dispatch = createEventDispatcher();
+    let loading = $state(false);
+    let error = $state(null);
+    let success = $state(false);
+    let selectedStatus = $state(currentStatus);
+    let updatedNotes = $state(notes);
+    let confirmDialogOpen = $state(false);
+    let statusToConfirm = $state(null);
     
     // Get status info for display
     function getStatusInfo(status) {
@@ -93,7 +93,7 @@
     async function updateStatus() {
         if (selectedStatus === currentStatus && updatedNotes === notes) {
             // No changes to save
-            dispatch('cancel');
+            oncancel();
             return;
         }
         
@@ -111,15 +111,17 @@
             await attendanceService.updateAttendanceStatus(updateRequest);
             
             success = true;
-            dispatch('update', { 
-                status: selectedStatus, 
-                notes: updatedNotes 
+            onupdate({ 
+                detail: {
+                    status: selectedStatus, 
+                    notes: updatedNotes 
+                }
             });
             
             // Reset after successful update
             setTimeout(() => {
                 if (success) {
-                    dispatch('complete');
+                    oncomplete();
                 }
             }, 1500);
         } catch (err) {
@@ -143,11 +145,11 @@
     {/if}
     
     <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-        <div class="flex flex-wrap gap-2">
+        <label for="status-options" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+        <div id="status-options" class="flex flex-wrap gap-2">
             <button 
                 class="p-2 rounded-md transition-all {selectedStatus === AttendanceStatus.CHECKED_IN ? 'ring-2 ring-indigo-500 shadow-md' : 'hover:bg-gray-100'}"
-                on:click={() => selectStatus(AttendanceStatus.CHECKED_IN)}
+                onclick={() => selectStatus(AttendanceStatus.CHECKED_IN)}
                 disabled={loading}
                 aria-pressed={selectedStatus === AttendanceStatus.CHECKED_IN}
             >
@@ -155,7 +157,7 @@
             </button>
             <button 
                 class="p-2 rounded-md transition-all {selectedStatus === AttendanceStatus.CHECKED_OUT ? 'ring-2 ring-indigo-500 shadow-md' : 'hover:bg-gray-100'}"
-                on:click={() => selectStatus(AttendanceStatus.CHECKED_OUT)}
+                onclick={() => selectStatus(AttendanceStatus.CHECKED_OUT)}
                 disabled={loading}
                 aria-pressed={selectedStatus === AttendanceStatus.CHECKED_OUT}
             >
@@ -163,7 +165,7 @@
             </button>
             <button 
                 class="p-2 rounded-md transition-all {selectedStatus === AttendanceStatus.EMERGENCY ? 'ring-2 ring-indigo-500 shadow-md' : 'hover:bg-gray-100'}"
-                on:click={() => selectStatus(AttendanceStatus.EMERGENCY)}
+                onclick={() => selectStatus(AttendanceStatus.EMERGENCY)}
                 disabled={loading}
                 aria-pressed={selectedStatus === AttendanceStatus.EMERGENCY}
             >
@@ -171,7 +173,7 @@
             </button>
             <button 
                 class="p-2 rounded-md transition-all {selectedStatus === AttendanceStatus.NO_SHOW ? 'ring-2 ring-indigo-500 shadow-md' : 'hover:bg-gray-100'}"
-                on:click={() => selectStatus(AttendanceStatus.NO_SHOW)}
+                onclick={() => selectStatus(AttendanceStatus.NO_SHOW)}
                 disabled={loading}
                 aria-pressed={selectedStatus === AttendanceStatus.NO_SHOW}
             >
@@ -193,7 +195,7 @@
     </div>
     
     <div class="flex justify-end gap-2">
-        <Button variant="secondary" onclick={() => dispatch('cancel')} disabled={loading}>
+        <Button variant="secondary" onclick={() => oncancel()} disabled={loading}>
             Cancel
         </Button>
         <Button variant="primary" onclick={updateStatus} disabled={loading}>

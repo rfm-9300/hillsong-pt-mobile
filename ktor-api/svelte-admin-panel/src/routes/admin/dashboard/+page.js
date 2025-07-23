@@ -23,6 +23,7 @@ export async function load({ fetch }) {
             api.get(api.endpoints.EVENTS, fetch),
             api.get(api.endpoints.USERS, fetch)
         ]);
+        console.log(results)
 
         // Handle each result independently
         if (results[0].status === 'fulfilled') {
@@ -30,7 +31,7 @@ export async function load({ fetch }) {
         }
         
         if (results[1].status === 'fulfilled') {
-            stats.events.count = results[1].value?.data?.length || 0;
+            stats.events.count = results[1].value?.data?.events?.length || 0;
         }
         
         if (results[2].status === 'fulfilled') {

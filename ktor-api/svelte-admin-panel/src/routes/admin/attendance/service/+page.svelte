@@ -1,26 +1,49 @@
 <script>
-    import { onMount } from 'svelte';
     import PageHeader from '$lib/components/PageHeader.svelte';
     import Card from '$lib/components/Card.svelte';
-    import { api } from '$lib/api';
     import { EventType } from '$lib/types/attendance';
     import { goto } from '$app/navigation';
     
-    let services = [];
-    let loading = true;
-    let error = null;
+    /** @type {import('./$types').PageData} */
+    export let data;
     
-    onMount(async () => {
-        try {
-            // Assuming there's an endpoint for services, if not, this would need to be adjusted
-            const response = await api.get('/api/services');
-            services = response.services || [];
-            loading = false;
-        } catch (err) {
-            error = err.message || 'Failed to load services';
-            loading = false;
+    let services = [];
+    let loading = false;
+    let error = data.error || null;
+    
+    $: {
+        if (data.services) {
+            // Format service data for display
+            services = data.services.map(service => {
+                // Extract time information - handle both camelCase and snake_case field names
+                const startTime = service.startTime || service.start_time ? 
+                    new Date(service.startTime || service.start_time) : null;
+                const endTime = service.endTime || service.end_time ? 
+                    new Date(service.endTime || service.end_time) : null;
+                
+                // Format day and time
+                const day = startTime ? startTime.toLocaleDateString(undefined, { weekday: 'long' }) : 'N/A';
+                const time = startTime ? 
+                    `${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}${endTime ? ' - ' + endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : ''}` : 
+                    'N/A';
+                
+                console.log('Formatted service:', { 
+                    id: service.id,
+                    name: service.name,
+                    startTime: startTime?.toISOString(),
+                    endTime: endTime?.toISOString(),
+                    day,
+                    time
+                });
+                
+                return {
+                    ...service,
+                    day,
+                    time
+                };
+            });
         }
-    });
+    }
     
     function viewAttendance(serviceId) {
         goto(`/admin/attendance/service/${serviceId}`);
