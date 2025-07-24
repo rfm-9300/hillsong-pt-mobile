@@ -53,9 +53,51 @@ ON CONFLICT (id) DO NOTHING;
 
 -- For SQLite, sequences are handled automatically
 
+-- 7. Insert test kids
+INSERT INTO kid (id, family_id, first_name, last_name, date_of_birth, allergies, notes) VALUES
+(1, 2, 'Emma', 'Doe', '2018-05-15', 'Peanuts', 'Very active child'),
+(2, 3, 'Liam', 'Smith', '2019-08-22', NULL, 'Loves drawing'),
+(3, 4, 'Sophia', 'Johnson', '2017-12-03', 'Dairy', 'Shy but friendly'),
+(4, 5, 'Noah', 'Wilson', '2020-03-10', NULL, 'Energetic toddler'),
+(5, 2, 'Oliver', 'Doe', '2016-09-18', NULL, 'John Doe second child')
+ON CONFLICT (id) DO NOTHING;
+
+-- 8. Insert test kids services
+INSERT INTO kids_service (id, service_id, name, description, age_group_min, age_group_max, max_capacity, location, is_active, created_at) VALUES
+(1, 1, 'Little Lambs (0-3)', 'Nursery service for toddlers', 0, 3, 15, 'Nursery Room A', true, '2024-07-20 10:00:00'),
+(2, 1, 'Mighty Lions (4-7)', 'Kids service for preschool age', 4, 7, 25, 'Kids Hall B', true, '2024-07-20 10:00:00'),
+(3, 1, 'Super Heroes (8-12)', 'Kids service for school age', 8, 12, 30, 'Kids Hall C', true, '2024-07-20 10:00:00'),
+(4, 2, 'Evening Kids (4-12)', 'Evening kids service', 4, 12, 20, 'Kids Hall B', true, '2024-07-20 10:00:00'),
+(10, 1, 'Adventure Club (5-10)', 'Special adventure-themed kids service', 5, 10, 20, 'Adventure Room', true, '2024-07-20 10:00:00')
+ON CONFLICT (id) DO NOTHING;
+
+-- 9. Insert attendance records for kids service ID 2 (Mighty Lions)
+INSERT INTO attendance (id, event_type, event_id, user_id, kid_id, checked_in_by, check_in_time, check_out_time, checked_out_by, status, notes, created_at) VALUES
+(10, 'KIDS_SERVICE', 2, NULL, 1, 1, '2024-07-28 08:45:00', '2024-07-28 11:15:00', 1, 'CHECKED_OUT', 'Had a great time in class', '2024-07-28 08:45:00'),
+(11, 'KIDS_SERVICE', 2, NULL, 2, 1, '2024-07-28 08:50:00', NULL, NULL, 'CHECKED_IN', 'First time visitor', '2024-07-28 08:50:00'),
+(12, 'KIDS_SERVICE', 2, NULL, 3, 1, '2024-07-28 09:00:00', '2024-07-28 11:10:00', 1, 'CHECKED_OUT', 'Participated well in activities', '2024-07-28 09:00:00')
+ON CONFLICT (id) DO NOTHING;
+
+-- 10. Insert additional kids attendance for other services
+INSERT INTO attendance (id, event_type, event_id, user_id, kid_id, checked_in_by, check_in_time, check_out_time, checked_out_by, status, notes, created_at) VALUES
+(13, 'KIDS_SERVICE', 1, NULL, 4, 1, '2024-07-28 08:55:00', '2024-07-28 11:05:00', 1, 'CHECKED_OUT', 'Enjoyed nursery time', '2024-07-28 08:55:00'),
+(14, 'KIDS_SERVICE', 3, NULL, 5, 1, '2024-07-28 09:05:00', NULL, NULL, 'CHECKED_IN', 'Helping with younger kids', '2024-07-28 09:05:00'),
+(15, 'KIDS_SERVICE', 10, NULL, 1, 1, '2024-07-28 09:00:00', '2024-07-28 11:30:00', 1, 'CHECKED_OUT', 'Loved the adventure activities', '2024-07-28 09:00:00'),
+(16, 'KIDS_SERVICE', 10, NULL, 2, 1, '2024-07-28 09:10:00', NULL, NULL, 'CHECKED_IN', 'Very engaged in treasure hunt', '2024-07-28 09:10:00'),
+(17, 'KIDS_SERVICE', 10, NULL, 3, 1, '2024-07-28 09:15:00', '2024-07-28 11:25:00', 1, 'CHECKED_OUT', 'Great teamwork skills', '2024-07-28 09:15:00')
+ON CONFLICT (id) DO NOTHING;
+
 -- Verification queries to check the data:
+
+-- Check service data
 -- SELECT * FROM service WHERE id = 2;
 -- SELECT * FROM attendance WHERE event_type = 'SERVICE' AND event_id = 2;
+
+-- Check kids service data  
+-- SELECT * FROM kids_service WHERE id = 2;
+-- SELECT * FROM attendance WHERE event_type = 'KIDS_SERVICE' AND event_id = 2;
+
+-- Full attendance query for services
 -- SELECT 
 --     a.id,
 --     a.event_type,
@@ -70,3 +112,21 @@ ON CONFLICT (id) DO NOTHING;
 -- LEFT JOIN user_profile up ON a.user_id = up.user_id
 -- LEFT JOIN service s ON a.event_id = s.id
 -- WHERE a.event_type = 'SERVICE' AND a.event_id = 2;
+
+-- Full attendance query for kids services
+-- SELECT 
+--     a.id,
+--     a.event_type,
+--     a.event_id,
+--     a.check_in_time,
+--     a.check_out_time,
+--     a.status,
+--     a.notes,
+--     k.first_name || ' ' || k.last_name as kid_name,
+--     ks.name as kids_service_name,
+--     up.first_name || ' ' || up.last_name as checked_in_by_name
+-- FROM attendance a
+-- LEFT JOIN kid k ON a.kid_id = k.id
+-- LEFT JOIN kids_service ks ON a.event_id = ks.id
+-- LEFT JOIN user_profile up ON a.checked_in_by = up.user_id
+-- WHERE a.event_type = 'KIDS_SERVICE' AND a.event_id = 2;
