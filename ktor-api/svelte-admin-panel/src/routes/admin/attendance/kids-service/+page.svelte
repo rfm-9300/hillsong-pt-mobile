@@ -1,26 +1,48 @@
 <script>
-	import { onMount } from 'svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import Card from '$lib/components/Card.svelte';
-	import { api } from '$lib/api';
 	import { EventType } from '$lib/types/attendance';
 	import { goto } from '$app/navigation';
 
-	let kidsServices = [];
-	let loading = true;
-	let error = null;
+	/** @type {import('./$types').PageData} */
+	export let data;
 
-	onMount(async () => {
-		try {
-			// Assuming there's an endpoint for kids services, if not, this would need to be adjusted
-			const response = await api.get('/kids-services');
-			kidsServices = response.kidsServices || [];
-			loading = false;
-		} catch (err) {
-			error = err.message || 'Failed to load kids services';
-			loading = false;
+	let kidsServices = [];
+	let loading = false;
+	let error = data.error || null;
+
+	$: {
+		if (data.kidsServices) {
+			// Format kids service data for display
+			kidsServices = data.kidsServices.map(service => {
+				// Extract time information - handle both camelCase and snake_case field names
+				const startTime = service.startTime || service.start_time ? 
+					new Date(service.startTime || service.start_time) : null;
+				const endTime = service.endTime || service.end_time ? 
+					new Date(service.endTime || service.end_time) : null;
+
+				// Format time
+				const time = startTime ? 
+					`${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}${endTime ? ' - ' + endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : ''}` : 
+					'N/A';
+
+				console.log('Formatted kids service:', { 
+					id: service.id,
+					name: service.name,
+					ageGroup: service.ageGroup || service.age_group,
+					startTime: startTime?.toISOString(),
+					endTime: endTime?.toISOString(),
+					time
+				});
+
+				return {
+					...service,
+					ageGroup: service.ageGroup || service.age_group || 'All Ages',
+					time
+				};
+			});
 		}
-	});
+	}
 
 	function viewAttendance(kidsServiceId) {
 		goto(`/admin/attendance/kids-service/${kidsServiceId}`);
@@ -93,17 +115,40 @@
 			<Card>
 				<div class="p-6">
 					<h3 class="text-lg font-semibold mb-2">{service.name}</h3>
+					
+					{#if service.description}
+						<p class="text-gray-600 dark:text-gray-400 mb-2 text-sm">
+							{service.description}
+						</p>
+					{/if}
+					
 					<p class="text-gray-600 dark:text-gray-400 mb-2">
 						<span class="font-medium">Age Group:</span>
-						{service.ageGroup || 'N/A'}
+						{service.ageGroup}
 					</p>
-					<p class="text-gray-600 dark:text-gray-400 mb-4">
+					
+					<p class="text-gray-600 dark:text-gray-400 mb-2">
 						<span class="font-medium">Time:</span>
-						{service.time || 'N/A'}
+						{service.time}
 					</p>
+					
+					{#if service.location}
+						<p class="text-gray-600 dark:text-gray-400 mb-4">
+							<span class="font-medium">Location:</span>
+							{service.location}
+						</p>
+					{/if}
+					
+					<div class="flex items-center justify-between mb-4">
+						<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {service.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+							{service.isActive ? 'Active' : 'Inactive'}
+						</span>
+					</div>
+					
 					<button
 						on:click={() => viewAttendance(service.id)}
-						class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+						class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+						disabled={!service.isActive}
 					>
 						View Attendance
 					</button>

@@ -31,6 +31,10 @@ const ENDPOINTS = {
     SERVICE_UPDATE: '/services/update',
     SERVICE_DELETE: '/services/delete',
     
+    // Kids Services
+    KIDS_SERVICES: '/kids-services',
+    KIDS_SERVICE_BY_ID: (id) => `/kids-services/${id}`,
+    
     // Attendance
     ATTENDANCE_EVENT: (eventId) => `/attendance/event/${eventId}`,
     ATTENDANCE_SERVICE: (serviceId) => `/attendance/service/${serviceId}`,

@@ -6,6 +6,7 @@ import rfm.com.data.db.service.ServiceRepository
 import rfm.com.data.db.kidsservice.KidsServiceRepository
 import rfm.com.data.db.user.UserRepository
 import rfm.com.data.db.kid.KidRepository
+import rfm.com.plugins.Logger
 import java.time.LocalDateTime
 
 class AttendanceService(

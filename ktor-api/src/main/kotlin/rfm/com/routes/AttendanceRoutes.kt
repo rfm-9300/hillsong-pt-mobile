@@ -1,7 +1,6 @@
 package rfm.com.routes
 
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -9,6 +8,7 @@ import io.ktor.server.routing.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import rfm.com.data.db.attendance.AttendanceStatus
+import rfm.com.plugins.Logger
 import rfm.com.data.responses.ApiResponse
 import rfm.com.data.responses.ApiResponseData
 import rfm.com.services.AttendanceService
@@ -205,6 +205,7 @@ fun Route.attendanceRoutes(attendanceService: AttendanceService) {
 
             // Query routes
             get("/event/{eventId}") {
+                Logger.d("Fetching attendance for event")
                 val eventId = call.parameters["eventId"]?.toIntOrNull()
                 if (eventId == null) {
                     call.respond(
@@ -219,6 +220,7 @@ fun Route.attendanceRoutes(attendanceService: AttendanceService) {
             }
 
             get("/service/{serviceId}") {
+                Logger.d("Fetching attendance for service")
                 val serviceId = call.parameters["serviceId"]?.toIntOrNull()
                 if (serviceId == null) {
                     call.respond(
@@ -229,6 +231,7 @@ fun Route.attendanceRoutes(attendanceService: AttendanceService) {
                 }
 
                 val attendances = attendanceService.getServiceAttendance(serviceId)
+                Logger.d("Fetched ${attendances.size} attendances for service $serviceId")
                 call.respond(HttpStatusCode.OK, ApiResponse(success = true, data = ApiResponseData.AttendanceListResponse(attendances)))
             }
 

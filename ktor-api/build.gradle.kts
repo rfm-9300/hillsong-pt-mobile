@@ -15,6 +15,7 @@ plugins {
     id("com.google.cloud.tools.jib") version "3.2.1"
 }
 
+
 group = "example.com"
 version = file("version.txt").readText().trim()
 
@@ -43,6 +44,7 @@ tasks.named("jib") {
 }
 
 application {
+
     mainClass.set("io.ktor.server.netty.EngineMain")
 
     val isDevelopment: Boolean = project.ext.has("development")

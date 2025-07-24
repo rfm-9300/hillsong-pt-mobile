@@ -24,6 +24,7 @@ import kotlinx.coroutines.*
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
+import rfm.com.data.db.attendance.AttendanceTable
 
 fun Application.configureDatabases(config: ApplicationConfig) {
     val databaseName = config.property("storage.name").getString()
@@ -52,7 +53,8 @@ fun Application.configureDatabases(config: ApplicationConfig) {
             PasswordResetTable,
             ServiceTable,
             KidsServiceTable,
-            KidsCheckInTable
+            KidsCheckInTable,
+            AttendanceTable,
         )
         SchemaUtils.createMissingTablesAndColumns(
             UserTable,
@@ -67,7 +69,8 @@ fun Application.configureDatabases(config: ApplicationConfig) {
             PasswordResetTable,
             ServiceTable,
             KidsServiceTable,
-            KidsCheckInTable
+            KidsCheckInTable,
+            AttendanceTable,
         )
     }
 }
