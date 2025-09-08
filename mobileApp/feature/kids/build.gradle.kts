@@ -6,7 +6,9 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.serialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
 }
 kotlin{
     androidTarget {
@@ -37,19 +39,50 @@ kotlin{
             implementation(compose.components.uiToolingPreview)
 
             implementation(projects.core.designsystem)
-
             implementation(projects.core.data)
+            implementation(projects.core.network)
+            implementation(projects.core.navigation)
+
+            implementation(libs.navigation.compose)
+            implementation(libs.kermit)
 
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
-
             implementation(libs.koin.coroutines)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.datetime)
+            implementation(libs.room.runtime)
+            implementation(libs.sqlite.bundled)
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0") // Or the latest version
+            // Network dependencies
+            implementation(libs.bundles.ktor)
+            implementation(libs.ktor.client.websockets)
+            
+            // Navigation dependencies
 
             api(libs.koin.core)
             api(libs.koin.compose)
         }
+        
+        commonTest.dependencies {
+
+        }
 
     }
+}
+
+dependencies {
+    add("kspAndroid", libs.room.compiler)
+
+    if (hasProperty("kmp.enableIos")) {
+        add("kspIosSimulatorArm64", libs.room.compiler)
+        add("kspIosX64", libs.room.compiler)
+        add("kspIosArm64", libs.room.compiler)
+    }
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 android {

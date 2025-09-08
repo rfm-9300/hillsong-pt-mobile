@@ -83,3 +83,30 @@ sealed class HomeNav {
     @Serializable
     object EventsScreen : HomeNav()
 }
+
+// Kids Management Navigation Routes
+sealed class KidsNav {
+    @Serializable
+    object Management : KidsNav()
+    
+    @Serializable
+    object Registration : KidsNav()
+    
+    @Serializable
+    object Services : KidsNav()
+    
+    @Serializable
+    data class ServicesForChild(val childId: String) : KidsNav()
+    
+    @Serializable
+    data class CheckIn(val childId: String) : KidsNav()
+    
+    @Serializable
+    data class CheckOut(val childId: String) : KidsNav()
+    
+    @Serializable
+    data class EditChild(val childId: String) : KidsNav()
+    
+    @Serializable
+    object Reports : KidsNav()
+}

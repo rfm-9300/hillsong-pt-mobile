@@ -9,7 +9,7 @@ import rfm.hillsongptapp.core.data.repository.database.UserDao
 import rfm.hillsongptapp.core.data.repository.database.UserProfile
 import rfm.hillsongptapp.core.data.repository.database.UserProfileDao
 
-@Database(entities = [User::class, UserProfile::class], version = 1)
+@Database(entities = [User::class, UserProfile::class], version = 2)
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun userDao(): UserDao

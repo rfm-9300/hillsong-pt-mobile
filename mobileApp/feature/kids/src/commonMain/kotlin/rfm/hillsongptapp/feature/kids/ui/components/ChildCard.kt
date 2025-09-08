@@ -1,0 +1,227 @@
+package rfm.hillsongptapp.feature.kids.ui.components
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import rfm.hillsongptapp.feature.kids.domain.model.Child
+import rfm.hillsongptapp.feature.kids.domain.model.CheckInStatus
+import rfm.hillsongptapp.feature.kids.domain.model.KidsService
+import rfm.hillsongptapp.feature.kids.ui.theme.KidsColors
+import rfm.hillsongptapp.feature.kids.ui.theme.getStatusColor
+
+/**
+ * Card component displaying child information with status indicators and action buttons
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ChildCard(
+    child: Child,
+    currentService: KidsService? = null,
+    onCheckInClick: (Child) -> Unit,
+    onCheckOutClick: (Child) -> Unit,
+    onEditClick: (Child) -> Unit,
+    onViewServicesClick: ((Child) -> Unit)? = null,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // Header with child name and status
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Child",
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = child.name,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                
+                StatusIndicator(status = child.status)
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Child details
+            Text(
+                text = "Age: ${child.calculateAge()} years",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            // Show current service if checked in
+            if (child.status == CheckInStatus.CHECKED_IN && currentService != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Currently in: ${currentService.name}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                )
+                
+                child.checkInTime?.let { checkInTime ->
+                    Text(
+                        text = "Checked in at: ${formatTime(checkInTime)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            // Show last checkout time if recently checked out
+            if (child.status == CheckInStatus.CHECKED_OUT && child.checkOutTime != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Last checked out: ${formatTime(child.checkOutTime)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Action buttons
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Primary action row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    when (child.status) {
+                        CheckInStatus.CHECKED_OUT, CheckInStatus.NOT_IN_SERVICE -> {
+                            Button(
+                                onClick = { onCheckInClick(child) },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Check In")
+                            }
+                        }
+                        CheckInStatus.CHECKED_IN -> {
+                            Button(
+                                onClick = { onCheckOutClick(child) },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary
+                                )
+                            ) {
+                                Text("Check Out")
+                            }
+                        }
+                    }
+                    
+                    OutlinedButton(
+                        onClick = { onEditClick(child) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Edit")
+                    }
+                }
+                
+                // Secondary action row
+                if (onViewServicesClick != null) {
+                    OutlinedButton(
+                        onClick = { onViewServicesClick(child) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("View Services for ${child.name}")
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Status indicator component showing visual status of child
+ */
+@Composable
+private fun StatusIndicator(
+    status: CheckInStatus,
+    modifier: Modifier = Modifier
+) {
+    val (icon, color, text) = when (status) {
+        CheckInStatus.CHECKED_IN -> Triple(
+            Icons.Filled.CheckCircle,
+            KidsColors.CheckedInColor,
+            "Checked In"
+        )
+        CheckInStatus.CHECKED_OUT -> Triple(
+            Icons.Outlined.Warning,
+            KidsColors.CheckedOutColor,
+            "Checked Out"
+        )
+        CheckInStatus.NOT_IN_SERVICE -> Triple(
+            Icons.Outlined.Warning,
+            KidsColors.NotInServiceColor,
+            "Not in Service"
+        )
+    }
+    
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = text,
+            tint = color,
+            modifier = Modifier.size(16.dp)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            color = color,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+/**
+ * Format time string for display
+ * This is a simplified implementation - in a real app you'd use proper date/time formatting
+ */
+private fun formatTime(isoTime: String): String {
+    // Simplified time formatting - extract time portion from ISO string
+    return try {
+        val timePart = isoTime.substringAfter('T').substringBefore('.')
+        val (hour, minute) = timePart.split(':')
+        val hourInt = hour.toInt()
+        val amPm = if (hourInt >= 12) "PM" else "AM"
+        val displayHour = if (hourInt == 0) 12 else if (hourInt > 12) hourInt - 12 else hourInt
+        "$displayHour:$minute $amPm"
+    } catch (e: Exception) {
+        isoTime // Fallback to original string
+    }
+}

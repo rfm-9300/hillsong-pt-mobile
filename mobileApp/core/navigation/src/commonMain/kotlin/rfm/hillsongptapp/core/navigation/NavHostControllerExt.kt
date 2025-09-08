@@ -46,3 +46,36 @@ fun NavHostController.navigateToFeed() {
 fun NavHostController.navigateToEvents() {
     navigate(HomeNav.EventsScreen)
 }
+
+// Kids Management Navigation Extensions
+fun NavHostController.navigateToKidsManagement() {
+    navigate(KidsNav.Management)
+}
+
+fun NavHostController.navigateToKidsRegistration() {
+    navigate(KidsNav.Registration)
+}
+
+fun NavHostController.navigateToKidsServices() {
+    navigate(KidsNav.Services)
+}
+
+fun NavHostController.navigateToKidsServicesForChild(childId: String) {
+    navigate(KidsNav.ServicesForChild(childId))
+}
+
+fun NavHostController.navigateToKidsCheckIn(childId: String) {
+    navigate(KidsNav.CheckIn(childId))
+}
+
+fun NavHostController.navigateToKidsCheckOut(childId: String) {
+    navigate(KidsNav.CheckOut(childId))
+}
+
+fun NavHostController.navigateToKidsEditChild(childId: String) {
+    navigate(KidsNav.EditChild(childId))
+}
+
+fun NavHostController.navigateToKidsReports() {
+    navigate(KidsNav.Reports)
+}
