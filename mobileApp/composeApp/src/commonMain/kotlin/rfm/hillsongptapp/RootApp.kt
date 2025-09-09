@@ -34,10 +34,6 @@ fun RootApp() {
     RootNavigation()
 }
 
-fun onNavigateBack() {
-
-}
-
 @Composable
 fun RootNavigation() {
     val rootNavController = rememberNavController()
@@ -60,14 +56,85 @@ fun RootNavigation() {
             rootNavController = rootNavController
         )
         kidsGraph(
-            kidsManagement = { KidsManagementScreen() },
-            kidsRegistration = { ChildRegistrationScreen() },
-            kidsServices = { ServicesScreen({ onNavigateBack() }) },
-            kidsServicesForChild = { childId -> ServicesScreen({ onNavigateBack() },  selectedChildId = childId) },
-            kidsCheckIn = { childId -> CheckInScreen(onNavigateBack = { onNavigateBack() }, onCheckInSuccess = { onNavigateBack() },    childId = childId) },
-            kidsCheckOut = { childId -> CheckOutScreen(onNavigateBack = { onNavigateBack() }, childId = childId) },
-            kidsEditChild = { childId -> ChildEditScreen(onNavigateBack = { onNavigateBack() }, onUpdateSuccess = { onNavigateBack() }, childId = childId) },
-            kidsReports = { ReportsScreen({ onNavigateBack() }) },
+            kidsManagement = { 
+                KidsManagementScreen(
+                    onNavigateToRegistration = {
+                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.Registration)
+                    },
+                    onNavigateToServices = {
+                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.Services)
+                    },
+                    onNavigateToReports = {
+                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.Reports)
+                    },
+                    onNavigateToServicesForChild = { childId ->
+                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.ServicesForChild(childId))
+                    },
+                    onNavigateToCheckIn = { childId ->
+                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.CheckIn(childId))
+                    },
+                    onNavigateToCheckOut = { childId ->
+                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.CheckOut(childId))
+                    },
+                    onNavigateToChildEdit = { childId ->
+                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.EditChild(childId))
+                    }
+                )
+            },
+            kidsRegistration = { 
+                ChildRegistrationScreen(
+                    onNavigateBack = { rootNavController.popBackStack() },
+                    onRegistrationSuccess = { 
+                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.Management) {
+                            popUpTo(rfm.hillsongptapp.core.navigation.KidsNav.Management) { inclusive = true }
+                        }
+                    }
+                )
+            },
+            kidsServices = { 
+                ServicesScreen(
+                    onNavigateBack = { rootNavController.popBackStack() }
+                )
+            },
+            kidsServicesForChild = { childId -> 
+                ServicesScreen(
+                    onNavigateBack = { rootNavController.popBackStack() },
+                    selectedChildId = childId
+                )
+            },
+            kidsCheckIn = { childId -> 
+                CheckInScreen(
+                    childId = childId,
+                    onNavigateBack = { rootNavController.popBackStack() },
+                    onCheckInSuccess = { 
+                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.Management) {
+                            popUpTo(rfm.hillsongptapp.core.navigation.KidsNav.Management) { inclusive = true }
+                        }
+                    }
+                )
+            },
+            kidsCheckOut = { childId -> 
+                CheckOutScreen(
+                    childId = childId,
+                    onNavigateBack = { rootNavController.popBackStack() }
+                )
+            },
+            kidsEditChild = { childId -> 
+                ChildEditScreen(
+                    childId = childId,
+                    onNavigateBack = { rootNavController.popBackStack() },
+                    onUpdateSuccess = { 
+                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.Management) {
+                            popUpTo(rfm.hillsongptapp.core.navigation.KidsNav.Management) { inclusive = true }
+                        }
+                    }
+                )
+            },
+            kidsReports = { 
+                ReportsScreen(
+                    onNavigateBack = { rootNavController.popBackStack() }
+                )
+            },
             rootNavController = rootNavController
         )
     }

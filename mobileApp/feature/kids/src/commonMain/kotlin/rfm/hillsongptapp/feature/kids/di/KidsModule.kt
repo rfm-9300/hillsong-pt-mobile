@@ -1,10 +1,6 @@
 package rfm.hillsongptapp.feature.kids.di
 
-import org.koin.core.module.Module
-import org.koin.core.module.dsl.factoryOf
-import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModelOf
-import org.koin.dsl.bind
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.lazyModule
 import rfm.hillsongptapp.feature.kids.data.database.KidsDatabase
 import rfm.hillsongptapp.feature.kids.data.database.kidsDatabaseInstance
@@ -24,7 +20,6 @@ import rfm.hillsongptapp.feature.kids.ui.edit.ChildEditViewModel
 import rfm.hillsongptapp.feature.kids.ui.registration.ChildRegistrationViewModel
 import rfm.hillsongptapp.feature.kids.ui.reports.ReportsViewModel
 import rfm.hillsongptapp.feature.kids.ui.services.ServicesViewModel
-import rfm.hillsongptapp.core.data.repository.UserRepository
 
 /**
  * Main Koin module for Kids Management feature
@@ -33,30 +28,123 @@ import rfm.hillsongptapp.core.data.repository.UserRepository
 val featureKidsModule = lazyModule {
     
     // Database
-    single<KidsDatabase> { kidsDatabaseInstance() }
+    single { kidsDatabaseInstance() }
     
     // Data Sources
-    singleOf(::KidsLocalDataSourceImpl) bind KidsLocalDataSource::class
-    singleOf(::KidsRemoteDataSourceImpl) bind KidsRemoteDataSource::class
+    single<KidsLocalDataSource> { 
+        KidsLocalDataSourceImpl(
+            database = get()
+        )
+    }
     
-    // Real-time Status Manager with proper lifecycle management
-    singleOf(::RealTimeStatusManager)
+    single<KidsRemoteDataSource> { 
+        KidsRemoteDataSourceImpl(
+            httpClient = get(),
+            baseUrl = "https://api.hillsong.pt", // TODO: Move to config
+            json = kotlinx.serialization.json.Json {
+                ignoreUnknownKeys = true
+                isLenient = true
+            }
+        )
+    }
+    
+    // Real-time Status Manager
+    single<RealTimeStatusManager> { 
+        RealTimeStatusManager(
+            remoteDataSource = get()
+        )
+    }
     
     // Repository
-    singleOf(::KidsRepositoryImpl) bind KidsRepository::class
+    single<KidsRepository> { 
+        KidsRepositoryImpl(
+            localDataSource = get(),
+            remoteDataSource = get()
+        )
+    }
+    
+    // Error Handling
+    single { 
+        rfm.hillsongptapp.feature.kids.domain.error.ErrorHandler(
+            logger = co.touchlab.kermit.Logger.withTag("ErrorHandler")
+        )
+    }
+    
+    single { 
+        rfm.hillsongptapp.feature.kids.domain.offline.OfflineHandler(
+            logger = co.touchlab.kermit.Logger.withTag("OfflineHandler")
+        )
+    }
+    
+    single { 
+        rfm.hillsongptapp.feature.kids.domain.error.ErrorRecoveryManager(
+            errorHandler = get(),
+            offlineHandler = get(),
+            logger = co.touchlab.kermit.Logger.withTag("ErrorRecoveryManager")
+        )
+    }
     
     // Use Cases
-    factoryOf(::CheckInChildUseCase)
-    factoryOf(::CheckOutChildUseCase)
+    factory<CheckInChildUseCase> { 
+        CheckInChildUseCase(
+            kidsRepository = get()
+        )
+    }
+    
+    factory<CheckOutChildUseCase> { 
+        CheckOutChildUseCase(
+            kidsRepository = get()
+        )
+    }
     
     // ViewModels
-    viewModelOf(::KidsManagementViewModel)
-    viewModelOf(::CheckInViewModel)
-    viewModelOf(::CheckOutViewModel)
-    viewModelOf(::ChildRegistrationViewModel)
-    viewModelOf(::ChildEditViewModel)
-    viewModelOf(::ReportsViewModel)
-    viewModelOf(::ServicesViewModel)
+    viewModel<KidsManagementViewModel> {
+        KidsManagementViewModel(
+            kidsRepository = get(),
+            realTimeStatusManager = get(),
+            userRepository = get()
+        )
+    }
+    
+    viewModel<CheckInViewModel> {
+        CheckInViewModel(
+            checkInChildUseCase = get(),
+            errorHandler = get(),
+            errorRecoveryManager = get(),
+            offlineHandler = get()
+        )
+    }
+    
+    viewModel<CheckOutViewModel> {
+        CheckOutViewModel(
+            kidsRepository = get(),
+            checkOutChildUseCase = get()
+        )
+    }
+    
+    viewModel<ChildRegistrationViewModel> {
+        ChildRegistrationViewModel(
+            kidsRepository = get()
+        )
+    }
+    
+    viewModel<ChildEditViewModel> {
+        ChildEditViewModel(
+            kidsRepository = get()
+        )
+    }
+    
+    viewModel<ReportsViewModel> {
+        ReportsViewModel(
+            kidsRepository = get()
+        )
+    }
+    
+    viewModel<ServicesViewModel> {
+        ServicesViewModel(
+            kidsRepository = get()
+        )
+    }
 }
 
 
