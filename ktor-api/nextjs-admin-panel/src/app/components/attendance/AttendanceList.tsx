@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AttendanceListProps, AttendanceRecord, AttendanceStatus } from '@/lib/types';
+import { AttendanceListProps } from '@/lib/types';
 import { Card, StatusBadge, Button } from '@/app/components/ui';
 import { NotesEditor } from './NotesEditor';
 import { CheckInOut } from './CheckInOut';

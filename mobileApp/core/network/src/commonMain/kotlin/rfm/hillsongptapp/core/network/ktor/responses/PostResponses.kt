@@ -1,4 +1,4 @@
-package rfm.hillsongptapp.core.data.repository.ktor.responses
+package rfm.hillsongptapp.core.network.ktor.responses
 
 import kotlinx.serialization.Serializable
 

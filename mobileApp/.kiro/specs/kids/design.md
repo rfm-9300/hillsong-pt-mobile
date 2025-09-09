@@ -9,6 +9,7 @@ The feature follows the established app architecture with clean separation of co
 ## Architecture
 
 ### Module Structure
+
 ```
 feature/kids/
 ├── src/commonMain/kotlin/rfm/hillsongptapp/feature/kids/
@@ -28,9 +29,11 @@ feature/kids/
 ```
 
 ### Navigation Integration
+
 The kids management feature integrates with the existing navigation system through the `HomeNav.KidsScreen` route, providing seamless navigation from the main app into the kids management section.
 
 ### Data Flow Architecture
+
 ```mermaid
 graph TD
     A[KidsManagementScreen] --> B[KidsManagementViewModel]
@@ -39,7 +42,7 @@ graph TD
     C --> E[Remote DataSource]
     D --> F[Room Database]
     E --> G[Ktor HTTP Client]
-    
+
     H[Child/Service Models] --> B
     I[UI State] --> A
     J[Real-time Updates] --> C
@@ -50,6 +53,7 @@ graph TD
 ### Core Data Models
 
 #### Child Models
+
 ```kotlin
 @Serializable
 data class Child(
@@ -81,6 +85,7 @@ enum class CheckInStatus {
 ```
 
 #### Service Models
+
 ```kotlin
 @Serializable
 data class KidsService(
@@ -101,6 +106,7 @@ data class KidsService(
 ```
 
 #### Check-in/Check-out Models
+
 ```kotlin
 @Serializable
 data class CheckInRecord(
@@ -119,6 +125,7 @@ data class CheckInRecord(
 ### Repository Layer
 
 #### KidsRepository Interface
+
 ```kotlin
 interface KidsRepository {
     // Child Management
@@ -126,18 +133,18 @@ interface KidsRepository {
     suspend fun registerChild(child: Child): Result<Child>
     suspend fun updateChild(child: Child): Result<Child>
     suspend fun deleteChild(childId: String): Result<Unit>
-    
+
     // Service Management
     suspend fun getAvailableServices(): Result<List<KidsService>>
     suspend fun getServicesForAge(age: Int): Result<List<KidsService>>
     suspend fun getServiceById(serviceId: String): Result<KidsService>
-    
+
     // Check-in/Check-out Operations
     suspend fun checkInChild(childId: String, serviceId: String): Result<CheckInRecord>
     suspend fun checkOutChild(childId: String): Result<CheckInRecord>
     suspend fun getCheckInHistory(childId: String): Result<List<CheckInRecord>>
     suspend fun getCurrentCheckIns(serviceId: String): Result<List<CheckInRecord>>
-    
+
     // Staff/Reporting
     suspend fun getServiceReport(serviceId: String): Result<ServiceReport>
     suspend fun getAllCurrentCheckIns(): Result<List<CheckInRecord>>
@@ -147,6 +154,7 @@ interface KidsRepository {
 ### UI Components
 
 #### Screen Components
+
 - **KidsManagementScreen**: Main dashboard showing registered children and their status
 - **ChildRegistrationScreen**: Form for registering new children
 - **ChildEditScreen**: Form for editing existing child information
@@ -156,6 +164,7 @@ interface KidsRepository {
 - **ReportsScreen**: Staff view for service attendance and capacity management
 
 #### Reusable UI Components
+
 - **ChildCard**: Displays child information with status indicators
 - **ServiceCard**: Shows service details, capacity, and availability
 - **StatusIndicator**: Visual indicator for check-in/check-out status
@@ -166,15 +175,16 @@ interface KidsRepository {
 ### ViewModels
 
 #### KidsManagementViewModel
+
 ```kotlin
 class KidsManagementViewModel(
     private val kidsRepository: KidsRepository,
     private val userRepository: UserRepository
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(KidsManagementUiState())
     val uiState: StateFlow<KidsManagementUiState> = _uiState.asStateFlow()
-    
+
     fun loadChildren()
     fun loadAvailableServices()
     fun checkInChild(childId: String, serviceId: String)
@@ -198,6 +208,7 @@ data class KidsManagementUiState(
 ### Local Database Schema (Room)
 
 #### ChildEntity
+
 ```kotlin
 @Entity(tableName = "children")
 data class ChildEntity(
@@ -221,6 +232,7 @@ data class ChildEntity(
 ```
 
 #### KidsServiceEntity
+
 ```kotlin
 @Entity(tableName = "kids_services")
 data class KidsServiceEntity(
@@ -242,6 +254,7 @@ data class KidsServiceEntity(
 ```
 
 #### CheckInRecordEntity
+
 ```kotlin
 @Entity(tableName = "checkin_records")
 data class CheckInRecordEntity(
@@ -261,6 +274,7 @@ data class CheckInRecordEntity(
 ### API Response Models
 
 #### ChildrenResponse
+
 ```kotlin
 @Serializable
 data class ChildrenResponse(
@@ -301,6 +315,7 @@ data class CheckInResponse(
 ## Error Handling
 
 ### Error Types
+
 ```kotlin
 sealed class KidsManagementError : Exception() {
     object NetworkError : KidsManagementError()
@@ -317,6 +332,7 @@ sealed class KidsManagementError : Exception() {
 ```
 
 ### Error Handling Strategy
+
 - Network errors: Show cached data and retry mechanisms with offline indicators
 - Check-in errors: Clear error messages with suggested actions (e.g., "Service is full, try another service")
 - Validation errors: Real-time form validation with helpful error messages
@@ -326,27 +342,32 @@ sealed class KidsManagementError : Exception() {
 ## Testing Strategy
 
 ### Unit Testing
+
 - **Repository Tests**: Mock data sources and test child/service management logic
 - **ViewModel Tests**: Test state management and check-in/check-out operations
 - **Use Case Tests**: Validate business rules for registration, check-ins, and capacity management
 - **Model Tests**: Test data serialization, validation, and age calculations
 
 ### Integration Testing
+
 - **Database Tests**: Test Room database operations, migrations, and real-time sync
 - **Network Tests**: Test API integration with mock servers for check-in operations
 - **Navigation Tests**: Test screen transitions and deep linking to specific children/services
 
 ### UI Testing
+
 - **Compose Tests**: Test UI components and user interactions for management operations
 - **Screenshot Tests**: Ensure consistent visual appearance across platforms
 - **Accessibility Tests**: Verify accessibility for parents and staff users
 
 ### Platform-Specific Testing
+
 - **Android Tests**: Test Android-specific features and permissions
 - **iOS Tests**: Test iOS-specific features and native integrations
 - **Common Tests**: Test shared business logic across platforms
 
 ### Business Logic Testing
+
 - **Capacity Management Tests**: Ensure services don't exceed maximum capacity
 - **Age Validation Tests**: Verify children can only be checked into age-appropriate services
 - **Check-in/Check-out Flow Tests**: Test complete workflows and edge cases
@@ -355,18 +376,21 @@ sealed class KidsManagementError : Exception() {
 ## Security and Privacy Considerations
 
 ### Data Protection
+
 - Secure storage of children's personal information with encryption at rest
 - Minimal data collection - only information necessary for safety and service delivery
 - Encrypted communication for all API calls, especially check-in/check-out operations
 - Compliance with child privacy regulations (COPPA, GDPR for minors)
 
 ### Access Control
+
 - Parent/guardian verification before child registration
 - Role-based access for staff members (check-in permissions, reporting access)
 - Secure authentication for sensitive operations (check-out verification)
 - Audit logging for all check-in/check-out activities
 
 ### Data Integrity
+
 - Real-time synchronization to prevent double check-ins
 - Conflict resolution for concurrent operations
 - Backup and recovery procedures for critical child safety data
@@ -375,18 +399,21 @@ sealed class KidsManagementError : Exception() {
 ## Performance Considerations
 
 ### Real-time Operations
+
 - Efficient WebSocket connections for real-time check-in/check-out updates
 - Optimized database queries for large numbers of children and services
 - Caching strategies for frequently accessed data (service lists, child information)
 - Background synchronization to keep local data current
 
 ### Scalability
+
 - Pagination for large lists of children and check-in records
 - Efficient search and filtering for finding specific children or services
 - Database indexing on frequently queried fields (parent ID, service ID, check-in status)
 - Connection pooling for concurrent check-in operations
 
 ### Platform Optimization
+
 - Android: Optimize for various screen sizes and device capabilities
 - iOS: Leverage native UI patterns for familiar user experience
 - Shared: Efficient Compose UI with minimal recomposition for status updates
@@ -395,6 +422,7 @@ sealed class KidsManagementError : Exception() {
 ### Additional Considerations
 
 #### ServiceReport Model
+
 ```kotlin
 @Serializable
 data class ServiceReport(

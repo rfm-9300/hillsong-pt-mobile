@@ -30,6 +30,7 @@ kotlin{
     sourceSets{
         commonMain.dependencies {
             implementation(projects.core.navigation)
+            implementation(projects.core.network)
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)

@@ -17,8 +17,8 @@ val featureModules = listOf(
 )
 
 val coreModules = listOf(
-    dataModule,
-    koinPlatformModule
+    dataModule, // This now includes networkModule
+    koinPlatformModule,
 )
 
 fun initKoin(config: KoinAppDeclaration? = null) {

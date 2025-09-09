@@ -18,6 +18,7 @@ kotlin{
             implementation(libs.room.runtime)
             implementation(libs.sqlite.bundled)
             implementation(compose.runtime)
+            implementation(projects.core.network)
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)

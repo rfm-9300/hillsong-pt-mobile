@@ -1,4 +1,4 @@
-package rfm.hillsongptapp.core.data.providers
+package rfm.hillsongptapp.core.network.provider
 
 import io.ktor.client.engine.HttpClientEngine
 

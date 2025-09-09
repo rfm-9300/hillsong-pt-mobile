@@ -4,13 +4,9 @@ import rfm.hillsongptapp.core.data.repository.database.User
 import rfm.hillsongptapp.core.data.repository.database.UserDao
 import rfm.hillsongptapp.core.data.repository.database.UserProfile
 import rfm.hillsongptapp.core.data.repository.database.UserProfileDao
-import rfm.hillsongptapp.core.data.repository.ktor.ApiService
-import rfm.hillsongptapp.core.data.repository.ktor.requests.FacebookAuthRequest
-import rfm.hillsongptapp.core.data.repository.ktor.requests.GoogleAuthRequest
-import rfm.hillsongptapp.core.data.repository.ktor.requests.LoginRequest
-import rfm.hillsongptapp.core.data.repository.ktor.requests.SignUpRequest
-import rfm.hillsongptapp.core.data.repository.ktor.responses.LoginResponse
-import rfm.hillsongptapp.core.data.repository.ktor.responses.SignUpResponse
+import rfm.hillsongptapp.core.network.ktor.ApiService
+import rfm.hillsongptapp.core.network.ktor.requests.*
+import rfm.hillsongptapp.core.network.ktor.responses.*
 
 class UserRepository(
     private val api: ApiService,

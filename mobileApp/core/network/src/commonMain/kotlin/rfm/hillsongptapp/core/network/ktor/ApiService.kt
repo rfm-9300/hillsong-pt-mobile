@@ -1,4 +1,4 @@
-package rfm.hillsongptapp.core.data.repository.ktor
+package rfm.hillsongptapp.core.network.ktor
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -7,8 +7,19 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import rfm.hillsongptapp.core.data.repository.ktor.requests.*
-import rfm.hillsongptapp.core.data.repository.ktor.responses.*
+import rfm.hillsongptapp.core.network.ktor.requests.FacebookAuthRequest
+import rfm.hillsongptapp.core.network.ktor.requests.GoogleAuthRequest
+import rfm.hillsongptapp.core.network.ktor.requests.LoginRequest
+import rfm.hillsongptapp.core.network.ktor.requests.PasswordResetRequest
+import rfm.hillsongptapp.core.network.ktor.requests.ResetPasswordRequest
+import rfm.hillsongptapp.core.network.ktor.requests.SignUpRequest
+import rfm.hillsongptapp.core.network.ktor.requests.VerificationRequest
+import rfm.hillsongptapp.core.network.ktor.responses.ApiResponse
+import rfm.hillsongptapp.core.network.ktor.responses.LoginResponse
+import rfm.hillsongptapp.core.network.ktor.responses.PasswordResetResponse
+import rfm.hillsongptapp.core.network.ktor.responses.PostListResponse
+import rfm.hillsongptapp.core.network.ktor.responses.SignUpResponse
+import rfm.hillsongptapp.core.network.ktor.responses.VerificationResponse
 
 class ApiService(
     private val baseUrl: String,

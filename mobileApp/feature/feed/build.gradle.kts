@@ -26,6 +26,7 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(projects.core.designsystem)
+            implementation(projects.core.network)
             implementation(projects.util.media)
 
             implementation(compose.runtime)
