@@ -15,7 +15,7 @@ interface NotesEditorProps {
   disabled?: boolean;
 }
 
-const NotesEditor: React.FC<NotesEditorProps> = ({
+export const NotesEditor: React.FC<NotesEditorProps> = ({
   initialNotes,
   onSave,
   onCancel,

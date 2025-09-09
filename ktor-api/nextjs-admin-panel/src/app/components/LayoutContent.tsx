@@ -27,7 +27,7 @@ function LayoutContentInner({ children }: { children: React.ReactNode }) {
           <MobileSidebar isOpen={sidebarOpen} onClose={toggleSidebar} />
 
           <main className="flex-1 md:ml-64">
-            <div className="flex flex-col w-full md:p-8 p-4 min-h-screen">
+            <div className="flex flex-col w-full p-4 sm:p-6 md:p-8 min-h-screen page-transition">
               {children}
             </div>
           </main>

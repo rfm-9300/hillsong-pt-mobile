@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 interface EnhancedTextareaProps extends Omit<TextareaProps, 'onChange'> {
   onChange?: (value: string) => void;
   onBlur?: () => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   name?: string;
   isValidating?: boolean;
   showValidation?: boolean;
@@ -21,6 +22,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, EnhancedTextareaProps>(({
   value,
   onChange,
   onBlur,
+  onKeyDown,
   error,
   rows = 4,
   required = false,
@@ -72,6 +74,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, EnhancedTextareaProps>(({
           value={value || ''}
           onChange={(e) => onChange?.(e.target.value)}
           onBlur={onBlur}
+          onKeyDown={onKeyDown}
           rows={rows}
           disabled={disabled}
           required={required}

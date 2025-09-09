@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { EmptyState, LoadingSkeleton, Alert } from './ui';
+import { EmptyState, LoadingSkeleton, Alert, EventsGrid, AnimatedGrid } from './ui';
 import EventCard from './EventCard';
 import { Event } from '@/lib/types';
 import { api, ENDPOINTS } from '@/lib/api';
@@ -59,11 +59,15 @@ export default function EventsList({ onEventDeleted }: EventsListProps) {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <EventsGrid>
         {Array.from({ length: 6 }).map((_, index) => (
-          <LoadingSkeleton key={index} className="h-80" />
+          <LoadingSkeleton 
+            key={index} 
+            className="h-80 rounded-lg"
+            style={{ animationDelay: `${index * 100}ms` }}
+          />
         ))}
-      </div>
+      </EventsGrid>
     );
   }
 
@@ -94,7 +98,7 @@ export default function EventsList({ onEventDeleted }: EventsListProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <AnimatedGrid cols="grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
       {events.map((event) => (
         <EventCard
           key={event.id}
@@ -102,6 +106,6 @@ export default function EventsList({ onEventDeleted }: EventsListProps) {
           onDelete={handleEventDeleted}
         />
       ))}
-    </div>
+    </AnimatedGrid>
   );
 }

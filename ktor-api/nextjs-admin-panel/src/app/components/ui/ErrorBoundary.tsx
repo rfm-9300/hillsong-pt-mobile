@@ -91,7 +91,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, EnhancedErrorBou
 
   render() {
     if (this.state.hasError) {
-      const { error, errorId, retryCount, errorInfo } = this.state;
+      const { error, errorId, retryCount } = this.state;
       const { fallback: FallbackComponent, showErrorDetails = false, level = 'component' } = this.props;
       const canRetry = retryCount < this.maxRetries;
 

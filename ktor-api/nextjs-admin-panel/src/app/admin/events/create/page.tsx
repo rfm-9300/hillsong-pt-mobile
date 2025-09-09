@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { PageHeader, Button, Alert, LoadingOverlay } from '@/app/components/ui';
+import { Button, Alert, LoadingOverlay, NavigationHeader } from '@/app/components/ui';
 import { FormContainer, Input, Textarea, ImageUpload } from '@/app/components/forms';
 import { api, ENDPOINTS } from '@/lib/api';
 import { Event } from '@/lib/types';
@@ -98,9 +98,17 @@ export default function CreateEventPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader 
-        title="Create Event" 
+      <NavigationHeader
+        title="Create Event"
         subtitle="Add a new event to the system"
+        showBackButton={true}
+        backButtonText="Back to Events"
+        backButtonHref="/admin/events"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/admin/dashboard' },
+          { label: 'Events', href: '/admin/events' },
+          { label: 'Create Event', current: true },
+        ]}
       />
       
       {alert && (

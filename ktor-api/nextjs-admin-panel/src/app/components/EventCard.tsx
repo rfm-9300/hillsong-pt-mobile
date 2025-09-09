@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Card, Button, DeleteConfirmationModal } from './ui';
 import { Event } from '@/lib/types';
 import { formatDate, formatTime, truncateText } from '@/lib/utils';
@@ -58,17 +59,19 @@ export default function EventCard({ event, onDelete }: EventCardProps) {
     <>
       <Card 
         hover 
-        className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+        className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 touch-target"
         onClick={handleEdit}
       >
         <div className="relative overflow-hidden">
           {/* Gradient Header */}
           <div className={`h-32 bg-gradient-to-r ${gradient} relative`}>
             {event.imageUrl && (
-              <img
+              <Image
                 src={event.imageUrl}
                 alt={event.title}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             )}
             
@@ -95,9 +98,9 @@ export default function EventCard({ event, onDelete }: EventCardProps) {
           </div>
           
           {/* Content */}
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <div className="flex justify-between items-start mb-3">
-              <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
                 {event.title}
               </h3>
             </div>
@@ -125,7 +128,7 @@ export default function EventCard({ event, onDelete }: EventCardProps) {
             </div>
             
             {/* Action Buttons */}
-            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex gap-2 opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity">
               <Button
                 size="sm"
                 variant="primary"
@@ -133,8 +136,10 @@ export default function EventCard({ event, onDelete }: EventCardProps) {
                   e?.stopPropagation();
                   handleEdit();
                 }}
+                className="flex-1 sm:flex-none"
               >
-                Edit
+                <span className="sm:hidden">✏️</span>
+                <span className="hidden sm:inline">Edit</span>
               </Button>
               
               <Button
@@ -144,8 +149,10 @@ export default function EventCard({ event, onDelete }: EventCardProps) {
                   e?.stopPropagation();
                   setShowDeleteModal(true);
                 }}
+                className="flex-1 sm:flex-none"
               >
-                Delete
+                <span className="sm:hidden">🗑️</span>
+                <span className="hidden sm:inline">Delete</span>
               </Button>
             </div>
           </div>

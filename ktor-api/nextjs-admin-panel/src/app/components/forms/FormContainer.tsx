@@ -69,10 +69,11 @@ const FormContainer: React.FC<EnhancedFormContainerProps> = ({
       
       <form
         onSubmit={handleSubmit}
-        className={cn('space-y-6', className)}
+        className={cn('space-y-4 sm:space-y-6 animate-in fade-in', className)}
+        style={{ animationDuration: '300ms' }}
         noValidate
       >
-        <fieldset disabled={isSubmitting} className="space-y-6">
+        <fieldset disabled={isSubmitting} className="space-y-4 sm:space-y-6">
           {children}
         </fieldset>
       </form>

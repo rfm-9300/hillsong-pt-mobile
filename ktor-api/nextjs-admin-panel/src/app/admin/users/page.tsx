@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { User } from '@/lib/types';
 import { 
-  PageHeader, 
   UsersList, 
   DeleteConfirmationModal,
-  Alert
+  Alert,
+  NavigationHeader
 } from '@/app/components';
 import { useUsers } from '@/app/hooks';
 import { getUserDisplayName } from '@/lib/userUtils';
@@ -56,9 +56,13 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <NavigationHeader
         title="Users Management"
         subtitle="Manage system users, roles, and permissions"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/admin/dashboard' },
+          { label: 'Users', current: true },
+        ]}
       />
 
       {successMessage && (
@@ -83,7 +87,6 @@ export default function UsersPage() {
         error={error}
         onEdit={handleEdit}
         onDelete={handleDeleteClick}
-        onRetry={refetch}
       />
 
       {/* Delete Confirmation Modal */}

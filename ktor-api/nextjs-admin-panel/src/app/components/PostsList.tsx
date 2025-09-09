@@ -1,5 +1,5 @@
 import { Post } from '@/lib/types';
-import { EmptyState } from './ui';
+import { EmptyState, PostsGrid, AnimatedGrid } from './ui';
 import PostCard from './PostCard';
 
 interface PostsListProps {
@@ -12,11 +12,15 @@ interface PostsListProps {
 export default function PostsList({ posts, onEdit, onDelete, loading = false }: PostsListProps) {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <PostsGrid>
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="bg-gray-200 rounded-xl h-64 animate-pulse"></div>
+          <div 
+            key={i} 
+            className="skeleton-shimmer rounded-xl h-64 sm:h-72"
+            style={{ animationDelay: `${i * 100}ms` }}
+          ></div>
         ))}
-      </div>
+      </PostsGrid>
     );
   }
 
@@ -37,20 +41,15 @@ export default function PostsList({ posts, onEdit, onDelete, loading = false }: 
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {posts.map((post, i) => (
-        <div 
+    <AnimatedGrid cols="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      {posts.map((post) => (
+        <PostCard 
           key={post.id}
-          className="animate-in fade-in slide-in-from-bottom-4"
-          style={{ animationDelay: `${i * 75}ms`, animationDuration: '300ms' }}
-        >
-          <PostCard 
-            post={post} 
-            onEdit={() => onEdit(post.id)} 
-            onDelete={() => onDelete(post.id)} 
-          />
-        </div>
+          post={post} 
+          onEdit={() => onEdit(post.id)} 
+          onDelete={() => onDelete(post.id)} 
+        />
       ))}
-    </div>
+    </AnimatedGrid>
   );
 }

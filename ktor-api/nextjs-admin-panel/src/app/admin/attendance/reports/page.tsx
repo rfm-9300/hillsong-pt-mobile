@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AttendanceRecord, AttendanceStatus, EventType } from '@/lib/types';
+
+type ApiResponse<T = unknown> = { success: boolean; data?: T };
 import { 
-  PageHeader, 
   Card, 
   Button, 
   EmptyState, 
   LoadingOverlay,
-  Alert
+  Alert,
+  NavigationHeader
 } from '@/app/components/ui';
 import { Input } from '@/app/components/forms';
 import { useApiCall } from '@/app/hooks';
@@ -53,20 +55,16 @@ const AttendanceReportsPage: React.FC = () => {
     loading: exporting 
   } = useApiCall(api.attendance.exportData);
 
-  useEffect(() => {
-    loadAttendanceData();
-  }, [filters.startDate, filters.endDate, filters.eventType]);
-
-  const loadAttendanceData = async () => {
+  const loadAttendanceData = useCallback(async () => {
     try {
       const eventTypeParam = filters.eventType === 'all' ? undefined : filters.eventType;
       const response = await fetchAttendanceByDateRange(
         filters.startDate, 
         filters.endDate, 
         eventTypeParam
-      );
+      ) as ApiResponse<AttendanceRecord[]>;
       
-      if (response && response.success) {
+      if (response && response.success && response.data) {
         setAttendanceData(response.data);
         calculateStats(response.data);
       }
@@ -74,7 +72,11 @@ const AttendanceReportsPage: React.FC = () => {
       console.error('Failed to load attendance data:', error);
       setAlert({ type: 'error', message: 'Failed to load attendance data' });
     }
-  };
+  }, [fetchAttendanceByDateRange, filters.startDate, filters.endDate, filters.eventType]);
+
+  useEffect(() => {
+    loadAttendanceData();
+  }, [loadAttendanceData]);
 
   const calculateStats = (data: AttendanceRecord[]) => {
     const stats: AttendanceStats = {
@@ -122,9 +124,9 @@ const AttendanceReportsPage: React.FC = () => {
         ...(filters.searchTerm && { search: filters.searchTerm }),
       };
 
-      const response = await exportAttendanceData(exportFilters);
+      const response = await exportAttendanceData(exportFilters) as ApiResponse<string>;
       
-      if (response && response.success) {
+      if (response && response.success && response.data) {
         // Create and download the file
         const blob = new Blob([response.data], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
@@ -183,9 +185,14 @@ const AttendanceReportsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <NavigationHeader
         title="Attendance Reports"
         subtitle="Generate and export attendance reports with filtering capabilities"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/admin/dashboard' },
+          { label: 'Attendance', href: '/admin/attendance' },
+          { label: 'Reports & Analytics', current: true },
+        ]}
       >
         <Button
           variant="primary"
@@ -195,7 +202,7 @@ const AttendanceReportsPage: React.FC = () => {
         >
           Export Report
         </Button>
-      </PageHeader>
+      </NavigationHeader>
 
       {alert && (
         <Alert

@@ -1,5 +1,5 @@
+import Image from 'next/image';
 import { Post } from '@/lib/types';
-import { Button } from './ui';
 
 interface PostCardProps {
   post: Post;
@@ -32,7 +32,7 @@ export default function PostCard({ post, onEdit, onDelete }: PostCardProps) {
 
   return (
     <div 
-      className="relative bg-white rounded-xl overflow-hidden shadow-lg transition-all duration-200 hover:shadow-xl border border-gray-100 h-64 cursor-pointer hover:scale-[1.02] group"
+      className="relative bg-white rounded-xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl border border-gray-100 h-64 sm:h-72 cursor-pointer hover:scale-[1.02] hover:-translate-y-1 group touch-target"
       onClick={onEdit}
       role="button"
       tabIndex={0}
@@ -42,10 +42,12 @@ export default function PostCard({ post, onEdit, onDelete }: PostCardProps) {
       {/* Background image with gradient overlay */}
       <div className="absolute inset-0">
         {imageUrl ? (
-          <img 
+          <Image 
             src={imageUrl} 
             alt={post.title} 
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             onError={(e) => {
               // Fallback to gradient background if image fails to load
               const target = e.target as HTMLImageElement;
@@ -74,10 +76,10 @@ export default function PostCard({ post, onEdit, onDelete }: PostCardProps) {
       </div>
       
       {/* Post content on top of the background */}
-      <div className="relative h-full flex flex-col justify-between p-5 text-white z-10">
+      <div className="relative h-full flex flex-col justify-between p-4 sm:p-5 text-white z-10">
         <div>
-          <h3 className="text-xl font-bold mb-2 text-white line-clamp-2">{post.title}</h3>
-          <p className="text-white/80 mb-4 line-clamp-2">{post.content}</p>
+          <h3 className="text-lg sm:text-xl font-bold mb-2 text-white line-clamp-2">{post.title}</h3>
+          <p className="text-white/80 mb-2 sm:mb-4 line-clamp-2 text-sm sm:text-base">{post.content}</p>
         </div>
         
         <div className="mt-auto">
@@ -90,9 +92,9 @@ export default function PostCard({ post, onEdit, onDelete }: PostCardProps) {
             </div>
           </div>
           
-          <div className="flex justify-between pt-3 border-t border-white/20">
+          <div className="flex justify-between pt-2 sm:pt-3 border-t border-white/20">
             <button 
-              className="text-white hover:text-blue-300 flex items-center transition-colors cursor-pointer"
+              className="text-white hover:text-blue-300 flex items-center transition-all duration-200 cursor-pointer touch-target hover:scale-105 text-sm sm:text-base"
               onClick={(e) => { 
                 e.stopPropagation(); 
                 onEdit(); 
@@ -101,19 +103,19 @@ export default function PostCard({ post, onEdit, onDelete }: PostCardProps) {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
-              Edit
+              <span className="hidden sm:inline">Edit</span>
             </button>
             <button 
               onClick={(e) => { 
                 e.stopPropagation(); 
                 onDelete(); 
               }}
-              className="text-white hover:text-red-300 flex items-center transition-colors cursor-pointer hover:scale-105"
+              className="text-white hover:text-red-300 flex items-center transition-all duration-200 cursor-pointer hover:scale-105 touch-target text-sm sm:text-base"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
-              Delete
+              <span className="hidden sm:inline">Delete</span>
             </button>
           </div>
         </div>

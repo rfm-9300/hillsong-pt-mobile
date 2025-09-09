@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AttendanceRecord, AttendanceStatus, EventType } from '@/lib/types';
+
+type ApiResponse<T = unknown> = { success: boolean; data?: T };
 import { 
-  PageHeader, 
   Card, 
   Button, 
   EmptyState, 
   LoadingOverlay,
-  Alert
+  Alert,
+  NavigationHeader
 } from '@/app/components/ui';
 import { 
   AttendanceList, 
@@ -44,25 +46,25 @@ const ServiceAttendancePage: React.FC = () => {
     loading: bulkUpdating 
   } = useApiCall(api.attendance.bulkUpdateStatus);
 
-  useEffect(() => {
-    loadAttendanceData();
-  }, []);
-
-  const loadAttendanceData = async () => {
+  const loadAttendanceData = useCallback(async () => {
     try {
-      const response = await fetchAttendance(EventType.SERVICE);
-      if (response.success) {
+      const response = await fetchAttendance(EventType.SERVICE) as { success: boolean; data?: AttendanceRecord[] };
+      if (response.success && response.data) {
         setAttendanceRecords(response.data);
       }
     } catch (error) {
       console.error('Failed to load attendance data:', error);
       setAlert({ type: 'error', message: 'Failed to load attendance data' });
     }
-  };
+  }, [fetchAttendance]);
+
+  useEffect(() => {
+    loadAttendanceData();
+  }, [loadAttendanceData]);
 
   const handleStatusUpdate = async (id: string, status: AttendanceStatus) => {
     try {
-      const response = await updateAttendanceStatus(id, status);
+      const response = await updateAttendanceStatus(id, status) as ApiResponse;
       if (response.success) {
         setAttendanceRecords(prev => 
           prev.map(record => 
@@ -79,7 +81,7 @@ const ServiceAttendancePage: React.FC = () => {
 
   const handleNotesUpdate = async (id: string, notes: string) => {
     try {
-      const response = await updateAttendanceNotes(id, notes);
+      const response = await updateAttendanceNotes(id, notes) as ApiResponse;
       if (response.success) {
         setAttendanceRecords(prev => 
           prev.map(record => 
@@ -96,7 +98,7 @@ const ServiceAttendancePage: React.FC = () => {
 
   const handleBulkStatusUpdate = async (ids: string[], status: AttendanceStatus) => {
     try {
-      const response = await bulkUpdateStatus(ids, status);
+      const response = await bulkUpdateStatus(ids, status) as ApiResponse;
       if (response.success) {
         setAttendanceRecords(prev => 
           prev.map(record => 
@@ -134,9 +136,14 @@ const ServiceAttendancePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <NavigationHeader
         title="Service Attendance"
         subtitle="Manage attendance for regular services"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/admin/dashboard' },
+          { label: 'Attendance', href: '/admin/attendance' },
+          { label: 'Service Attendance', current: true },
+        ]}
       >
         <Button
           variant="primary"
@@ -145,7 +152,7 @@ const ServiceAttendancePage: React.FC = () => {
         >
           Refresh
         </Button>
-      </PageHeader>
+      </NavigationHeader>
 
       {alert && (
         <Alert
@@ -244,6 +251,8 @@ const ServiceAttendancePage: React.FC = () => {
             attendances={filteredRecords}
             onStatusUpdate={handleStatusUpdate}
             onNotesUpdate={handleNotesUpdate}
+            updatingStatus={updatingStatus}
+            updatingNotes={updatingNotes}
           />
         )}
       </div>
@@ -254,6 +263,7 @@ const ServiceAttendancePage: React.FC = () => {
         onBulkStatusUpdate={handleBulkStatusUpdate}
         onClearSelection={handleClearSelection}
         eventType={EventType.SERVICE}
+        bulkUpdating={bulkUpdating}
       />
     </div>
   );

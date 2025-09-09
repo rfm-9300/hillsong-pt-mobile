@@ -12,6 +12,7 @@ interface StatusUpdateInterfaceProps {
   onClearSelection: () => void;
   eventType?: EventType;
   className?: string;
+  bulkUpdating?: boolean;
 }
 
 const StatusUpdateInterface: React.FC<StatusUpdateInterfaceProps> = ({
@@ -20,10 +21,11 @@ const StatusUpdateInterface: React.FC<StatusUpdateInterfaceProps> = ({
   onClearSelection,
   eventType = EventType.EVENT,
   className,
+  bulkUpdating = false,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<AttendanceStatus>(AttendanceStatus.CHECKED_IN);
-  const [isUpdating, setIsUpdating] = useState(false);
+
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -37,15 +39,12 @@ const StatusUpdateInterface: React.FC<StatusUpdateInterfaceProps> = ({
   const handleBulkUpdate = async () => {
     if (selectedIds.length === 0) return;
 
-    setIsUpdating(true);
     try {
       await onBulkStatusUpdate(selectedIds, selectedStatus);
       handleCloseModal();
       onClearSelection();
     } catch (error) {
       console.error('Failed to update attendance status:', error);
-    } finally {
-      setIsUpdating(false);
     }
   };
 
@@ -139,7 +138,7 @@ const StatusUpdateInterface: React.FC<StatusUpdateInterfaceProps> = ({
                   currentStatus={selectedStatus}
                   onStatusChange={setSelectedStatus}
                   eventType={eventType}
-                  disabled={isUpdating}
+                  disabled={bulkUpdating}
                 />
               </div>
             </Card>
@@ -156,7 +155,7 @@ const StatusUpdateInterface: React.FC<StatusUpdateInterfaceProps> = ({
                 </h3>
                 <div className="mt-2 text-sm text-yellow-700">
                   <p>
-                    This will change the status of all selected records to "{getStatusLabel(selectedStatus)}". 
+                    This will change the status of all selected records to &quot;{getStatusLabel(selectedStatus)}&quot;. 
                     This action cannot be undone.
                   </p>
                 </div>
@@ -168,17 +167,17 @@ const StatusUpdateInterface: React.FC<StatusUpdateInterfaceProps> = ({
             <Button
               variant="ghost"
               onClick={handleCloseModal}
-              disabled={isUpdating}
+              disabled={bulkUpdating}
             >
               Cancel
             </Button>
             <Button
               variant="primary"
               onClick={handleBulkUpdate}
-              loading={isUpdating}
-              disabled={isUpdating}
+              loading={bulkUpdating}
+              disabled={bulkUpdating}
             >
-              {isUpdating ? 'Updating...' : `Update ${selectedIds.length} Record${selectedIds.length !== 1 ? 's' : ''}`}
+              {bulkUpdating ? 'Updating...' : `Update ${selectedIds.length} Record${selectedIds.length !== 1 ? 's' : ''}`}
             </Button>
           </div>
         </div>

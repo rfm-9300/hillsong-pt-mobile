@@ -17,3 +17,7 @@ export { default as UserAvatar } from './UserAvatar';
 export { default as RoleBadge } from './RoleBadge';
 export { default as VerificationBadge } from './VerificationBadge';
 export { default as GlobalLoadingIndicator, CompactGlobalLoadingIndicator, DetailedGlobalLoadingIndicator } from './GlobalLoadingIndicator';
+export { default as Breadcrumb } from './Breadcrumb';
+export { default as NavigationHeader } from './NavigationHeader';
+export { default as ResponsiveGrid, PostsGrid, EventsGrid, UsersGrid, DashboardGrid } from './ResponsiveGrid';
+export { default as AnimatedList, AnimatedGrid, AnimatedStack, AnimatedRow } from './AnimatedList';

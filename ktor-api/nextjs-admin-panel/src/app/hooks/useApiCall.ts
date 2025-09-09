@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { enhancedApiService, ApiCallOptions } from '@/lib/enhancedApiService';
-import { loadingStateService, subscribeToLoading } from '@/lib/loadingStateService';
+import { subscribeToLoading } from '@/lib/loadingStateService';
 import { errorHandlingService } from '@/lib/errorHandlingService';
 import { useErrorContext } from '@/app/context/ErrorContext';
 
@@ -139,10 +139,11 @@ export function useEnhancedApiCall<T, TArgs extends unknown[] = []>(
 
   // Auto-execute on dependency changes
   useEffect(() => {
-    if (autoExecute && dependencies.length > 0) {
-      execute();
+    if (autoExecute && dependencies && dependencies.length > 0) {
+      execute(...([] as unknown as TArgs));
     }
-  }, dependencies);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoExecute, execute, ...(dependencies || [])]);
 
   return {
     ...state,

@@ -5,7 +5,7 @@ import { User } from '@/lib/types';
 import { getUserDisplayName, isUserAdmin } from '@/lib/userUtils';
 import UserCard from './UserCard';
 import { Input } from './forms';
-import { EmptyState, LoadingOverlay, Alert } from './ui';
+import { EmptyState, LoadingOverlay, Alert, AnimatedGrid } from './ui';
 
 interface UsersListProps {
   users: User[];
@@ -13,7 +13,6 @@ interface UsersListProps {
   error?: string | null;
   onEdit?: (user: User) => void;
   onDelete?: (user: User) => void;
-  onRetry?: () => void;
 }
 
 type RoleFilter = 'all' | 'admin' | 'user';
@@ -24,8 +23,7 @@ export default function UsersList({
   loading = false, 
   error, 
   onEdit, 
-  onDelete,
-  onRetry 
+  onDelete
 }: UsersListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
@@ -70,8 +68,8 @@ export default function UsersList({
   return (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6 animate-in fade-in" style={{ animationDuration: '300ms' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Search Input */}
           <div>
             <Input
@@ -134,7 +132,7 @@ export default function UsersList({
       {!loading && (
         <>
           {filteredUsers.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatedGrid cols="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredUsers.map((user) => (
                 <UserCard
                   key={user.id}
@@ -143,7 +141,7 @@ export default function UsersList({
                   onDelete={onDelete}
                 />
               ))}
-            </div>
+            </AnimatedGrid>
           ) : (
             <EmptyState
               title={searchQuery || roleFilter !== 'all' || verificationFilter !== 'all' 

@@ -1,15 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AttendanceRecord, AttendanceStatus, EventType } from '@/lib/types';
+
+type ApiResponse<T = unknown> = { success: boolean; data?: T };
 import { 
-  PageHeader, 
   Card, 
   Button, 
   EmptyState, 
   LoadingOverlay,
   Alert,
-  StatCard
+  StatCard,
+  NavigationHeader
 } from '@/app/components/ui';
 import { useApiCall } from '@/app/hooks';
 import { api } from '@/lib/api';
@@ -24,7 +26,7 @@ interface AttendanceStats {
   recentActivity: AttendanceRecord[];
 }
 
-const AttendancePage: React.FC = () => {
+const AttendanceOverviewPage: React.FC = () => {
   const [stats, setStats] = useState<AttendanceStats | null>(null);
   const [recentActivity, setRecentActivity] = useState<AttendanceRecord[]>([]);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -39,29 +41,29 @@ const AttendancePage: React.FC = () => {
     loading: loadingActivity 
   } = useApiCall(api.attendance.getRecent);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [statsResponse, activityResponse] = await Promise.all([
-        fetchStats(),
-        fetchRecentActivity(10)
+        fetchStats() as Promise<ApiResponse<AttendanceStats>>,
+        fetchRecentActivity(10) as Promise<ApiResponse<AttendanceRecord[]>>
       ]);
 
-      if (statsResponse && statsResponse.success) {
+      if (statsResponse && statsResponse.success && statsResponse.data) {
         setStats(statsResponse.data);
       }
 
-      if (activityResponse && activityResponse.success) {
+      if (activityResponse && activityResponse.success && activityResponse.data) {
         setRecentActivity(activityResponse.data);
       }
     } catch (error) {
       console.error('Failed to load attendance data:', error);
       setAlert({ type: 'error', message: 'Failed to load attendance data' });
     }
-  };
+  }, [fetchStats, fetchRecentActivity]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const formatTimestamp = (timestamp: string) => {
     return new Date(timestamp).toLocaleString();
@@ -128,9 +130,13 @@ const AttendancePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <NavigationHeader
         title="Attendance Management"
         subtitle="Overview of attendance tracking across all events and services"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/admin/dashboard' },
+          { label: 'Attendance', current: true },
+        ]}
       >
         <Button
           variant="primary"
@@ -139,7 +145,7 @@ const AttendancePage: React.FC = () => {
         >
           Refresh
         </Button>
-      </PageHeader>
+      </NavigationHeader>
 
       {alert && (
         <Alert
@@ -303,3 +309,5 @@ const AttendancePage: React.FC = () => {
     </div>
   );
 };
+
+export default AttendanceOverviewPage;

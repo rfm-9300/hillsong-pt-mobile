@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { PageHeader, Button, Alert, LoadingOverlay } from '@/app/components/ui';
+import { PageHeader, Button, Alert, LoadingOverlay, NavigationHeader } from '@/app/components/ui';
 import { FormContainer, Input, Textarea, ImageUpload } from '@/app/components/forms';
 import { api, ENDPOINTS } from '@/lib/api';
 import { Event } from '@/lib/types';
@@ -147,9 +147,17 @@ export default function EditEventPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader 
-        title="Edit Event" 
-        subtitle="Update event information"
+      <NavigationHeader
+        title="Edit Event"
+        subtitle={formData.title ? `Editing: ${formData.title}` : 'Update event information'}
+        showBackButton={true}
+        backButtonText="Back to Events"
+        backButtonHref="/admin/events"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/admin/dashboard' },
+          { label: 'Events', href: '/admin/events' },
+          { label: 'Edit Event', current: true },
+        ]}
       />
       
       {alert && (

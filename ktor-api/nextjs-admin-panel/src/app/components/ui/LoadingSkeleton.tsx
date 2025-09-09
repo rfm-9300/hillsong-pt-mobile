@@ -9,6 +9,7 @@ interface LoadingSkeletonProps {
   width?: string | number;
   height?: string | number;
   lines?: number;
+  style?: React.CSSProperties;
 }
 
 const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
@@ -17,8 +18,9 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
   width,
   height,
   lines = 1,
+  style,
 }) => {
-  const baseClasses = 'animate-pulse bg-gray-200';
+  const baseClasses = 'skeleton-shimmer bg-gray-200';
   
   const variantClasses = {
     text: 'rounded',
@@ -26,9 +28,9 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
     rectangular: 'rounded',
   };
 
-  const style: React.CSSProperties = {};
-  if (width) style.width = typeof width === 'number' ? `${width}px` : width;
-  if (height) style.height = typeof height === 'number' ? `${height}px` : height;
+  const computedStyle: React.CSSProperties = { ...style };
+  if (width) computedStyle.width = typeof width === 'number' ? `${width}px` : width;
+  if (height) computedStyle.height = typeof height === 'number' ? `${height}px` : height;
 
   if (variant === 'text' && lines > 1) {
     return (
@@ -42,7 +44,7 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
               index === lines - 1 ? 'w-3/4' : 'w-full',
               'h-4 mb-2 last:mb-0'
             )}
-            style={style}
+            style={computedStyle}
           />
         ))}
       </div>
@@ -56,7 +58,7 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
         variantClasses[variant],
         className
       )}
-      style={style}
+      style={computedStyle}
     />
   );
 };

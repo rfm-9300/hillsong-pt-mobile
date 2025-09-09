@@ -171,6 +171,16 @@ export interface AttendanceListProps {
   attendances: AttendanceRecord[];
   onStatusUpdate: (id: string, status: AttendanceStatus) => void;
   onNotesUpdate: (id: string, notes: string) => void;
+  updatingStatus?: boolean;
+  updatingNotes?: boolean;
+}
+
+export interface StatusUpdateInterfaceProps {
+  selectedIds: string[];
+  onBulkStatusUpdate: (ids: string[], status: AttendanceStatus) => void;
+  onClearSelection: () => void;
+  eventType: EventType;
+  bulkUpdating?: boolean;
 }
 
 // Error Handling

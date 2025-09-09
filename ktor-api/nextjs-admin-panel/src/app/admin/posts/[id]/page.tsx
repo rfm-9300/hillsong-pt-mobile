@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { api, ENDPOINTS } from '@/lib/api';
 import { Post } from '@/lib/types';
 import { FormContainer, Input, Textarea, ImageUpload } from '@/app/components/forms';
-import { Button, Alert, LoadingOverlay } from '@/app/components/ui';
+import { Button, Alert, LoadingOverlay, NavigationHeader } from '@/app/components/ui';
 
 export default function EditPostPage() {
   const router = useRouter();
@@ -128,22 +128,20 @@ export default function EditPostPage() {
 
   return (
     <div className="p-8 w-full max-w-3xl mx-auto">
-      <div className="mb-8">
-        <button 
-          onClick={handleCancel}
-          className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Back to Posts
-        </button>
-      </div>
+      <NavigationHeader
+        title="Edit Post"
+        subtitle={post ? `Editing: ${post.title}` : 'Loading post...'}
+        showBackButton={true}
+        backButtonText="Back to Posts"
+        backButtonHref="/admin/posts"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/admin/dashboard' },
+          { label: 'Posts', href: '/admin/posts' },
+          { label: 'Edit Post', current: true },
+        ]}
+      />
 
       <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Edit Post</h1>
-        </div>
 
         {alert && (
           <Alert

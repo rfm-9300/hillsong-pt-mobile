@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, ENDPOINTS } from '@/lib/api';
 import { Post } from '@/lib/types';
-import { PageHeader, Button, Alert, DeleteConfirmationModal } from '@/app/components/ui';
+import { Button, Alert, DeleteConfirmationModal, NavigationHeader } from '@/app/components/ui';
 import PostsList from '@/app/components/PostsList';
 
 export default function PostsPage() {
@@ -92,10 +92,14 @@ export default function PostsPage() {
   };
 
   return (
-    <div className="p-8">
-      <PageHeader
+    <div className="space-y-6">
+      <NavigationHeader
         title="Manage Posts"
         subtitle="Create, edit, and manage your blog posts"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/admin/dashboard' },
+          { label: 'Posts', current: true },
+        ]}
       >
         <Button
           onClick={handleCreatePost}
@@ -106,7 +110,7 @@ export default function PostsPage() {
           </svg>
           Create Post
         </Button>
-      </PageHeader>
+      </NavigationHeader>
 
       {alert && (
         <Alert

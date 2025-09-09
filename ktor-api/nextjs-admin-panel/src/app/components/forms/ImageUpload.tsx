@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
+import Image from 'next/image';
 import { ImageUploadProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { formatFileSize } from '@/lib/utils';
@@ -122,11 +123,15 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
         {preview ? (
           <div className="text-center">
-            <img
-              src={preview}
-              alt="Preview"
-              className="mx-auto h-32 w-32 object-cover rounded-lg mb-4"
-            />
+            <div className="relative mx-auto h-32 w-32 mb-4">
+              <Image
+                src={preview}
+                alt="Preview"
+                fill
+                className="object-cover rounded-lg"
+                sizes="128px"
+              />
+            </div>
             <div className="flex justify-center space-x-2">
               <button
                 type="button"

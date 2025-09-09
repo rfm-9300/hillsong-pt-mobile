@@ -14,6 +14,8 @@ import {
   DashboardSkeleton,
   Card,
   RetryButton,
+
+  AnimatedRow,
 } from '../../components/ui';
 
 interface DashboardData extends Record<string, unknown> {
@@ -106,11 +108,13 @@ export default function DashboardPage() {
 
   return (
     <ErrorBoundary>
-      <div className="p-4 space-y-6">
-        <PageHeader
-          title="Admin Dashboard"
-          subtitle="Welcome back! Here's what's happening with your community."
-        />
+      <div className="p-4 sm:p-6 space-y-6 page-transition">
+        <div className="animate-in fade-in" style={{ animationDuration: '300ms' }}>
+          <PageHeader
+            title="Admin Dashboard"
+            subtitle="Welcome back! Here's what's happening with your community."
+          />
+        </div>
 
         {/* Global Error Handling with Retry */}
         {globalError && (
@@ -125,7 +129,7 @@ export default function DashboardPage() {
                 </p>
               </div>
               <RetryButton
-                onRetry={executeAll}
+                onRetry={() => { executeAll(); }}
                 variant="danger"
                 size="sm"
                 className="ml-4"
@@ -137,7 +141,7 @@ export default function DashboardPage() {
         )}
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <AnimatedRow className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6" spacing="">
           <StatCard
             title="Total Posts"
             value={stats.posts.count}
@@ -192,14 +196,17 @@ export default function DashboardPage() {
               </svg>
             }
           />
-        </div>
+        </AnimatedRow>
 
         {/* Quick Actions and Recent Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <QuickActions />
+          <div className="animate-in fade-in slide-in-from-left" style={{ animationDelay: '400ms', animationDuration: '400ms' }}>
+            <QuickActions />
+          </div>
           
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">System Status</h3>
+          <div className="animate-in fade-in slide-in-from-right" style={{ animationDelay: '500ms', animationDuration: '400ms' }}>
+            <Card className="p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">System Status</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">API Status</span>
@@ -264,6 +271,7 @@ export default function DashboardPage() {
               )}
             </div>
           </Card>
+          </div>
         </div>
       </div>
     </ErrorBoundary>

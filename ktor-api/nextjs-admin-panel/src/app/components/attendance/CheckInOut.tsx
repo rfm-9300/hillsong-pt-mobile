@@ -13,7 +13,7 @@ interface CheckInOutProps {
   disabled?: boolean;
 }
 
-const CheckInOut: React.FC<CheckInOutProps> = ({
+export const CheckInOut: React.FC<CheckInOutProps> = ({
   currentStatus,
   onStatusChange,
   eventType,

@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AttendanceRecord, AttendanceStatus, EventType } from '@/lib/types';
+
+type ApiResponse<T = unknown> = { success: boolean; data?: T };
 import { 
-  PageHeader, 
   Card, 
   Button, 
   EmptyState, 
   LoadingOverlay,
-  Alert
+  Alert,
+  NavigationHeader
 } from '@/app/components/ui';
 import { 
   AttendanceList, 
@@ -44,25 +46,25 @@ const KidsServiceAttendancePage: React.FC = () => {
     loading: bulkUpdating 
   } = useApiCall(api.attendance.bulkUpdateStatus);
 
-  useEffect(() => {
-    loadAttendanceData();
-  }, []);
-
-  const loadAttendanceData = async () => {
+  const loadAttendanceData = useCallback(async () => {
     try {
-      const response = await fetchAttendance(EventType.KIDS_SERVICE);
-      if (response.success) {
+      const response = await fetchAttendance(EventType.KIDS_SERVICE) as { success: boolean; data?: AttendanceRecord[] };
+      if (response.success && response.data) {
         setAttendanceRecords(response.data);
       }
     } catch (error) {
       console.error('Failed to load attendance data:', error);
       setAlert({ type: 'error', message: 'Failed to load attendance data' });
     }
-  };
+  }, [fetchAttendance]);
+
+  useEffect(() => {
+    loadAttendanceData();
+  }, [loadAttendanceData]);
 
   const handleStatusUpdate = async (id: string, status: AttendanceStatus) => {
     try {
-      const response = await updateAttendanceStatus(id, status);
+      const response = await updateAttendanceStatus(id, status) as ApiResponse;
       if (response.success) {
         setAttendanceRecords(prev => 
           prev.map(record => 
@@ -79,7 +81,7 @@ const KidsServiceAttendancePage: React.FC = () => {
 
   const handleNotesUpdate = async (id: string, notes: string) => {
     try {
-      const response = await updateAttendanceNotes(id, notes);
+      const response = await updateAttendanceNotes(id, notes) as ApiResponse;
       if (response.success) {
         setAttendanceRecords(prev => 
           prev.map(record => 
@@ -96,7 +98,7 @@ const KidsServiceAttendancePage: React.FC = () => {
 
   const handleBulkStatusUpdate = async (ids: string[], status: AttendanceStatus) => {
     try {
-      const response = await bulkUpdateStatus(ids, status);
+      const response = await bulkUpdateStatus(ids, status) as ApiResponse;
       if (response.success) {
         setAttendanceRecords(prev => 
           prev.map(record => 
@@ -134,9 +136,14 @@ const KidsServiceAttendancePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <NavigationHeader
         title="Kids Service Attendance"
         subtitle="Manage attendance for children's programs with child-specific features"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/admin/dashboard' },
+          { label: 'Attendance', href: '/admin/attendance' },
+          { label: 'Kids Service Attendance', current: true },
+        ]}
       >
         <Button
           variant="primary"
@@ -145,7 +152,7 @@ const KidsServiceAttendancePage: React.FC = () => {
         >
           Refresh
         </Button>
-      </PageHeader>
+      </NavigationHeader>
 
       {alert && (
         <Alert
@@ -200,8 +207,8 @@ const KidsServiceAttendancePage: React.FC = () => {
               Kids Service Attendance
             </h3>
             <p className="mt-1 text-sm text-blue-700">
-              This page tracks attendance for children's programs. Status labels are adapted for child care:
-              "Arrived" for check-in, "Picked Up" for check-out, "Absent" for no-show, and "Emergency" for urgent situations.
+              This page tracks attendance for children&apos;s programs. Status labels are adapted for child care:
+              &quot;Arrived&quot; for check-in, &quot;Picked Up&quot; for check-out, &quot;Absent&quot; for no-show, and &quot;Emergency&quot; for urgent situations.
             </p>
           </div>
         </div>
@@ -262,6 +269,8 @@ const KidsServiceAttendancePage: React.FC = () => {
             attendances={filteredRecords}
             onStatusUpdate={handleStatusUpdate}
             onNotesUpdate={handleNotesUpdate}
+            updatingStatus={updatingStatus}
+            updatingNotes={updatingNotes}
           />
         )}
       </div>
@@ -272,6 +281,7 @@ const KidsServiceAttendancePage: React.FC = () => {
         onBulkStatusUpdate={handleBulkStatusUpdate}
         onClearSelection={handleClearSelection}
         eventType={EventType.KIDS_SERVICE}
+        bulkUpdating={bulkUpdating}
       />
     </div>
   );
