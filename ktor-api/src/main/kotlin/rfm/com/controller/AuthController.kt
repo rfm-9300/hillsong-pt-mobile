@@ -14,7 +14,6 @@ import rfm.com.service.UserService
  */
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = ["*"], maxAge = 3600)
 class AuthController(
     private val userService: UserService
 ) {

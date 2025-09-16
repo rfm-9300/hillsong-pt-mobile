@@ -11,11 +11,12 @@ class WebConfig(
 ) : WebMvcConfigurer {
     
     override fun addCorsMappings(registry: CorsRegistry) {
-        registry.addMapping("/api/**")
-            .allowedOriginPatterns("*")
+        registry.addMapping("/**")
+            .allowedOriginPatterns("*")  // Allow all origins for development
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("*")
-            .allowCredentials(true)
+            .allowCredentials(false)  // Must be false when using wildcard origins
+            .maxAge(3600) // Cache preflight for 1 hour
     }
     
     override fun addInterceptors(registry: InterceptorRegistry) {
