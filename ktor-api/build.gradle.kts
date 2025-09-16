@@ -1,23 +1,36 @@
-val ktor_version: String by project
-val kotlin_version: String by project
-val logback_version: String by project
-val postgres_version: String by project
-val h2_version: String by project
-val exposed_version: String by project
-val commons_codec_version: String by project
-val koinVersion: String by project
-val jakarta_mail_version = "2.0.1"
-
 plugins {
-    kotlin("jvm") version "2.0.20"
-    id("io.ktor.plugin") version "3.0.3"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0"
-    id("com.google.cloud.tools.jib") version "3.2.1"
+    kotlin("jvm") version "1.9.22"
+    kotlin("plugin.spring") version "1.9.22"
+    kotlin("plugin.jpa") version "1.9.22"
+    id("org.springframework.boot") version "3.2.2"
+    id("io.spring.dependency-management") version "1.1.4"
+    id("com.google.cloud.tools.jib") version "3.4.0"
 }
 
 
-group = "example.com"
+group = "rfm.com"
 version = file("version.txt").readText().trim()
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+}
+
+kotlin {
+    jvmToolchain(17)
+}
+
+sourceSets {
+    main {
+        kotlin {
+            exclude("**/data/**")
+            exclude("**/di/**")
+            exclude("**/plugins/**")
+            exclude("**/routes/**")
+            exclude("**/useCases/**")
+            exclude("**/services/AttendanceService.kt")
+        }
+    }
+}
 
 val incrementVersion by tasks.registering {
     doLast {
@@ -43,88 +56,67 @@ tasks.named("jib") {
     dependsOn(incrementVersion)
 }
 
-application {
-
-    mainClass.set("io.ktor.server.netty.EngineMain")
-
-    val isDevelopment: Boolean = project.ext.has("development")
-    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=true")
-}
-
 repositories {
     mavenCentral()
-    maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
 }
-ktor {
-    fatJar {
-        archiveFileName.set("rfm.ktor-server.jar")
+
+jib {
+    from {
+        image = "openjdk:17-jdk-alpine"
     }
-    docker {
-        jreVersion.set(JavaVersion.VERSION_19)
-    }
-    jib {
-        from {
-            image = "openjdk:19-jdk-alpine"
-        }
-        to {
-            image = "rfm9300/ktor-central"
-            tags = setOf("${project.version}")
-        }
+    to {
+        image = "rfm9300/spring-boot-central"
+        tags = setOf("${project.version}")
     }
 }
 
 
 dependencies {
-    // Ktor core
-    implementation("io.ktor:ktor-server-core-jvm")
-    implementation("io.ktor:ktor-server-netty-jvm")
-    implementation("io.ktor:ktor-server-config-yaml")
-    implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
-    implementation("io.ktor:ktor-server-content-negotiation-jvm")
-    implementation("commons-codec:commons-codec:$commons_codec_version")
-    implementation("io.ktor:ktor-server-auth-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-auth-jwt-jvm:$ktor_version")
-    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
-    implementation("io.ktor:ktor-server-status-pages:$ktor_version")
+    // Spring Boot Starters
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-mail")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     
-    // Ktor HTTP client engines
-    implementation("io.ktor:ktor-client-core:$ktor_version")
-    implementation("io.ktor:ktor-client-cio:$ktor_version")
+    // Kotlin Support
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     
-    // web
-    implementation("io.ktor:ktor-server-html-builder:$ktor_version")
-    implementation("io.ktor:ktor-server-sse:$ktor_version")
-    implementation("io.ktor:ktor-server-sessions:$ktor_version")
-
-    // Logging
-    implementation("ch.qos.logback:logback-classic:$logback_version")
-
+    // JWT
+    implementation("io.jsonwebtoken:jjwt-api:0.12.3")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.3")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.3")
+    
+    // Auth0 JWT (for backward compatibility with existing Ktor code)
+    implementation("com.auth0:java-jwt:4.4.0")
+    
     // Database
-    implementation("org.flywaydb:flyway-core:9.20.1")
-    implementation("org.postgresql:postgresql:$postgres_version")
-    implementation("com.h2database:h2:$h2_version")
-    // exposed
-    implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
-    implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
-    implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
-    implementation("org.jetbrains.exposed:exposed-java-time:0.30.1")
-
-
-    // dotenv
-    implementation("io.github.cdimascio:dotenv-kotlin:6.2.2") // Adjust the version if necessary
-
-    // Email
-    implementation("com.sun.mail:jakarta.mail:$jakarta_mail_version")
-    implementation("jakarta.activation:jakarta.activation-api:2.0.1")
+    implementation("org.postgresql:postgresql")
+    implementation("org.flywaydb:flyway-core")
+    runtimeOnly("com.h2database:h2")
     
-    // SSL for development
-    implementation("io.ktor:ktor-network-tls-certificates:$ktor_version")
-
-    testImplementation("io.ktor:ktor-server-test-host-jvm")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
-
-    // Koin
-    implementation("io.insert-koin:koin-ktor:$koinVersion")
-    implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
+    // OAuth2 Support
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+    
+    // Utilities
+    implementation("commons-codec:commons-codec:1.15")
+    
+    // Logging
+    implementation("net.logstash.logback:logstash-logback-encoder:7.4")
+    
+    // Koin (for backward compatibility with existing code)
+    implementation("io.insert-koin:koin-core:3.5.3")
+    
+    // Testing
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("org.testcontainers:postgresql")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("com.ninja-squad:springmockk:4.0.2")
 }
 

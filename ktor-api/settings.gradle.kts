@@ -1,1 +1,1 @@
-rootProject.name = "rfm.ktor-server"
+rootProject.name = "rfm.springboot-server"

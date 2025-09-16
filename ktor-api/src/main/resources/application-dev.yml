@@ -1,0 +1,74 @@
+spring:
+  application:
+    name: church-management-api
+  
+  datasource:
+    url: jdbc:h2:mem:devdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+    open-in-view: false
+  
+  flyway:
+    enabled: false  # Disable Flyway for H2 development
+  
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  
+  mail:
+    host: localhost
+    port: 25
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: mySecretKeyForDevelopment
+    expiration: 86400000 # 24 hours
+    issuer: http://localhost:8080
+    audience: users
+  
+  upload:
+    path: ./uploads
+  
+  email:
+    from: noreply@church.com
+    production: false
+  
+  base-url: http://localhost:8080
+  
+  verification:
+    token-expiry: 86400000 # 24 hours
+  
+  reset:
+    token-expiry: 3600000 # 1 hour
+
+logging:
+  level:
+    root: INFO
+    rfm.com: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG

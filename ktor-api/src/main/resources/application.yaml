@@ -1,40 +1,127 @@
-ktor:
+spring:
   application:
-    modules:
-      - rfm.com.ApplicationKt.module
-  deployment:
-    port: 8080
-    # SSL configuration for Facebook Authentication
-    #sslPort: 8443
-    watch:
-      - classes
-      - resources
-  development: $IS_PRODUCTION
-  #security:
-   # ssl:
-    #  keyStore: "keystore.jks"
-     # keyAlias: sampleAlias
-      #keyStorePassword: password123
-      #privateKeyPassword: password123
+    name: church-management-api
+  
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://${POSTGRES_HOST:localhost}:5432/${POSTGRES_DB:church_management_db}}
+    username: ${POSTGRES_USERNAME:rodrigomartins}
+    password: ${POSTGRES_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+    open-in-view: false
+  
+  flyway:
+    enabled: true
+    clean-disabled: false
+    schemas: public
+    default-schema: public
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:abizaria@gmail.com}
+    password: ${SMTP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:dummy}
+            client-secret: ${GOOGLE_CLIENT_SECRET:dummy}
+            scope: openid,profile,email
+          facebook:
+            client-id: ${FACEBOOK_CLIENT_ID:dummy}
+            client-secret: ${FACEBOOK_CLIENT_SECRET:dummy}
+            scope: email,public_profile
 
-storage:
-  user: $POSTGRES_USERNAME
-  password: $POSTGRES_PASSWORD
-  name: $POSTGRES_DB
-  host: $POSTGRES_HOST
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: always
 
-jwt:
-  domain: "http://0.0.0.0:8080"
-  issuer: "http://0.0.0.0:8080"
-  audience: "users"
-  realm: "ktor-backend"
-  secret: $JWT_SECRET
+app:
+  jwt:
+    secret: ${JWT_SECRET:mySecretKey}
+    expiration: 86400000 # 24 hours
+    issuer: ${JWT_ISSUER:http://localhost:8080}
+    audience: ${JWT_AUDIENCE:users}
+  
+  upload:
+    path: ${UPLOAD_PATH:./uploads}
+  
+  email:
+    from: ${SMTP_FROM:noreply@church.com}
+    production: ${IS_PRODUCTION:false}
+  
+  oauth2:
+    google:
+      client-id: ${GOOGLE_CLIENT_ID:}
+    facebook:
+      app-id: ${FACEBOOK_APP_ID:}
+      app-secret: ${FACEBOOK_APP_SECRET:}
+  
+  base-url: ${BASE_URL:http://localhost:8080}
+  
+  verification:
+    token-expiry: 86400000 # 24 hours
+  
+  reset:
+    token-expiry: 3600000 # 1 hour
 
-smtp:
-  host: smtp.gmail.com
-  port: 587
-  username: abizaria@gmail.com
-  password: $SMTP_PASSWORD
-  from: abizaria@gmail.com
-  production: $IS_PRODUCTION
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    root: INFO
+    rfm.com: DEBUG
+    rfm.com.security: INFO
+    rfm.com.controller: INFO
+    rfm.com.service: DEBUG
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.engine.jdbc.batch.internal.BatchingBatch: DEBUG
+    SECURITY: INFO
+    ACCESS: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{requestId:-}] %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{requestId:-}] %logger{36} - %msg%n"
+  file:
+    name: logs/application.log
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 30
+      total-size-cap: 3GB
