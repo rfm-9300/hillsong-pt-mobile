@@ -22,7 +22,7 @@ mobileApp/.gradle/*
 
 
 ### IntelliJ IDEA ###
-ktor-api/.idea
+springboot-api/.idea
 mobileApp/.idea
 *.iws
 *.iml
@@ -55,9 +55,9 @@ gen/
 out/
 
 # Gradle files
-ktor-api/.gradle/
-ktor-api/build/
-ktor-api/temp_env.sh
+springboot-api/.gradle/
+springboot-api/build/
+springboot-api/temp_env.sh
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -77,13 +77,13 @@ captures/
 
 # IntelliJ
 *.iml
-ktor-api/.idea/workspace.xml
-ktor-api/.idea/tasks.xml
-ktor-api/.idea/gradle.xml
-ktor-api/.idea/assetWizardSettings.xml
-ktor-api/.idea/dictionaries
-ktor-api/.idea/libraries
-ktor-api/.idea/caches
+springboot-api/.idea/workspace.xml
+springboot-api/.idea/tasks.xml
+springboot-api/.idea/gradle.xml
+springboot-api/.idea/assetWizardSettings.xml
+springboot-api/.idea/dictionaries
+springboot-api/.idea/libraries
+springboot-api/.idea/caches
 # Android Studio 3 in .gitignore file.
 .idea/caches/build_file_checksums.ser
 .idea/modules.xml
@@ -353,7 +353,7 @@ Pods/
 # !Podfile.lock
 
 
-#ktor uploads##
-ktor-api/app/files/uploads/images
-ktor-api/uploads/posts/2025-05-12_08-52.png
-ktor-api/uploads/posts/PHOTO-2025-06-21-12-43-08.jpg
+#springboot uploads##
+springboot-api/app/files/uploads/images
+springboot-api/uploads/posts/2025-05-12_08-52.png
+springboot-api/uploads/posts/PHOTO-2025-06-21-12-43-08.jpg

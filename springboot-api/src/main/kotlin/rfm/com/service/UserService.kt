@@ -51,15 +51,10 @@ class UserService(
                 )
             }
             
-            // Verify password - check if it's BCrypt format or legacy salted hash
-            val isPasswordValid = if (user.password.startsWith("$2")) {
-                // BCrypt format - use direct verification
-                passwordService.verifyPassword(authRequest.password, user.password)
-            } else {
-                // Legacy salted hash format
-                passwordService.verifySaltedHash(authRequest.password, 
-                    rfm.com.security.hashing.SaltedHash(user.password, user.salt))
-            }
+            // Verify password using BCrypt
+            logger.debug("Verifying password with BCrypt")
+            val isPasswordValid = passwordService.verifyPassword(authRequest.password, user.password)
+            logger.debug("Password verification result: $isPasswordValid")
             
             if (!isPasswordValid) {
                 logger.warn("Invalid password attempt for user: ${authRequest.email}")
@@ -123,7 +118,7 @@ class UserService(
                 return ApiResponse(success = false, message = "User with this email already exists")
             }
             
-            // Generate BCrypt hash for password (recommended approach)
+            // Generate BCrypt hash for password
             val hashedPassword = passwordService.encodePassword(signUpRequest.password)
             
             // Generate verification token
@@ -133,7 +128,7 @@ class UserService(
             val user = User(
                 email = signUpRequest.email,
                 password = hashedPassword,
-                salt = "", // Empty salt for BCrypt (BCrypt handles salting internally)
+                salt = "", // Empty salt (BCrypt handles salting internally)
                 verified = false,
                 verificationToken = verificationToken,
                 authProvider = AuthProvider.LOCAL
@@ -259,7 +254,7 @@ class UserService(
             // Update user with new password and clear reset token
             val updatedUser = user.copy(
                 password = hashedPassword,
-                salt = "", // Empty salt for BCrypt
+                salt = "", // Empty salt (BCrypt handles salting internally)
                 resetToken = null,
                 resetTokenExpiresAt = null
             )
