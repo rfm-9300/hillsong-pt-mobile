@@ -19,9 +19,9 @@ import {
 } from '../../components/ui';
 
 interface DashboardData extends Record<string, unknown> {
-  posts: { data: { postList: unknown[] } } | null;
+  posts: { data: { posts: unknown[] } } | null;
   events: { data: { events: unknown[] } } | null;
-  users: { data: { users: unknown[] } } | null;
+  users: { data: unknown[] } | null;
 }
 
 export default function DashboardPage() {
@@ -32,11 +32,9 @@ export default function DashboardPage() {
 
   // API calls configuration with enhanced error handling - memoized to prevent infinite loops
   const apiCalls = useMemo(() => ({
-    // Only call the working endpoint for now
     events: () => api.get<{ data: { events: unknown[] } }>(ENDPOINTS.EVENTS),
-    // Mock the broken endpoints to prevent errors
-    posts: () => Promise.resolve({ data: { postList: [] } }),
-    users: () => Promise.resolve({ data: { users: [] } }),
+    posts: () => api.get<{ data: { posts: unknown[] } }>(ENDPOINTS.POSTS),
+    users: () => api.get<{ data: unknown[] }>(ENDPOINTS.PROFILE_ALL),
   }), []);
 
   const {
@@ -95,9 +93,9 @@ export default function DashboardPage() {
 
   const stats = {
     posts: {
-      count: 'N/A',
-      loading: false,
-      error: 'Backend configuration needed',
+      count: data.posts?.data?.posts?.length || 0,
+      loading: loading.posts || false,
+      error: errors.posts?.message,
     },
     events: {
       count: data.events?.data?.events?.length || 0,
@@ -105,9 +103,9 @@ export default function DashboardPage() {
       error: errors.events?.message,
     },
     users: {
-      count: 'N/A',
-      loading: false,
-      error: 'Endpoint not available',
+      count: Array.isArray(data.users?.data) ? data.users.data.length : 0,
+      loading: loading.users || false,
+      error: errors.users?.message,
     },
   };
 
@@ -120,29 +118,31 @@ export default function DashboardPage() {
             subtitle="Welcome back! Here's what's happening with your community."
           />
           
-          {/* Backend Status Notice */}
-          <Card className="p-4 border-yellow-200 bg-yellow-50 mb-6">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-yellow-800">
-                  Backend Integration Status
-                </h3>
-                <div className="mt-2 text-sm text-yellow-700">
-                  <p>Some endpoints are still being configured:</p>
-                  <ul className="list-disc list-inside mt-1 space-y-1">
-                    <li>✅ Events API - Working correctly</li>
-                    <li>⚠️ Posts API - User ID authentication issue</li>
-                    <li>⚠️ Users API - Endpoint not found</li>
-                  </ul>
+          {/* Backend Status Notice - Only show if there are actual errors */}
+          {(errors.posts || errors.events || errors.users) && (
+            <Card className="p-4 border-yellow-200 bg-yellow-50 mb-6">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-yellow-800">
+                    Backend Integration Status
+                  </h3>
+                  <div className="mt-2 text-sm text-yellow-700">
+                    <p>Some endpoints are experiencing issues:</p>
+                    <ul className="list-disc list-inside mt-1 space-y-1">
+                      <li>{errors.events ? '❌' : '✅'} Events API - {errors.events ? errors.events.message : 'Working correctly'}</li>
+                      <li>{errors.posts ? '❌' : '✅'} Posts API - {errors.posts ? errors.posts.message : 'Working correctly'}</li>
+                      <li>{errors.users ? '❌' : '✅'} Users API - {errors.users ? errors.users.message : 'Working correctly'}</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          )}
         </div>
 
         {/* Global Error Handling with Retry */}

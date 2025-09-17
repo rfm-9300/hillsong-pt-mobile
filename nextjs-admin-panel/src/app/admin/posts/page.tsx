@@ -29,8 +29,8 @@ export default function PostsPage() {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const fetchedPosts = await api.get<Post[]>(ENDPOINTS.POSTS);
-      setPosts(fetchedPosts || []);
+      const response = await api.get<{ data: { posts: Post[] } }>(ENDPOINTS.POSTS);
+      setPosts(response?.data?.posts || []);
     } catch (error) {
       setAlert({
         type: 'error',

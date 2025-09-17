@@ -12,14 +12,21 @@ export interface Post {
 }
 
 export interface Event {
-  id: string;
+  id: number;
   title: string;
   description: string;
   date: string;
   location: string;
-  imageUrl?: string;
+  organizerName: string;
+  organizerId: number;
+  attendeeCount: number;
+  maxAttendees: number;
+  availableSpots: number;
+  headerImagePath?: string;
+  needsApproval: boolean;
+  isAtCapacity: boolean;
   createdAt: string;
-  updatedAt: string;
+  imageUrl?: string; // Keep for backward compatibility
 }
 
 export interface User {

@@ -19,10 +19,10 @@ export default function EventsList({ onEventDeleted }: EventsListProps) {
     try {
       setLoading(true);
       setError(null);
-      const response = await api.get<Event[]>(ENDPOINTS.EVENTS);
-      if (response) {
+      const response = await api.get<{ data: { content: Event[] } }>(ENDPOINTS.EVENTS);
+      if (response?.data?.content) {
         // Sort events by date (upcoming first, then by date)
-        const sortedEvents = response.sort((a, b) => {
+        const sortedEvents = response.data.content.sort((a, b) => {
           const dateA = new Date(a.date);
           const dateB = new Date(b.date);
           const now = new Date();

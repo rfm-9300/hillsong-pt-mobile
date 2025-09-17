@@ -31,7 +31,7 @@ export default function EventCard({ event, onDelete }: EventCardProps) {
     'from-red-500 to-orange-600',
   ];
   
-  const gradientIndex = event.id.split('').reduce((acc, char) => {
+  const gradientIndex = event.id.toString().split('').reduce((acc, char) => {
     return char.charCodeAt(0) + acc;
   }, 0) % gradients.length;
   
@@ -65,13 +65,17 @@ export default function EventCard({ event, onDelete }: EventCardProps) {
         <div className="relative overflow-hidden">
           {/* Gradient Header */}
           <div className={`h-32 bg-gradient-to-r ${gradient} relative`}>
-            {event.imageUrl && (
+            {(event.imageUrl || event.headerImagePath) && event.headerImagePath !== '' && (
               <Image
-                src={event.imageUrl}
+                src={event.imageUrl || (event.headerImagePath ? `/${event.headerImagePath}` : '')}
                 alt={event.title}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                onError={(e) => {
+                  // Hide the image if it fails to load
+                  e.currentTarget.style.display = 'none';
+                }}
               />
             )}
             

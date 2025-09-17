@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Alert, LoadingOverlay, NavigationHeader } from '@/app/components/ui';
-import { FormContainer, Input, Textarea, ImageUpload } from '@/app/components/forms';
+import { FormContainer, Input, Textarea, ImageUpload, Checkbox } from '@/app/components/forms';
 import { api, ENDPOINTS } from '@/lib/api';
 import { Event } from '@/lib/types';
 
@@ -17,6 +17,8 @@ export default function CreateEventPage() {
     description: '',
     date: '',
     location: '',
+    maxAttendees: 50,
+    needsApproval: false,
     imageFile: null as File | null
   });
   
@@ -47,6 +49,12 @@ export default function CreateEventPage() {
       newErrors.location = 'Location is required';
     }
     
+    if (formData.maxAttendees < 1) {
+      newErrors.maxAttendees = 'Max attendees must be at least 1';
+    } else if (formData.maxAttendees > 10000) {
+      newErrors.maxAttendees = 'Max attendees cannot exceed 10000';
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -63,11 +71,23 @@ export default function CreateEventPage() {
     
     try {
       const submitData = new FormData();
-      submitData.append('title', formData.title);
-      submitData.append('description', formData.description);
-      submitData.append('date', formData.date);
-      submitData.append('location', formData.location);
       
+      // Create event object as JSON
+      const eventData = {
+        title: formData.title,
+        description: formData.description,
+        date: formData.date + ':00', // Convert from datetime-local format to backend format
+        location: formData.location,
+        maxAttendees: formData.maxAttendees,
+        needsApproval: formData.needsApproval
+      };
+      
+      // Add event data as JSON blob
+      submitData.append('event', new Blob([JSON.stringify(eventData)], {
+        type: 'application/json'
+      }));
+      
+      // Add image if provided
       if (formData.imageFile) {
         submitData.append('image', formData.imageFile);
       }
@@ -160,6 +180,26 @@ export default function CreateEventPage() {
               error={errors.location}
               placeholder="Enter event location"
               required
+              disabled={loading}
+            />
+            
+            <Input
+              label="Maximum Attendees"
+              type="number"
+              value={formData.maxAttendees.toString()}
+              onChange={(value) => setFormData(prev => ({ ...prev, maxAttendees: parseInt(value) || 1 }))}
+              error={errors.maxAttendees}
+              placeholder="Enter maximum number of attendees"
+              min="1"
+              max="10000"
+              required
+              disabled={loading}
+            />
+            
+            <Checkbox
+              label="Requires approval to join"
+              checked={formData.needsApproval}
+              onChange={(checked) => setFormData(prev => ({ ...prev, needsApproval: checked }))}
               disabled={loading}
             />
             

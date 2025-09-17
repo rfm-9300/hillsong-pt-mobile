@@ -17,7 +17,7 @@ interface EventRepository : JpaRepository<Event, Long> {
     /**
      * Find event by ID with organizer eagerly loaded
      */
-    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.organizer WHERE e.id = :id")
+    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.organizer LEFT JOIN FETCH e.attendees WHERE e.id = :id")
     fun findByIdWithOrganizer(@Param("id") id: Long): Event?
     
     /**
@@ -45,7 +45,7 @@ interface EventRepository : JpaRepository<Event, Long> {
     /**
      * Find all upcoming events (events with date >= current time)
      */
-    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.organizer WHERE e.date >= :fromDate ORDER BY e.date ASC")
+    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.organizer LEFT JOIN FETCH e.attendees WHERE e.date >= :fromDate ORDER BY e.date ASC")
     fun findUpcomingEvents(@Param("fromDate") fromDate: LocalDateTime): List<Event>
     
     /**
@@ -57,25 +57,25 @@ interface EventRepository : JpaRepository<Event, Long> {
     /**
      * Find events organized by a specific user
      */
-    @Query("SELECT e FROM Event e WHERE e.organizer = :organizer ORDER BY e.date DESC")
+    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.organizer LEFT JOIN FETCH e.attendees WHERE e.organizer = :organizer ORDER BY e.date DESC")
     fun findByOrganizer(@Param("organizer") organizer: UserProfile): List<Event>
     
     /**
      * Find events organized by a specific user with pagination
      */
-    @Query("SELECT e FROM Event e WHERE e.organizer = :organizer ORDER BY e.date DESC")
+    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.organizer LEFT JOIN FETCH e.attendees WHERE e.organizer = :organizer ORDER BY e.date DESC")
     fun findByOrganizer(@Param("organizer") organizer: UserProfile, pageable: Pageable): Page<Event>
     
     /**
      * Find events that a user is attending
      */
-    @Query("SELECT e FROM Event e JOIN e.attendees a WHERE a = :user ORDER BY e.date ASC")
+    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.organizer LEFT JOIN FETCH e.attendees a WHERE a = :user ORDER BY e.date ASC")
     fun findEventsByAttendee(@Param("user") user: User): List<Event>
     
     /**
      * Find events that a user is on the waiting list for
      */
-    @Query("SELECT e FROM Event e JOIN e.waitingListUsers w WHERE w = :user ORDER BY e.date ASC")
+    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.organizer LEFT JOIN FETCH e.attendees LEFT JOIN FETCH e.waitingListUsers w WHERE w = :user ORDER BY e.date ASC")
     fun findEventsByWaitingListUser(@Param("user") user: User): List<Event>
     
     /**
@@ -87,13 +87,13 @@ interface EventRepository : JpaRepository<Event, Long> {
     /**
      * Find events by location (case-insensitive)
      */
-    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.organizer WHERE LOWER(e.location) LIKE LOWER(CONCAT('%', :location, '%')) ORDER BY e.date ASC")
+    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.organizer LEFT JOIN FETCH e.attendees WHERE LOWER(e.location) LIKE LOWER(CONCAT('%', :location, '%')) ORDER BY e.date ASC")
     fun findEventsByLocationContainingIgnoreCase(@Param("location") location: String): List<Event>
     
     /**
      * Find events by title (case-insensitive)
      */
-    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.organizer WHERE LOWER(e.title) LIKE LOWER(CONCAT('%', :title, '%')) ORDER BY e.date ASC")
+    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.organizer LEFT JOIN FETCH e.attendees WHERE LOWER(e.title) LIKE LOWER(CONCAT('%', :title, '%')) ORDER BY e.date ASC")
     fun findEventsByTitleContainingIgnoreCase(@Param("title") title: String): List<Event>
     
     /**
@@ -135,12 +135,12 @@ interface EventRepository : JpaRepository<Event, Long> {
     /**
      * Find events with pagination and sorting
      */
-    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.organizer")
+    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.organizer LEFT JOIN FETCH e.attendees")
     fun findAllWithOrganizer(pageable: Pageable): Page<Event>
     
     /**
      * Find upcoming events with pagination
      */
-    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.organizer WHERE e.date >= :fromDate")
+    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.organizer LEFT JOIN FETCH e.attendees WHERE e.date >= :fromDate")
     fun findUpcomingEventsWithPagination(@Param("fromDate") fromDate: LocalDateTime, pageable: Pageable): Page<Event>
 }

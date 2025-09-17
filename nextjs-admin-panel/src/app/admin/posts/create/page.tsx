@@ -31,9 +31,15 @@ export default function CreatePostPage() {
 
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('content', formData.content);
       
+      // Create the post JSON data as a Blob and append it as 'post' part
+      const postData = {
+        title: formData.title,
+        content: formData.content
+      };
+      formDataToSend.append('post', new Blob([JSON.stringify(postData)], { type: 'application/json' }));
+      
+      // Append image if provided
       if (image) {
         formDataToSend.append('image', image);
       }

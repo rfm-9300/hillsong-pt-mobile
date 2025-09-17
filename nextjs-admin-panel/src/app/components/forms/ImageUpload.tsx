@@ -18,7 +18,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
-  const [preview, setPreview] = useState<string | null>(value || null);
+  const [preview, setPreview] = useState<string | null>(
+    value ? (value.startsWith('http') || value.startsWith('/') ? value : `/${value}`) : null
+  );
 
   const handleFileSelect = (file: File | null) => {
     if (!file) {

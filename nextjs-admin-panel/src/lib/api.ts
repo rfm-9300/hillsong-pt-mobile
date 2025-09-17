@@ -1,64 +1,81 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
 
-// API Endpoints
+// API Endpoints - Aligned with Spring Boot backend
 export const ENDPOINTS = {
-    // Auth
+    // Auth - /api/auth/*
     LOGIN: '/auth/login',
+    SIGNUP: '/auth/signup',
+    VERIFY: '/auth/verify',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
+    GOOGLE_LOGIN: '/auth/google-login',
+    FACEBOOK_LOGIN: '/auth/facebook-login',
+    REFRESH: '/auth/refresh',
+    LOGOUT: '/auth/logout',
 
-    // Posts
+    // Posts - /api/posts/*
     POSTS: '/posts',
     POST_BY_ID: (id: string) => `/posts/${id}`,
-    POST_CREATE: '/posts/create',
-    POST_UPDATE: '/posts/update',
-    POST_DELETE: '/posts/delete',
+    POST_CREATE: '/posts',
+    POST_UPDATE: (id: string) => `/posts/${id}`,
+    POST_DELETE: (id: string) => `/posts/${id}`,
+    POST_LIKE: (id: string) => `/posts/${id}/like`,
+    POST_BY_AUTHOR: (authorId: string) => `/posts/author/${authorId}`,
+    POST_SEARCH: '/posts/search',
+    POST_COMMENTS: (id: string) => `/posts/${id}/comments`,
+    POST_COMMENT_DELETE: (commentId: string) => `/posts/comments/${commentId}`,
+    POST_STATS: '/posts/stats',
 
-    // Events
+    // Events - /api/events/*
     EVENTS: '/events',
     EVENT_BY_ID: (id: string) => `/events/${id}`,
-    EVENT_UPDATE: '/events/update',
-    EVENT_DELETE: '/events/delete',
+    EVENT_CREATE: '/events',
+    EVENT_UPDATE: (id: string) => `/events/${id}`,
+    EVENT_DELETE: (id: string) => `/events/${id}`,
+    EVENT_UPCOMING: '/events/upcoming',
+    EVENT_JOIN: (id: string) => `/events/${id}/join`,
+    EVENT_LEAVE: (id: string) => `/events/${id}/leave`,
+    EVENT_APPROVE: (eventId: string, userId: string) => `/events/${eventId}/approve/${userId}`,
+    EVENT_STATUS: (id: string) => `/events/${id}/status`,
+    EVENT_MY_EVENTS: '/events/my-events',
+    EVENT_ATTENDING: '/events/attending',
+    EVENT_WAITING_LIST: '/events/waiting-list',
+    EVENT_SEARCH: '/events/search',
 
-    // Users
-    USERS: '/users',
+    // Profile/Users - /api/profile/*
+    PROFILE: '/profile',
+    PROFILE_BY_ID: (userId: string) => `/profile/${userId}`,
+    PROFILE_UPDATE: '/profile',
+    PROFILE_IMAGE: '/profile/image',
+    PROFILE_ALL: '/profile/all',
+    PROFILE_SEARCH: '/profile/search',
+    PROFILE_ADMINS: '/profile/admins',
+    PROFILE_ADMIN_STATUS: (userId: string) => `/profile/${userId}/admin-status`,
+    PROFILE_DELETE: (userId: string) => `/profile/${userId}`,
 
-    // Kids
-    KIDS: '/kids',
-
-    // Services
-    SERVICES: '/services',
-    SERVICE_BY_ID: (id: string) => `/services/${id}`,
-    SERVICE_CREATE: '/services/create',
-    SERVICE_UPDATE: '/services/update',
-    SERVICE_DELETE: '/services/delete',
-
-    // Kids Services
-    KIDS_SERVICES: '/kids-services',
-    KIDS_SERVICE_BY_ID: (id: string) => `/kids-services/${id}`,
-
-    // Attendance
+    // Attendance - /api/attendance/*
+    ATTENDANCE_CHECK_IN: '/attendance/check-in',
+    ATTENDANCE_CHECK_OUT: '/attendance/check-out',
+    ATTENDANCE_MY: '/attendance/my-attendance',
+    ATTENDANCE_USER: (userId: string) => `/attendance/user/${userId}`,
     ATTENDANCE_EVENT: (eventId: string) => `/attendance/event/${eventId}`,
     ATTENDANCE_SERVICE: (serviceId: string) => `/attendance/service/${serviceId}`,
     ATTENDANCE_KIDS_SERVICE: (kidsServiceId: string) => `/attendance/kids-service/${kidsServiceId}`,
-    ATTENDANCE_EVENT_CURRENT: (eventId: string) => `/attendance/event/${eventId}/current`,
-    ATTENDANCE_SERVICE_CURRENT: (serviceId: string) => `/attendance/service/${serviceId}/current`,
-    ATTENDANCE_KIDS_SERVICE_CURRENT: (kidsServiceId: string) => `/attendance/kids-service/${kidsServiceId}/current`,
-    ATTENDANCE_EVENT_STATS: (eventId: string) => `/attendance/event/${eventId}/stats`,
-    ATTENDANCE_SERVICE_STATS: (serviceId: string) => `/attendance/service/${serviceId}/stats`,
-    ATTENDANCE_KIDS_SERVICE_STATS: (kidsServiceId: string) => `/attendance/kids-service/${kidsServiceId}/stats`,
-    ATTENDANCE_USER_HISTORY: (userId: string) => `/attendance/user/${userId}`,
-    ATTENDANCE_KID_HISTORY: (kidId: string) => `/attendance/kid/${kidId}`,
-    ATTENDANCE_EVENT_CHECK_IN: (eventId: string) => `/attendance/event/${eventId}/check-in`,
-    ATTENDANCE_SERVICE_CHECK_IN: (serviceId: string) => `/attendance/service/${serviceId}/check-in`,
-    ATTENDANCE_KIDS_SERVICE_CHECK_IN: (kidsServiceId: string) => `/attendance/kids-service/${kidsServiceId}/check-in`,
-    ATTENDANCE_CHECK_OUT: '/attendance/check-out',
-    ATTENDANCE_KID_CHECK_OUT: '/attendance/kid/check-out',
-    ATTENDANCE_UPDATE_STATUS: '/attendance/status',
-    ATTENDANCE_UPDATE_NOTES: '/attendance/notes',
-    ATTENDANCE_EVENT_USER_STATUS: (eventId: string, userId: string) => `/attendance/event/${eventId}/user/${userId}/status`,
-    ATTENDANCE_SERVICE_USER_STATUS: (serviceId: string, userId: string) => `/attendance/service/${serviceId}/user/${userId}/status`,
-    ATTENDANCE_KIDS_SERVICE_KID_STATUS: (kidsServiceId: string, kidId: string) => `/attendance/kids-service/${kidsServiceId}/kid/${kidId}/status`,
-    ATTENDANCE_RECENT: '/attendance/recent',
-    ATTENDANCE_FREQUENT: '/attendance/frequent'
+    ATTENDANCE_CURRENT: '/attendance/currently-checked-in',
+    ATTENDANCE_STATS: '/attendance/stats',
+    ATTENDANCE_FREQUENT: '/attendance/frequent-attendees',
+    ATTENDANCE_BULK_CHECK_IN: '/attendance/bulk-check-in',
+    ATTENDANCE_UPDATE_STATUS: (attendanceId: string) => `/attendance/${attendanceId}/status`,
+    ATTENDANCE_BY_TYPE: (type: string) => `/attendance/by-type/${type}`,
+    ATTENDANCE_BY_STATUS: (status: string) => `/attendance/by-status/${status}`,
+
+    // Files - /api/files/*
+    FILES: (subDirectory: string, fileName: string) => `/files/${subDirectory}/${fileName}`,
+    FILE_ROOT: (fileName: string) => `/files/${fileName}`,
+    FILE_INFO: (subDirectory: string, fileName: string) => `/files/${subDirectory}/${fileName}/info`,
+
+    // Health - /api/health
+    HEALTH: '/health'
 };
 
 interface RequestOptions {
@@ -208,6 +225,11 @@ export const api = {
         isFormData: true
     }),
     put: <T>(path: string, data: unknown) => client.request<T>(path, { method: 'PUT', body: data }),
+    putForm: <T>(path: string, formData: FormData) => client.request<T>(path, {
+        method: 'PUT',
+        body: formData,
+        isFormData: true
+    }),
     delete: <T>(path: string, data?: unknown) => client.request<T>(path, { method: 'DELETE', body: data }),
 
     // Attendance API functions

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { PageHeader, Button, Alert, LoadingOverlay, NavigationHeader } from '@/app/components/ui';
-import { FormContainer, Input, Textarea, ImageUpload } from '@/app/components/forms';
+import { FormContainer, Input, Textarea, ImageUpload, Checkbox } from '@/app/components/forms';
 import { api, ENDPOINTS } from '@/lib/api';
 import { Event } from '@/lib/types';
 
@@ -21,6 +21,8 @@ export default function EditEventPage() {
     description: '',
     date: '',
     location: '',
+    maxAttendees: 50,
+    needsApproval: false,
     imageFile: null as File | null,
     currentImageUrl: '' as string
   });
@@ -30,10 +32,17 @@ export default function EditEventPage() {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const event = await api.get<Event>(ENDPOINTS.EVENT_BY_ID(eventId));
-        if (event) {
+        const response = await api.get<{ data: Event }>(ENDPOINTS.EVENT_BY_ID(eventId));
+        if (response?.data) {
+          const event = response.data;
+          
           // Convert date to datetime-local format
           const eventDate = new Date(event.date);
+          
+          if (isNaN(eventDate.getTime())) {
+            throw new Error(`Invalid date format: ${event.date}`);
+          }
+          
           const localDateTime = new Date(eventDate.getTime() - eventDate.getTimezoneOffset() * 60000)
             .toISOString()
             .slice(0, 16);
@@ -43,8 +52,10 @@ export default function EditEventPage() {
             description: event.description,
             date: localDateTime,
             location: event.location,
+            maxAttendees: event.maxAttendees || 50,
+            needsApproval: event.needsApproval || false,
             imageFile: null,
-            currentImageUrl: event.imageUrl || ''
+            currentImageUrl: event.headerImagePath || ''
           });
         }
       } catch (error) {
@@ -82,6 +93,12 @@ export default function EditEventPage() {
       newErrors.location = 'Location is required';
     }
     
+    if (formData.maxAttendees < 1) {
+      newErrors.maxAttendees = 'Max attendees must be at least 1';
+    } else if (formData.maxAttendees > 10000) {
+      newErrors.maxAttendees = 'Max attendees cannot exceed 10000';
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -98,17 +115,28 @@ export default function EditEventPage() {
     
     try {
       const submitData = new FormData();
-      submitData.append('id', eventId);
-      submitData.append('title', formData.title);
-      submitData.append('description', formData.description);
-      submitData.append('date', formData.date);
-      submitData.append('location', formData.location);
       
+      // Create event object as JSON
+      const eventData = {
+        title: formData.title,
+        description: formData.description,
+        date: formData.date + ':00', // Convert from datetime-local format to backend format
+        location: formData.location,
+        maxAttendees: formData.maxAttendees,
+        needsApproval: formData.needsApproval
+      };
+      
+      // Add event data as JSON blob
+      submitData.append('event', new Blob([JSON.stringify(eventData)], {
+        type: 'application/json'
+      }));
+      
+      // Add image if provided
       if (formData.imageFile) {
         submitData.append('image', formData.imageFile);
       }
       
-      await api.postForm<Event>(ENDPOINTS.EVENT_UPDATE, submitData);
+      await api.putForm<Event>(ENDPOINTS.EVENT_UPDATE(eventId), submitData);
       
       setAlert({ type: 'success', message: 'Event updated successfully!' });
       
@@ -209,6 +237,26 @@ export default function EditEventPage() {
               error={errors.location}
               placeholder="Enter event location"
               required
+              disabled={loading}
+            />
+            
+            <Input
+              label="Maximum Attendees"
+              type="number"
+              value={formData.maxAttendees.toString()}
+              onChange={(value) => setFormData(prev => ({ ...prev, maxAttendees: parseInt(value) || 1 }))}
+              error={errors.maxAttendees}
+              placeholder="Enter maximum number of attendees"
+              min="1"
+              max="10000"
+              required
+              disabled={loading}
+            />
+            
+            <Checkbox
+              label="Requires approval to join"
+              checked={formData.needsApproval}
+              onChange={(checked) => setFormData(prev => ({ ...prev, needsApproval: checked }))}
               disabled={loading}
             />
             

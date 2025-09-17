@@ -78,8 +78,17 @@ class EventService(
      */
     suspend fun getAllEvents(pageable: Pageable): Page<EventSummaryResponse> = withContext(Dispatchers.IO) {
         logger.debug("Fetching all events with pagination")
-        eventRepository.findAllWithOrganizer(pageable)
-            .map { mapToEventSummaryResponse(it) }
+        try {
+            val events = eventRepository.findAllWithOrganizer(pageable)
+            logger.debug("Found ${events.totalElements} events")
+            events.map { event ->
+                logger.debug("Mapping event: ${event.id} - ${event.title}")
+                mapToEventSummaryResponse(event)
+            }
+        } catch (e: Exception) {
+            logger.error("Error fetching events", e)
+            throw e
+        }
     }
     
     /**
@@ -459,6 +468,7 @@ class EventService(
     }
     
     private fun mapToEventSummaryResponse(event: Event): EventSummaryResponse {
+        logger.debug("Mapping event ${event.id}: maxAttendees=${event.maxAttendees}, needsApproval=${event.needsApproval}")
         return EventSummaryResponse(
             id = event.id!!,
             title = event.title,
