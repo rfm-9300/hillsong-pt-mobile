@@ -1,5 +1,6 @@
 package rfm.com.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
@@ -17,7 +18,7 @@ class CustomUserDetailsService(
     override fun loadUserByUsername(email: String): UserDetails {
         val user = userRepository.findByEmailWithProfile(email)
             ?: throw UsernameNotFoundException("User not found with email: $email")
-        
+
         return UserPrincipal.create(user)
     }
 

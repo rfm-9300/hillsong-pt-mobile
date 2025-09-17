@@ -20,21 +20,21 @@ export const ENDPOINTS = {
 
     // Users
     USERS: '/users',
-    
+
     // Kids
     KIDS: '/kids',
-    
+
     // Services
     SERVICES: '/services',
     SERVICE_BY_ID: (id: string) => `/services/${id}`,
     SERVICE_CREATE: '/services/create',
     SERVICE_UPDATE: '/services/update',
     SERVICE_DELETE: '/services/delete',
-    
+
     // Kids Services
     KIDS_SERVICES: '/kids-services',
     KIDS_SERVICE_BY_ID: (id: string) => `/kids-services/${id}`,
-    
+
     // Attendance
     ATTENDANCE_EVENT: (eventId: string) => `/attendance/event/${eventId}`,
     ATTENDANCE_SERVICE: (serviceId: string) => `/attendance/service/${serviceId}`,
@@ -77,7 +77,9 @@ class ApiClient {
 
     private getAuthToken(): string | null {
         if (typeof window !== 'undefined') {
-            return localStorage.getItem('authToken');
+            const token = localStorage.getItem('authToken');
+            console.log('🔑 Retrieved token from localStorage:', token ? 'Token exists' : 'No token found');
+            return token;
         }
         return null;
     }
@@ -99,6 +101,9 @@ class ApiClient {
 
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
+            console.log('🔐 Adding Authorization header with Bearer token');
+        } else {
+            console.log('⚠️ No token available, making unauthenticated request');
         }
 
         const fetchOptions: RequestInit = {
@@ -111,11 +116,15 @@ class ApiClient {
         }
 
         try {
+            console.log(`🚀 API Request: ${method} ${this.baseUrl}${path}`, body ? { body } : '');
+
             const controller = new AbortController();
             const id = setTimeout(() => controller.abort(), timeout);
 
             const response = await fetch(`${this.baseUrl}${path}`, { ...fetchOptions, signal: controller.signal });
             clearTimeout(id);
+
+            console.log(`📡 API Response: ${method} ${path} - Status: ${response.status}`);
 
             if (!response.ok) {
                 let errorData: { message?: string };
@@ -124,15 +133,21 @@ class ApiClient {
                 } catch {
                     errorData = { message: response.statusText };
                 }
-                
+
                 let errorMessage = errorData.message || `HTTP error! Status: ${response.status}`;
-                
+
                 switch (response.status) {
                     case 400:
                         errorMessage = errorData.message || 'Bad request: The server could not understand the request';
                         break;
                     case 401:
                         errorMessage = 'Authentication required: Please log in again';
+                        // Only redirect if we're not already on the login page
+                        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+                            console.log('🚪 Redirecting to login due to 401 error');
+                            localStorage.removeItem('authToken');
+                            window.location.href = '/login';
+                        }
                         break;
                     case 403:
                         errorMessage = 'Access denied: You do not have permission to perform this action';
@@ -153,7 +168,7 @@ class ApiClient {
                         errorMessage = 'Server error: The server encountered an error. Please try again later';
                         break;
                 }
-                
+
                 throw new Error(errorMessage);
             }
 
@@ -167,8 +182,8 @@ class ApiClient {
                 return null;
             }
         } catch (error: unknown) {
-            console.error(`API request error: ${method} ${path}`, error);
-            
+            console.error(`🔴 API request error: ${method} ${path}`, error);
+
             if (error instanceof Error) {
                 if (error.name === 'AbortError') {
                     throw new Error('The request timed out. The server might be experiencing high load or connectivity issues.');
@@ -176,7 +191,7 @@ class ApiClient {
                     throw new Error('Network error: Unable to connect to the server. Please check your internet connection.');
                 }
             }
-            
+
             throw error;
         }
     }
@@ -198,27 +213,27 @@ export const api = {
     // Attendance API functions
     attendance: {
         getByEventType: async (eventType: string) => {
-            const endpoint = eventType === 'EVENT' ? '/attendance/events' : 
-                           eventType === 'SERVICE' ? '/attendance/services' : 
-                           '/attendance/kids-services';
+            const endpoint = eventType === 'EVENT' ? '/attendance/events' :
+                eventType === 'SERVICE' ? '/attendance/services' :
+                    '/attendance/kids-services';
             return client.request(endpoint, { method: 'GET' });
         },
         updateStatus: async (id: string, status: string) => {
-            return client.request('/attendance/status', { 
-                method: 'PUT', 
-                body: { id, status } 
+            return client.request('/attendance/status', {
+                method: 'PUT',
+                body: { id, status }
             });
         },
         updateNotes: async (id: string, notes: string) => {
-            return client.request('/attendance/notes', { 
-                method: 'PUT', 
-                body: { id, notes } 
+            return client.request('/attendance/notes', {
+                method: 'PUT',
+                body: { id, notes }
             });
         },
         bulkUpdateStatus: async (ids: string[], status: string) => {
-            return client.request('/attendance/bulk-status', { 
-                method: 'PUT', 
-                body: { ids, status } 
+            return client.request('/attendance/bulk-status', {
+                method: 'PUT',
+                body: { ids, status }
             });
         },
         getStats: async () => {

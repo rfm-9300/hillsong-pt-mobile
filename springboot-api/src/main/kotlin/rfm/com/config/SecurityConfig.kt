@@ -21,7 +21,8 @@ import rfm.com.security.jwt.JwtTokenProvider
 @EnableMethodSecurity(prePostEnabled = true)
 class SecurityConfig(
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
-    private val jwtTokenProvider: JwtTokenProvider
+    private val jwtTokenProvider: JwtTokenProvider,
+    private val customUserDetailsService: rfm.com.service.CustomUserDetailsService
 ) {
 
     @Bean
@@ -49,7 +50,7 @@ class SecurityConfig(
                     .anyRequest().authenticated()
             }
             .exceptionHandling { it.authenticationEntryPoint(jwtAuthenticationEntryPoint) }
-            .addFilterBefore(JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(JwtAuthenticationFilter(jwtTokenProvider, customUserDetailsService), UsernamePasswordAuthenticationFilter::class.java)
             .build()
     }
 }

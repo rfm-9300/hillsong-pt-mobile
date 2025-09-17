@@ -13,13 +13,11 @@ import org.springframework.web.filter.OncePerRequestFilter
 import rfm.com.service.CustomUserDetailsService
 
 class JwtAuthenticationFilter(
-    private val jwtTokenProvider: JwtTokenProvider
+    private val jwtTokenProvider: JwtTokenProvider,
+    private val customUserDetailsService: CustomUserDetailsService
 ) : OncePerRequestFilter() {
 
     private val logger = LoggerFactory.getLogger(JwtAuthenticationFilter::class.java)
-    
-    @Autowired
-    private lateinit var customUserDetailsService: CustomUserDetailsService
 
     override fun doFilterInternal(
         request: HttpServletRequest,

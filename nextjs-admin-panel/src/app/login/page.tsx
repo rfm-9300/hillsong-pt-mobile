@@ -17,14 +17,19 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await api.post<{ token: string }>(ENDPOINTS.LOGIN, { email, password });
-      if (response?.token) {
-        login(response.token);
+      const response = await api.post<{ success: boolean; data: { token: string; user: any } }>(ENDPOINTS.LOGIN, { email, password });
+      console.log('🔐 Login response:', response);
+      
+      if (response?.success && response?.data?.token) {
+        console.log('✅ Login successful, token received');
+        login(response.data.token);
         router.push('/admin/dashboard');
       } else {
+        console.log('❌ Login failed: No token in response', response);
         setError('Login failed: No token received.');
       }
     } catch (err: unknown) {
+      console.log('🔴 Login error:', err);
       setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
     }
   };

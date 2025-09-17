@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { api, ENDPOINTS } from '../../../lib/api';
@@ -28,13 +28,16 @@ export default function DashboardPage() {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
   const { showSuccess } = useErrorContext();
+  const [hasExecuted, setHasExecuted] = useState(false);
 
-  // API calls configuration with enhanced error handling
-  const apiCalls = {
-    posts: () => api.get<{ data: { postList: unknown[] } }>(ENDPOINTS.POSTS),
+  // API calls configuration with enhanced error handling - memoized to prevent infinite loops
+  const apiCalls = useMemo(() => ({
+    // Only call the working endpoint for now
     events: () => api.get<{ data: { events: unknown[] } }>(ENDPOINTS.EVENTS),
-    users: () => api.get<{ data: { users: unknown[] } }>(ENDPOINTS.USERS),
-  };
+    // Mock the broken endpoints to prevent errors
+    posts: () => Promise.resolve({ data: { postList: [] } }),
+    users: () => Promise.resolve({ data: { users: [] } }),
+  }), []);
 
   const {
     data,
@@ -50,9 +53,7 @@ export default function DashboardPage() {
     context: 'Dashboard Data Loading',
     message: 'Loading dashboard statistics...',
     showProgress: true,
-    onSuccess: () => {
-      showSuccess('Dashboard data loaded successfully');
-    },
+    showToUser: false, // Disable automatic success messages
   });
 
   useEffect(() => {
@@ -61,8 +62,12 @@ export default function DashboardPage() {
       return;
     }
 
-    executeAll();
-  }, [isAuthenticated, router, executeAll]);
+    // Only execute once when authenticated and not already executed
+    if (!hasExecuted) {
+      setHasExecuted(true);
+      executeAll();
+    }
+  }, [isAuthenticated, router, hasExecuted, executeAll]);
 
   // Show loading skeleton while data is being fetched
   if (globalLoading && !data.posts && !data.events && !data.users) {
@@ -90,9 +95,9 @@ export default function DashboardPage() {
 
   const stats = {
     posts: {
-      count: data.posts?.data?.postList?.length || 0,
-      loading: loading.posts || false,
-      error: errors.posts?.message,
+      count: 'N/A',
+      loading: false,
+      error: 'Backend configuration needed',
     },
     events: {
       count: data.events?.data?.events?.length || 0,
@@ -100,9 +105,9 @@ export default function DashboardPage() {
       error: errors.events?.message,
     },
     users: {
-      count: data.users?.data?.users?.length || 0,
-      loading: loading.users || false,
-      error: errors.users?.message,
+      count: 'N/A',
+      loading: false,
+      error: 'Endpoint not available',
     },
   };
 
@@ -114,6 +119,30 @@ export default function DashboardPage() {
             title="Admin Dashboard"
             subtitle="Welcome back! Here's what's happening with your community."
           />
+          
+          {/* Backend Status Notice */}
+          <Card className="p-4 border-yellow-200 bg-yellow-50 mb-6">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-yellow-800">
+                  Backend Integration Status
+                </h3>
+                <div className="mt-2 text-sm text-yellow-700">
+                  <p>Some endpoints are still being configured:</p>
+                  <ul className="list-disc list-inside mt-1 space-y-1">
+                    <li>✅ Events API - Working correctly</li>
+                    <li>⚠️ Posts API - User ID authentication issue</li>
+                    <li>⚠️ Users API - Endpoint not found</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </Card>
         </div>
 
         {/* Global Error Handling with Retry */}
@@ -127,6 +156,11 @@ export default function DashboardPage() {
                 <p className="text-sm text-red-700">
                   {globalError.message}
                 </p>
+                {globalError.message.includes('Authentication required') && (
+                  <p className="text-xs text-red-600 mt-2">
+                    Your session may have expired or you may not have the required permissions to access these resources.
+                  </p>
+                )}
               </div>
               <RetryButton
                 onRetry={() => { executeAll(); }}
