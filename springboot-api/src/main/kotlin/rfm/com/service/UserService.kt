@@ -51,9 +51,15 @@ class UserService(
                 )
             }
             
-            // Verify password using the existing password service
-            val isPasswordValid = passwordService.verifySaltedHash(authRequest.password, 
-                rfm.com.security.hashing.SaltedHash(user.password, user.salt))
+            // Verify password - check if it's BCrypt format or legacy salted hash
+            val isPasswordValid = if (user.password.startsWith("$2")) {
+                // BCrypt format - use direct verification
+                passwordService.verifyPassword(authRequest.password, user.password)
+            } else {
+                // Legacy salted hash format
+                passwordService.verifySaltedHash(authRequest.password, 
+                    rfm.com.security.hashing.SaltedHash(user.password, user.salt))
+            }
             
             if (!isPasswordValid) {
                 logger.warn("Invalid password attempt for user: ${authRequest.email}")
@@ -117,8 +123,8 @@ class UserService(
                 return ApiResponse(success = false, message = "User with this email already exists")
             }
             
-            // Generate salted hash for password
-            val saltedHash = passwordService.generateSaltedHash(signUpRequest.password)
+            // Generate BCrypt hash for password (recommended approach)
+            val hashedPassword = passwordService.encodePassword(signUpRequest.password)
             
             // Generate verification token
             val verificationToken = generateSecureToken()
@@ -126,8 +132,8 @@ class UserService(
             // Create user entity
             val user = User(
                 email = signUpRequest.email,
-                password = saltedHash.hash,
-                salt = saltedHash.salt,
+                password = hashedPassword,
+                salt = "", // Empty salt for BCrypt (BCrypt handles salting internally)
                 verified = false,
                 verificationToken = verificationToken,
                 authProvider = AuthProvider.LOCAL
@@ -247,13 +253,13 @@ class UserService(
                 return ApiResponse(success = false, message = "Password must be at least 8 characters long")
             }
             
-            // Generate new salted hash for password
-            val saltedHash = passwordService.generateSaltedHash(resetPasswordRequest.newPassword)
+            // Generate new BCrypt hash for password
+            val hashedPassword = passwordService.encodePassword(resetPasswordRequest.newPassword)
             
             // Update user with new password and clear reset token
             val updatedUser = user.copy(
-                password = saltedHash.hash,
-                salt = saltedHash.salt,
+                password = hashedPassword,
+                salt = "", // Empty salt for BCrypt
                 resetToken = null,
                 resetTokenExpiresAt = null
             )

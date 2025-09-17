@@ -116,7 +116,7 @@ logging:
     SECURITY: INFO
     ACCESS: INFO
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{requestId:-}] %logger{36} - %msg%n"
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%thread]){magenta} %clr(%-5level){highlight} %clr([%X{requestId:-}]){cyan} %clr(%logger{36}){blue} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{requestId:-}] %logger{36} - %msg%n"
   file:
     name: logs/application.log
