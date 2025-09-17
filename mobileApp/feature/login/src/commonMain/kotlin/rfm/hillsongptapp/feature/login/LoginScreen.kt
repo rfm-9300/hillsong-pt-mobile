@@ -31,6 +31,7 @@ fun LoginScreen(viewModel: LoginViewModel = koinViewModel(), navigator: NavHostC
     val uiState by viewModel.uiState.collectAsState()
 
     // if the user is authorized, navigate to the home screen
+    // In debug mode, don't auto-navigate - let user manually test the login flow
     LaunchedEffect(uiState.isAuthorized) {
         if (uiState.isAuthorized) {
             navigator.navigateToHome()

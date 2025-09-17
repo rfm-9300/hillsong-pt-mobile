@@ -6,6 +6,13 @@ import rfm.hillsongptapp.di.initKoin
 
 fun MainViewController() = ComposeUIViewController(
     configure = {
-        initKoin()
+        initKoin {
+            // iOS uses production API by default
+            properties(
+                mapOf(
+                    "API_BASE_URL" to "https://activehive.pt:443"
+                )
+            )
+        }
     }
 ) { RootApp() }

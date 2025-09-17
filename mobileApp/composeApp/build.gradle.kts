@@ -125,9 +125,19 @@ android {
         }
     }
     buildTypes {
+        getByName("debug") {
+            buildConfigField("String", "API_BASE_URL", "\"http://192.168.1.165:8080\"")
+            buildConfigField("String", "BUILD_TYPE", "\"debug\"")
+            isDebuggable = true
+        }
         getByName("release") {
+            buildConfigField("String", "API_BASE_URL", "\"https://activehive.pt:443\"")
+            buildConfigField("String", "BUILD_TYPE", "\"release\"")
             isMinifyEnabled = false
         }
+    }
+    buildFeatures {
+        buildConfig = true
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

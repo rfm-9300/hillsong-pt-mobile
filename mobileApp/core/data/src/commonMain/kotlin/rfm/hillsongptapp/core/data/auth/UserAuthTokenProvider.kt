@@ -1,5 +1,6 @@
 package rfm.hillsongptapp.core.data.auth
 
+import kotlinx.datetime.Clock
 import rfm.hillsongptapp.core.network.auth.AuthTokenProvider
 import rfm.hillsongptapp.core.data.repository.database.UserDao
 
@@ -26,7 +27,7 @@ class UserAuthTokenProvider(
     override suspend fun isAuthenticated(): Boolean {
         return try {
             val user = userDao.getUserById(1)
-            user?.token != null && user.expiryAt?.let { it > System.currentTimeMillis() } ?: true
+            user?.token != null && user.expiryAt?.let { it > Clock.System.now().toEpochMilliseconds() } ?: true
         } catch (e: Exception) {
             false
         }

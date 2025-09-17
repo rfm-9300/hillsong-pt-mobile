@@ -17,6 +17,7 @@ kotlin{
             implementation(libs.bundles.ktor)
             implementation(libs.room.runtime)
             implementation(libs.sqlite.bundled)
+            implementation(libs.kotlinx.datetime)
             implementation(compose.runtime)
             implementation(projects.core.network)
         }

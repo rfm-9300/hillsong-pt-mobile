@@ -22,11 +22,10 @@ val networkModule =
         // Auth Token Provider - default implementation (will be overridden by data module)
         single<AuthTokenProvider> { NoAuthTokenProvider() }
         
-        // Api
+        // Api - base URL will be provided during Koin initialization
         single {
             ApiService(
-                //baseUrl = "http://192.168.1.67:8080", // For physical device to connect to host machine
-                baseUrl = "https://activehive.pt:443",
+                baseUrl = getProperty("API_BASE_URL", "https://activehive.pt:443"),
                 httpClient = get(),
             )
         }
