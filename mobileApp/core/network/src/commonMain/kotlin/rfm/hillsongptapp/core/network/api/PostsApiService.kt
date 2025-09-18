@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.flow
 import rfm.hillsongptapp.core.network.base.BaseApiService
 import rfm.hillsongptapp.core.network.ktor.responses.ApiResponse
 import rfm.hillsongptapp.core.network.ktor.responses.Post
-import rfm.hillsongptapp.core.network.ktor.responses.PostListResponse
+import rfm.hillsongptapp.core.network.ktor.responses.PostsDataResponse
 import rfm.hillsongptapp.core.network.result.NetworkResult
 
 /**
@@ -14,7 +14,7 @@ import rfm.hillsongptapp.core.network.result.NetworkResult
  * Supports both single requests and reactive streams using Flow
  */
 interface PostsApiService {
-    suspend fun getPosts(): NetworkResult<ApiResponse<PostListResponse>>
+    suspend fun getPosts(): NetworkResult<ApiResponse<PostsDataResponse>>
     suspend fun getPost(postId: Int): NetworkResult<Post>
     suspend fun createPost(title: String, content: String, headerImagePath: String?): NetworkResult<Post>
     suspend fun updatePost(postId: Int, title: String, content: String): NetworkResult<Post>
@@ -23,7 +23,7 @@ interface PostsApiService {
     suspend fun unlikePost(postId: Int): NetworkResult<Unit>
     
     // Reactive streams for real-time updates
-    fun getPostsStream(): Flow<NetworkResult<ApiResponse<PostListResponse>>>
+    fun getPostsStream(): Flow<NetworkResult<ApiResponse<PostsDataResponse>>>
 }
 
 /**
@@ -34,7 +34,7 @@ class PostsApiServiceImpl(
     baseUrl: String
 ) : BaseApiService(httpClient, baseUrl), PostsApiService {
     
-    override suspend fun getPosts(): NetworkResult<ApiResponse<PostListResponse>> {
+    override suspend fun getPosts(): NetworkResult<ApiResponse<PostsDataResponse>> {
         return safeGet("api/posts")
     }
     
@@ -79,7 +79,7 @@ class PostsApiServiceImpl(
         return safeDelete("api/posts/$postId/like")
     }
     
-    override fun getPostsStream(): Flow<NetworkResult<ApiResponse<PostListResponse>>> = flow {
+    override fun getPostsStream(): Flow<NetworkResult<ApiResponse<PostsDataResponse>>> = flow {
         emit(NetworkResult.Loading)
         emit(getPosts())
     }

@@ -15,6 +15,7 @@ kotlin{
             implementation(libs.koin.core)
             implementation(libs.bundles.ktor)
             implementation(compose.runtime)
+            implementation(projects.util.logging)
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)

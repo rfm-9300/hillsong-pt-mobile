@@ -29,11 +29,11 @@ class ExampleAuthRepository(
             }
             .onSuccess { token ->
                 // Could save token to local storage here
-                println("Login successful, token: $token")
+                // Token saved successfully
             }
             .onError { exception ->
                 // Log error for debugging
-                println("Login failed: ${exception.message}")
+                // Login failed
             }
     }
     
@@ -49,7 +49,7 @@ class ExampleAuthRepository(
             
             when (result) {
                 is NetworkResult.Success -> {
-                    val posts = result.data.data?.postList ?: emptyList()
+                    val posts = result.data.data?.posts ?: emptyList()
                     emit(NetworkResult.Success(posts))
                 }
                 is NetworkResult.Error -> {

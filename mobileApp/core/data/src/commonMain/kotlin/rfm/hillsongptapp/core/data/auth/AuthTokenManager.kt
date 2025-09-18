@@ -10,6 +10,7 @@ import rfm.hillsongptapp.core.data.repository.database.User
 import rfm.hillsongptapp.core.data.repository.database.UserDao
 import rfm.hillsongptapp.core.network.HillsongApiClient
 import rfm.hillsongptapp.core.network.result.NetworkResult
+import rfm.hillsongptapp.logging.LoggerHelper
 
 /**
  * Manages authentication tokens with automatic refresh functionality
@@ -24,6 +25,11 @@ class AuthTokenManager(
     val authState: Flow<AuthState> = _authState.asStateFlow()
     
     private var currentUser: User? = null
+    private var isInitialized = false
+    
+    init {
+        LoggerHelper.setTag("AuthTokenManager")
+    }
     
 
     
@@ -31,25 +37,40 @@ class AuthTokenManager(
      * Initialize authentication state by checking stored tokens
      */
     suspend fun initialize() {
+        if (isInitialized) {
+            LoggerHelper.logDebug("Already initialized, skipping", "AuthTokenManager")
+            return
+        }
+        
+        LoggerHelper.logDebug("Initializing...", "AuthTokenManager")
         try {
             // Get the most recent authenticated user
             val user = userDao.getAuthenticatedUser()
+            LoggerHelper.logDebug("Found user: ${user?.email}, token present: ${user?.token != null}", "AuthTokenManager")
             
             if (user?.token != null) {
                 currentUser = user
                 
                 if (isTokenValid(user)) {
+                    LoggerHelper.logDebug("Token is valid, setting authenticated state", "AuthTokenManager")
                     _authState.value = AuthState.Authenticated(user)
                 } else if (isTokenExpiredButRefreshable(user)) {
+                    LoggerHelper.logDebug("Token expired but refreshable", "AuthTokenManager")
                     refreshTokenIfNeeded()
                 } else {
+                    LoggerHelper.logDebug("Token is invalid", "AuthTokenManager")
                     _authState.value = AuthState.Unauthenticated
                 }
             } else {
+                LoggerHelper.logDebug("No user or token found", "AuthTokenManager")
                 _authState.value = AuthState.Unauthenticated
             }
+            isInitialized = true
+            LoggerHelper.logDebug("Initialization complete, state: ${_authState.value}", "AuthTokenManager")
         } catch (e: Exception) {
+            LoggerHelper.logDebug("Initialization failed: ${e.message}", "AuthTokenManager")
             _authState.value = AuthState.Unauthenticated
+            isInitialized = true
         }
     }
     
@@ -78,14 +99,41 @@ class AuthTokenManager(
      * Get current valid token, refreshing if necessary
      */
     suspend fun getValidToken(): String? {
-        val user = currentUser ?: return null
+        LoggerHelper.logDebug("getValidToken() called on instance ${this.hashCode()}, isInitialized: $isInitialized", "AuthTokenManager")
+        
+        if (!isInitialized) {
+            LoggerHelper.logDebug("Not initialized, initializing now...", "AuthTokenManager")
+            initialize()
+        }
+        
+        // Get user from AuthState instead of currentUser field to ensure consistency
+        val authState = _authState.value
+        LoggerHelper.logDebug("Current auth state: $authState", "AuthTokenManager")
+        
+        val user = when (authState) {
+            is AuthState.Authenticated -> {
+                LoggerHelper.logDebug("User from auth state: ${authState.user.email}, token present: ${authState.user.token != null}", "AuthTokenManager")
+                authState.user
+            }
+            else -> {
+                LoggerHelper.logDebug("User not authenticated in auth state", "AuthTokenManager")
+                return null
+            }
+        }
+        
+        // Also check currentUser for debugging
+        LoggerHelper.logDebug("currentUser field: ${currentUser?.email}, same as auth state: ${currentUser?.email == user.email}", "AuthTokenManager")
         
         return if (isTokenValid(user)) {
+            LoggerHelper.logDebug("Token is valid, returning token", "AuthTokenManager")
             user.token
         } else if (isTokenExpiredButRefreshable(user)) {
+            LoggerHelper.logDebug("Token expired but refreshable, attempting refresh", "AuthTokenManager")
             refreshTokenIfNeeded()
-            currentUser?.token
+            // After refresh, get the updated user from auth state
+            (_authState.value as? AuthState.Authenticated)?.user?.token
         } else {
+            LoggerHelper.logDebug("Token is invalid and not refreshable", "AuthTokenManager")
             null
         }
     }
@@ -94,7 +142,9 @@ class AuthTokenManager(
      * Check if user is currently authenticated
      */
     fun isAuthenticated(): Boolean {
-        return _authState.value is AuthState.Authenticated
+        val isAuth = _authState.value is AuthState.Authenticated
+        LoggerHelper.logDebug("isAuthenticated() called, result: $isAuth, state: ${_authState.value}", "AuthTokenManager")
+        return isAuth
     }
     
     /**
@@ -156,13 +206,22 @@ class AuthTokenManager(
      * Check if token is still valid (not expired)
      */
     private fun isTokenValid(user: User): Boolean {
-        val token = user.token ?: return false
-        val expiryTime = user.expiryAt ?: return false
+        val token = user.token ?: run {
+            LoggerHelper.logDebug("Token is null", "AuthTokenManager")
+            return false
+        }
+        val expiryTime = user.expiryAt ?: run {
+            LoggerHelper.logDebug("No expiry time, assuming token is valid", "AuthTokenManager")
+            return true // If no expiry time is set, assume token is valid
+        }
         val currentTime = Clock.System.now().toEpochMilliseconds()
         
         // Add buffer time (5 minutes) to refresh before actual expiry
         val bufferTime = 5 * 60 * 1000L // 5 minutes in milliseconds
-        return currentTime < (expiryTime - bufferTime)
+        val isValid = currentTime < (expiryTime - bufferTime)
+        
+        LoggerHelper.logDebug("Token validation: current=$currentTime, expiry=$expiryTime, valid=$isValid", "AuthTokenManager")
+        return isValid
     }
     
     /**

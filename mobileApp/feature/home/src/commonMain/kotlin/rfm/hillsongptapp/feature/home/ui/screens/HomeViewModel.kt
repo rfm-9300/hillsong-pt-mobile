@@ -9,7 +9,7 @@ class HomeViewModel(
     private val authRepository: AuthRepository
 ): ViewModel() {
     init {
-        println("AQUIII")
+        // HomeViewModel initialized
     }
 
     fun loginUser(email: String = "rodrigomartins@msn.com", password:String = "feller123") {

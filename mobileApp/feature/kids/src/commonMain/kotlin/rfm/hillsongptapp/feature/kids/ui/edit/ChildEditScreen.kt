@@ -150,7 +150,7 @@ fun ChildEditScreen(
     uiState.error?.let { error ->
         LaunchedEffect(error) {
             // In a real app, show snackbar here
-            println("Edit Error: $error") // Temporary logging
+            // Edit error occurred
             viewModel.clearError()
         }
     }

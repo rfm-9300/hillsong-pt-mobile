@@ -12,6 +12,7 @@ import rfm.hillsongptapp.core.network.result.NetworkResult
 import rfm.hillsongptapp.core.network.util.getOrNull
 import rfm.hillsongptapp.core.network.util.onError
 import rfm.hillsongptapp.core.network.util.onSuccess
+import rfm.hillsongptapp.logging.LoggerHelper
 
 /**
  * Repository for authentication operations using the new HillsongApiClient
@@ -282,11 +283,11 @@ class AuthRepository(
         return apiClient.auth.login(apiRequest)
             .onSuccess { response ->
                 // Handle successful login (save token, update UI, etc.)
-                println("Login successful: ${response.message}")
+                LoggerHelper.logDebug("Login successful: ${response.message}", "AuthRepository")
             }
             .onError { exception ->
                 // Handle error (show error message, log, etc.)
-                println("Login failed: ${exception.message}")
+                LoggerHelper.logDebug("Login failed: ${exception.message}", "AuthRepository")
             }
             .getOrNull() // Returns the data if successful, null if error/loading
     }

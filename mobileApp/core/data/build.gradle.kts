@@ -20,6 +20,7 @@ kotlin{
             implementation(libs.kotlinx.datetime)
             implementation(compose.runtime)
             implementation(projects.core.network)
+            implementation(projects.util.logging)
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)

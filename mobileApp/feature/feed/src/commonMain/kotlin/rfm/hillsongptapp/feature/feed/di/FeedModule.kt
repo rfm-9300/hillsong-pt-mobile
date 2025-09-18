@@ -9,6 +9,7 @@ val featureFeedModule = lazyModule {
     viewModel<FeedViewModel> {
         FeedViewModel(
             postRepository = get(),
+            authRepository = get(),
         )
     }
 }

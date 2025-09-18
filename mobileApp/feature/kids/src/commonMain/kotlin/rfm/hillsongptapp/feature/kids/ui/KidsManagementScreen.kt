@@ -188,7 +188,7 @@ fun KidsManagementScreen(
     uiState.error?.let { error ->
         LaunchedEffect(error) {
             // In a real app, show snackbar here
-            println("Error: $error") // Temporary logging
+            // Error occurred
         }
     }
 }

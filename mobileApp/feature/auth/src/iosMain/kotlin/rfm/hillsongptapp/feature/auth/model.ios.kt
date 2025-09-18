@@ -21,7 +21,9 @@ actual class GoogleAuthUiProvider {
             } else {
                 GIDSignIn.sharedInstance
                     .signInWithPresentingViewController(rootViewController) { gidSignInResult, nsError ->
-                        nsError?.let { println("Error While signing: $nsError") }
+                        nsError?.let { 
+                            // Error while signing in with Google
+                        }
                         val idToken = gidSignInResult?.user?.idToken?.tokenString
                         val profile = gidSignInResult?.user?.profile
                         if (idToken != null) {

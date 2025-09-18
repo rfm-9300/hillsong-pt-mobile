@@ -100,7 +100,7 @@ fun ChildRegistrationScreen(
     uiState.error?.let { error ->
         LaunchedEffect(error) {
             // In a real app, show snackbar here
-            println("Registration Error: $error") // Temporary logging
+            // Registration error occurred
             viewModel.clearError()
         }
     }

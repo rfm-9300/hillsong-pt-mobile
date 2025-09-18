@@ -17,9 +17,6 @@ import rfm.hillsongptapp.core.network.ktor.ApiService
 
 val dataModule =
     module {
-        // Include network module
-        includes(networkModule)
-        
         // Database DAOs
         single<UserDao> {
             databaseInstance().userDao()
@@ -28,18 +25,21 @@ val dataModule =
             databaseInstance().userProfileDao()
         }
 
-        // Auth Token Manager - handles token storage and refresh
+        // Auth Token Manager - handles token storage and refresh (without apiClient dependency for now)
         single<AuthTokenManager> {
             AuthTokenManager(
                 userDao = get(),
-                apiClient = get()
+                apiClient = get() // This will be resolved after HillsongApiClient is created
             )
         }
 
-        // Auth Token Provider - override the default with real implementation
+        // Auth Token Provider - MUST be defined before HTTP client
         single<AuthTokenProvider> { 
             AuthTokenProviderImpl(authTokenManager = get()) 
-        } bind AuthTokenProvider::class
+        }
+        
+        // Now include network module AFTER AuthTokenProvider is defined
+        includes(networkModule)
 
         // Repositories
         single {
@@ -53,7 +53,7 @@ val dataModule =
 
         single {
             PostRepository(
-                api = get<ApiService>(), // Specify ApiService type explicitly
+                apiClient = get<HillsongApiClient>()
             )
         }
     }

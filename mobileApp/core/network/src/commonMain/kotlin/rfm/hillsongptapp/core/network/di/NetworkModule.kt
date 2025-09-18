@@ -18,6 +18,7 @@ import rfm.hillsongptapp.core.network.api.EventsApiService
 import rfm.hillsongptapp.core.network.api.EventsApiServiceImpl
 import rfm.hillsongptapp.core.network.api.GroupsApiService
 import rfm.hillsongptapp.core.network.api.GroupsApiServiceImpl
+import rfm.hillsongptapp.logging.LoggerHelper
 import rfm.hillsongptapp.core.network.api.PostsApiService
 import rfm.hillsongptapp.core.network.api.PostsApiServiceImpl
 import rfm.hillsongptapp.core.network.api.PrayerApiService
@@ -31,8 +32,7 @@ import rfm.hillsongptapp.core.network.provider.httpClientEngine
 
 val networkModule =
     module {
-        // Auth Token Provider - default implementation (will be overridden by data module)
-        single<AuthTokenProvider> { NoAuthTokenProvider() }
+
         
         // Base URL configuration
         single<String>(qualifier = org.koin.core.qualifier.named("baseUrl")) {
@@ -63,10 +63,22 @@ val networkModule =
 
                 // Add auth interceptor using AuthTokenProvider
                 defaultRequest {
-                    val authTokenProvider = get<AuthTokenProvider>()
-                    val token = runBlocking { authTokenProvider.getAuthToken() }
-                    token?.let {
-                        header("Authorization", "Bearer $it")
+                    try {
+                        LoggerHelper.logDebug("Adding auth header to request", "NetworkAuth")
+                        val authTokenProvider = get<AuthTokenProvider>()
+                        LoggerHelper.logDebug("Got AuthTokenProvider instance: ${authTokenProvider::class.simpleName}", "NetworkAuth")
+                        val token = runBlocking { 
+                            LoggerHelper.logDebug("Calling authTokenProvider.getAuthToken()", "NetworkAuth")
+                            authTokenProvider.getAuthToken()
+                        }
+                        LoggerHelper.logDebug("Token retrieved: ${if (token != null) "Present (${token.take(10)}...)" else "NULL"}", "NetworkAuth")
+                        token?.let {
+                            header("Authorization", "Bearer $it")
+                            LoggerHelper.logDebug("Authorization header added", "NetworkAuth")
+                        }
+                    } catch (e: Exception) {
+                        LoggerHelper.logDebug("Error adding auth header: ${e.message}", "NetworkAuth")
+                        e.printStackTrace()
                     }
                 }
             }
