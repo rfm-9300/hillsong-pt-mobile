@@ -2,7 +2,8 @@ package rfm.hillsongptapp.core.data.di
 
 import org.koin.dsl.bind
 import org.koin.dsl.module
-import rfm.hillsongptapp.core.data.auth.UserAuthTokenProvider
+import rfm.hillsongptapp.core.data.auth.AuthTokenManager
+import rfm.hillsongptapp.core.data.auth.AuthTokenProviderImpl
 import rfm.hillsongptapp.core.data.providers.databaseInstance
 import rfm.hillsongptapp.core.data.repository.PostRepository
 import rfm.hillsongptapp.core.data.repository.AuthRepository
@@ -19,7 +20,7 @@ val dataModule =
         // Include network module
         includes(networkModule)
         
-        // Db
+        // Database DAOs
         single<UserDao> {
             databaseInstance().userDao()
         }
@@ -27,17 +28,26 @@ val dataModule =
             databaseInstance().userProfileDao()
         }
 
+        // Auth Token Manager - handles token storage and refresh
+        single<AuthTokenManager> {
+            AuthTokenManager(
+                userDao = get(),
+                apiClient = get()
+            )
+        }
+
         // Auth Token Provider - override the default with real implementation
         single<AuthTokenProvider> { 
-            UserAuthTokenProvider(userDao = get()) 
+            AuthTokenProviderImpl(authTokenManager = get()) 
         } bind AuthTokenProvider::class
 
-        // Repository
+        // Repositories
         single {
             AuthRepository(
                 userDao = get<UserDao>(),
-                apiClient = get<HillsongApiClient>(),
                 userProfileDao = get<UserProfileDao>(),
+                apiClient = get<HillsongApiClient>(),
+                authTokenManager = get<AuthTokenManager>(),
             )
         }
 

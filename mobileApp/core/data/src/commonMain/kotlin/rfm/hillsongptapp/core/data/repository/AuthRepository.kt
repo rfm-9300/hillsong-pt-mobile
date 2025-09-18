@@ -4,6 +4,7 @@ import rfm.hillsongptapp.core.data.repository.database.User
 import rfm.hillsongptapp.core.data.repository.database.UserDao
 import rfm.hillsongptapp.core.data.repository.database.UserProfile
 import rfm.hillsongptapp.core.data.repository.database.UserProfileDao
+import rfm.hillsongptapp.core.data.auth.AuthTokenManager
 import rfm.hillsongptapp.core.network.HillsongApiClient
 import rfm.hillsongptapp.core.network.ktor.requests.*
 import rfm.hillsongptapp.core.network.ktor.responses.*
@@ -20,6 +21,7 @@ class AuthRepository(
     private val userDao: UserDao,
     private val userProfileDao: UserProfileDao,
     private val apiClient: HillsongApiClient,
+    private val authTokenManager: AuthTokenManager,
 ) {
     
     // Database operations for User
@@ -49,8 +51,14 @@ class AuthRepository(
         return when (val result = apiClient.auth.login(apiRequest)) {
             is NetworkResult.Success -> {
                 val response = result.data
-                if (response.success && response.data?.token != null) {
-                    // Save user data to local database if needed
+                val authData = response.data
+                if (response.success && authData != null && authData.token.isNotEmpty()) {
+                    // Save auth data using AuthTokenManager
+                    authTokenManager.saveAuthData(
+                        email = email,
+                        token = authData.token,
+                        expiryTimeMillis = null // Let AuthTokenManager set default expiry
+                    )
                     AuthResult.Success(response)
                 } else {
                     AuthResult.Error(response.message)
@@ -71,7 +79,15 @@ class AuthRepository(
         return when (val result = apiClient.auth.googleLogin(apiRequest)) {
             is NetworkResult.Success -> {
                 val response = result.data
-                if (response.success && response.data?.token != null) {
+                val authData = response.data
+                if (response.success && authData != null && authData.token.isNotEmpty()) {
+                    // Extract email from Google account or use a placeholder
+                    // You might need to get this from the Google account info
+                    authTokenManager.saveAuthData(
+                        email = "google_user@example.com", // Replace with actual email from Google
+                        token = authData.token,
+                        expiryTimeMillis = null
+                    )
                     AuthResult.Success(response)
                 } else {
                     AuthResult.Error(response.message)
@@ -203,20 +219,7 @@ class AuthRepository(
         }
     }
 
-    suspend fun logout(): AuthResult<Unit> {
-        return when (val result = apiClient.auth.logout()) {
-            is NetworkResult.Success -> {
-                // Clear local user data
-                AuthResult.Success(Unit)
-            }
-            is NetworkResult.Error -> {
-                AuthResult.NetworkError(result.exception.message ?: "Logout network error")
-            }
-            is NetworkResult.Loading -> {
-                AuthResult.Loading
-            }
-        }
-    }
+
 
     // UserProfile management
     suspend fun insertUserProfile(profile: UserProfile) {
@@ -231,6 +234,47 @@ class AuthRepository(
         userProfileDao.deleteUserProfile(profile)
     }
 
+    // Authentication state management
+    suspend fun initializeAuthState() {
+        authTokenManager.initialize()
+    }
+    
+    suspend fun isUserAuthenticated(): Boolean {
+        return authTokenManager.isAuthenticated()
+    }
+    
+    suspend fun getCurrentUser(): User? {
+        return userDao.getAuthenticatedUser()
+    }
+    
+    suspend fun logout(): AuthResult<Unit> {
+        return try {
+            // Call logout API
+            when (val result = apiClient.auth.logout()) {
+                is NetworkResult.Success -> {
+                    // Clear local auth data
+                    authTokenManager.clearAuthData()
+                    AuthResult.Success(Unit)
+                }
+                is NetworkResult.Error -> {
+                    // Even if API call fails, clear local data
+                    authTokenManager.clearAuthData()
+                    AuthResult.Success(Unit)
+                }
+                is NetworkResult.Loading -> {
+                    AuthResult.Loading
+                }
+            }
+        } catch (e: Exception) {
+            // Ensure local data is cleared even on error
+            authTokenManager.clearAuthData()
+            AuthResult.Success(Unit)
+        }
+    }
+    
+    // Get auth state flow for reactive UI updates
+    fun getAuthStateFlow() = authTokenManager.authState
+    
     // Helper methods using extension functions for cleaner code
     suspend fun loginWithExtensions(email: String, password: String): LoginResponse? {
         val apiRequest = LoginRequest(email = email, password = password)

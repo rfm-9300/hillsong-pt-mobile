@@ -12,9 +12,10 @@ import androidx.room.Upsert
 data class User(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val email: String,
-    val password: String,
     val token: String? = null,
     val expiryAt: Long? = null, // Store as epoch millis
+    val refreshToken: String? = null, // For refresh token if your API supports it
+    val lastLoginAt: Long? = null // Track last login time
 )
 
 @Dao
@@ -25,6 +26,15 @@ interface UserDao {
 
     @Query("SELECT * FROM user WHERE id = :userId")
     suspend fun getUserById(userId: Long): User?
+
+    @Query("SELECT * FROM user ORDER BY lastLoginAt DESC LIMIT 1")
+    suspend fun getCurrentUser(): User?
+
+    @Query("SELECT * FROM user WHERE token IS NOT NULL ORDER BY lastLoginAt DESC LIMIT 1")
+    suspend fun getAuthenticatedUser(): User?
+
+    @Query("DELETE FROM user")
+    suspend fun clearAllUsers()
 
     @Update
     suspend fun updateUser(user: User)

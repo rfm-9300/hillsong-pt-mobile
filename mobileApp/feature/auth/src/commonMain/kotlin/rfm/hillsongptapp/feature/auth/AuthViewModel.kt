@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import rfm.hillsongptapp.core.data.auth.AuthState
 import rfm.hillsongptapp.core.data.repository.AuthRepository
 import rfm.hillsongptapp.core.data.repository.AuthResult
 import rfm.hillsongptapp.core.data.repository.database.User
@@ -16,15 +17,39 @@ class AuthViewModel(
 ) : ViewModel() {
 
     init {
-        LoggerHelper.setTag("Login")
+        LoggerHelper.setTag("AuthViewModel")
+        initializeAuthState()
+    }
+    
+    private fun initializeAuthState() {
         viewModelScope.launch {
-            val user = authRepository.getUserById(1)
-            if (user != null) {
-                LoggerHelper.logDebug("User already exists: ${user.email}", "LoginFlow")
-                _uiState.value = _uiState.value.copy(isAuthorized = true)
-            } else {
-                LoggerHelper.logDebug("No user found, initializing empty state", "LoginFlow")
-                _uiState.value = defaultEmptyState()
+            LoggerHelper.logDebug("Initializing authentication state", "AuthInit")
+            
+            // Initialize the auth token manager
+            authRepository.initializeAuthState()
+            
+            // Observe auth state changes
+            authRepository.getAuthStateFlow().collect { authState ->
+                when (authState) {
+                    is AuthState.Loading -> {
+                        LoggerHelper.logDebug("Auth state: Loading", "AuthInit")
+                        _uiState.value = _uiState.value.copy(isLoading = true)
+                    }
+                    is AuthState.Authenticated -> {
+                        LoggerHelper.logDebug("Auth state: Authenticated for user: ${authState.user.email}", "AuthInit")
+                        _uiState.value = _uiState.value.copy(
+                            isAuthorized = true,
+                            isLoading = false
+                        )
+                    }
+                    is AuthState.Unauthenticated -> {
+                        LoggerHelper.logDebug("Auth state: Unauthenticated", "AuthInit")
+                        _uiState.value = _uiState.value.copy(
+                            isAuthorized = false,
+                            isLoading = false
+                        )
+                    }
+                }
             }
         }
     }
@@ -73,6 +98,9 @@ class AuthViewModel(
                     )
                 }
             }
+            is LoginUiEvent.LogoutClicked -> {
+                doLogout()
+            }
         }
     }
 
@@ -93,7 +121,7 @@ class AuthViewModel(
                         )
                         return@launch
                     }
-                    saveUser(username, password, token)
+                    // Token is automatically saved by AuthRepository
                     _uiState.value = _uiState.value.copy(
                         isAuthorized = true,
                         isLoading = false
@@ -119,17 +147,7 @@ class AuthViewModel(
             }
         }
     }
-    private suspend fun saveUser(username: String, password: String, token: String) {
-        LoggerHelper.logDebug("Saving user: $username", "LoginFlow")
-        val user = User(
-            email = username,
-            password = password,
-            token = token,
-            expiryAt = null
-        )
-        authRepository.insertUser(user)
-        LoggerHelper.logDebug("User saved: ${user.email}", "LoginFlow")
-    }
+
 
     private fun doSignup(
         email: String,
@@ -183,7 +201,7 @@ class AuthViewModel(
                         )
                         return@launch
                     }
-                    saveUser(googleAccount.displayName, "", token)
+                    // Token is automatically saved by AuthRepository
                     _uiState.value = _uiState.value.copy(
                         isAuthorized = true,
                         isLoading = false
@@ -203,6 +221,34 @@ class AuthViewModel(
                 }
                 is AuthResult.Loading -> {
                     // Loading state is already set above
+                }
+            }
+        }
+    }
+    
+    private fun doLogout() {
+        viewModelScope.launch {
+            LoggerHelper.logDebug("Logging out user", "LogoutFlow")
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            
+            when (val result = authRepository.logout()) {
+                is AuthResult.Success -> {
+                    LoggerHelper.logDebug("Logout successful", "LogoutFlow")
+                    _uiState.value = _uiState.value.copy(
+                        isAuthorized = false,
+                        isLoading = false
+                    )
+                }
+                is AuthResult.Error, is AuthResult.NetworkError -> {
+                    // Even if logout API fails, we still consider it successful locally
+                    LoggerHelper.logDebug("Logout completed (with API error)", "LogoutFlow")
+                    _uiState.value = _uiState.value.copy(
+                        isAuthorized = false,
+                        isLoading = false
+                    )
+                }
+                is AuthResult.Loading -> {
+                    // Keep loading state
                 }
             }
         }

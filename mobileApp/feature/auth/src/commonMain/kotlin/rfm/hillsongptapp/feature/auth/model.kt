@@ -33,6 +33,7 @@ sealed class LoginUiEvent {
     data object ToggleSignupMode : LoginUiEvent() // Event to toggle between login and signup
     data object GoogleLoginClicked : LoginUiEvent()
     data class GoogleLoginResult(val googleAccount: GoogleAccount?) : LoginUiEvent()
+    data object LogoutClicked : LoginUiEvent()
 }
 
 data class GoogleAccount(
