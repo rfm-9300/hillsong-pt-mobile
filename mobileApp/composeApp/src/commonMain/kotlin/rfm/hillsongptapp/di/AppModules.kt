@@ -5,8 +5,8 @@ import org.koin.dsl.KoinAppDeclaration
 import rfm.hillsongptapp.feature.home.di.featureHomeModule
 import rfm.hillsongptapp.core.data.di.dataModule
 import rfm.hillsongptapp.feature.feed.di.featureFeedModule
-import rfm.hillsongptapp.feature.login.di.featureLoginModule
-import rfm.hillsongptapp.feature.login.di.koinPlatformModule
+import rfm.hillsongptapp.feature.auth.di.featureLoginModule
+import rfm.hillsongptapp.feature.auth.di.koinPlatformModule
 import rfm.hillsongptapp.feature.kids.di.featureKidsModule
 
 val featureModules = listOf(

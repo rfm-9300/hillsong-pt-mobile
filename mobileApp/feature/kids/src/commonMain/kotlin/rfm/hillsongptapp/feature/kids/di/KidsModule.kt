@@ -2,7 +2,6 @@ package rfm.hillsongptapp.feature.kids.di
 
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.lazyModule
-import rfm.hillsongptapp.feature.kids.data.database.KidsDatabase
 import rfm.hillsongptapp.feature.kids.data.database.kidsDatabaseInstance
 import rfm.hillsongptapp.feature.kids.data.database.datasource.KidsLocalDataSource
 import rfm.hillsongptapp.feature.kids.data.database.datasource.KidsLocalDataSourceImpl
@@ -102,7 +101,7 @@ val featureKidsModule = lazyModule {
         KidsManagementViewModel(
             kidsRepository = get(),
             realTimeStatusManager = get(),
-            userRepository = get()
+            authRepository = get()
         )
     }
     

@@ -9,7 +9,7 @@ import rfm.hillsongptapp.core.navigation.LoginGraph
 import rfm.hillsongptapp.core.navigation.homeGraph
 import rfm.hillsongptapp.core.navigation.kidsGraph
 import rfm.hillsongptapp.core.navigation.loginGraph
-import rfm.hillsongptapp.feature.login.LoginScreen
+import rfm.hillsongptapp.feature.auth.LoginScreen
 import rfm.hillsongptapp.feature.stream.StreamScreen
 import rfm.hillsongptapp.feature.settings.SettingsScreen
 import rfm.hillsongptapp.feature.profile.ProfileScreen

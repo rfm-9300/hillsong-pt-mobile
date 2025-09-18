@@ -12,7 +12,7 @@ import org.koin.test.inject
 import rfm.hillsongptapp.feature.kids.di.featureKidsModule
 import rfm.hillsongptapp.feature.kids.domain.repository.KidsRepository
 import rfm.hillsongptapp.feature.kids.ui.KidsManagementViewModel
-import rfm.hillsongptapp.core.data.repository.UserRepository
+import rfm.hillsongptapp.core.data.repository.AuthRepository
 import rfm.hillsongptapp.core.data.repository.database.User
 import rfm.hillsongptapp.core.data.repository.database.UserProfile
 
@@ -23,7 +23,7 @@ import rfm.hillsongptapp.core.data.repository.database.UserProfile
 class KidsAppIntegrationTest : KoinTest {
     
     private val kidsRepository: KidsRepository by inject()
-    private val userRepository: UserRepository by inject()
+    private val authRepository: AuthRepository by inject()
     
     @Test
     fun `kids feature integrates with user authentication system`() = runTest {
@@ -37,7 +37,7 @@ class KidsAppIntegrationTest : KoinTest {
             assertNotNull(kidsRepository)
             
             // Test that UserRepository is properly injected
-            assertNotNull(userRepository)
+            assertNotNull(authRepository)
             
         } finally {
             stopKoin()
@@ -72,8 +72,8 @@ class KidsAppIntegrationTest : KoinTest {
             )
             
             // Insert test user
-            userRepository.insertUser(adminUser)
-            userRepository.insertUserProfile(adminProfile)
+            authRepository.insertUser(adminUser)
+            authRepository.insertUserProfile(adminProfile)
             
             // Create ViewModel and verify it loads user permissions
             val viewModel: KidsManagementViewModel by inject()
@@ -142,8 +142,8 @@ class KidsAppIntegrationTest : KoinTest {
                 isAdmin = false
             )
             
-            userRepository.insertUser(regularUser)
-            userRepository.insertUserProfile(regularProfile)
+            authRepository.insertUser(regularUser)
+            authRepository.insertUserProfile(regularProfile)
             
             // Test that regular user doesn't have staff permissions
             // This would require updating the ViewModel to use the correct user ID

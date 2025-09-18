@@ -5,9 +5,10 @@ import org.koin.dsl.module
 import rfm.hillsongptapp.core.data.auth.UserAuthTokenProvider
 import rfm.hillsongptapp.core.data.providers.databaseInstance
 import rfm.hillsongptapp.core.data.repository.PostRepository
-import rfm.hillsongptapp.core.data.repository.UserRepository
+import rfm.hillsongptapp.core.data.repository.AuthRepository
 import rfm.hillsongptapp.core.data.repository.database.UserDao
 import rfm.hillsongptapp.core.data.repository.database.UserProfileDao
+import rfm.hillsongptapp.core.network.HillsongApiClient
 import rfm.hillsongptapp.core.network.auth.AuthTokenProvider
 import rfm.hillsongptapp.core.network.di.networkModule
 import rfm.hillsongptapp.core.network.ktor.ApiService
@@ -33,9 +34,9 @@ val dataModule =
 
         // Repository
         single {
-            UserRepository(
+            AuthRepository(
                 userDao = get<UserDao>(),
-                api = get<ApiService>(), // Specify ApiService type explicitly
+                apiClient = get<HillsongApiClient>(),
                 userProfileDao = get<UserProfileDao>(),
             )
         }

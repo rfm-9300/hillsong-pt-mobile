@@ -12,7 +12,7 @@ import rfm.hillsongptapp.feature.kids.domain.repository.KidsRepository
 import rfm.hillsongptapp.feature.kids.data.network.websocket.RealTimeStatusManager
 import rfm.hillsongptapp.feature.kids.data.network.websocket.StatusNotification
 import rfm.hillsongptapp.feature.kids.data.network.websocket.ConnectionStatus
-import rfm.hillsongptapp.core.data.repository.UserRepository
+import rfm.hillsongptapp.core.data.repository.AuthRepository
 
 /**
  * ViewModel for the Kids Management screen
@@ -21,7 +21,7 @@ import rfm.hillsongptapp.core.data.repository.UserRepository
 class KidsManagementViewModel(
     private val kidsRepository: KidsRepository,
     private val realTimeStatusManager: RealTimeStatusManager,
-    private val userRepository: UserRepository
+    private val authRepository: AuthRepository
 ) : ViewModel() {
     
     private val logger = Logger.withTag("KidsManagementViewModel")
@@ -54,8 +54,8 @@ class KidsManagementViewModel(
         viewModelScope.launch {
             try {
                 // Get current user (assuming user ID 1 is the logged-in user)
-                val user = userRepository.getUserById(1)
-                val userProfile = user?.let { userRepository.getUserProfileByUserId(it.id) }
+                val user = authRepository.getUserById(1)
+                val userProfile = user?.let { authRepository.getUserProfileByUserId(it.id) }
                 
                 if (user != null && userProfile != null) {
                     currentParentId = user.id.toString()

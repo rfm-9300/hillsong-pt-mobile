@@ -32,13 +32,13 @@
             <option value="$PROJECT_DIR$/core/preview" />
             <option value="$PROJECT_DIR$/core/test" />
             <option value="$PROJECT_DIR$/feature" />
+            <option value="$PROJECT_DIR$/feature/auth" />
             <option value="$PROJECT_DIR$/feature/events" />
             <option value="$PROJECT_DIR$/feature/feed" />
             <option value="$PROJECT_DIR$/feature/giving" />
             <option value="$PROJECT_DIR$/feature/groups" />
             <option value="$PROJECT_DIR$/feature/home" />
             <option value="$PROJECT_DIR$/feature/kids" />
-            <option value="$PROJECT_DIR$/feature/login" />
             <option value="$PROJECT_DIR$/feature/ministries" />
             <option value="$PROJECT_DIR$/feature/prayer" />
             <option value="$PROJECT_DIR$/feature/profile" />

@@ -41,7 +41,7 @@ include(":core:test")
 
 include(":feature")
 include(":feature:home")
-include(":feature:login")
+include(":feature:auth")
 include(":feature:settings")
 include(":feature:stream")
 include(":feature:ministries")
