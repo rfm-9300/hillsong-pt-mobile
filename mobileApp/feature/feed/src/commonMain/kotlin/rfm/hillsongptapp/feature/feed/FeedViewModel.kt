@@ -56,7 +56,8 @@ data class FeedUiState(
  */
 class FeedViewModel(
     private val postRepository: PostRepository,
-    private val authRepository: rfm.hillsongptapp.core.data.repository.AuthRepository
+    private val authRepository: rfm.hillsongptapp.core.data.repository.AuthRepository,
+    private val baseUrl: String
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FeedUiState())
@@ -348,14 +349,14 @@ class FeedViewModel(
             title = this.title,
             content = this.content,
             imageUrl = this.headerImagePath?.let { 
-                "https://activehive.pt:443/resources/uploads/images/$it" 
+                "$baseUrl/api/files/$it" 
             },
             author = AuthorInfo(
                 id = this.author.id,
                 fullName = this.author.fullName,
                 email = this.author.email,
                 avatarUrl = this.author.imagePath?.let { 
-                    "https://activehive.pt:443/resources/uploads/images/$it" 
+                    "$baseUrl/api/files/$it" 
                 }
             ),
             likeCount = this.likeCount,

@@ -10,6 +10,7 @@ val featureFeedModule = lazyModule {
         FeedViewModel(
             postRepository = get(),
             authRepository = get(),
+            baseUrl = get(qualifier = org.koin.core.qualifier.named("baseUrl"))
         )
     }
 }

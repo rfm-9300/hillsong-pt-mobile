@@ -54,11 +54,8 @@ class AuthTokenManager(
                 if (isTokenValid(user)) {
                     LoggerHelper.logDebug("Token is valid, setting authenticated state", "AuthTokenManager")
                     _authState.value = AuthState.Authenticated(user)
-                } else if (isTokenExpiredButRefreshable(user)) {
-                    LoggerHelper.logDebug("Token expired but refreshable", "AuthTokenManager")
-                    refreshTokenIfNeeded()
                 } else {
-                    LoggerHelper.logDebug("Token is invalid", "AuthTokenManager")
+                    LoggerHelper.logDebug("Token is expired or invalid, setting unauthenticated state", "AuthTokenManager")
                     _authState.value = AuthState.Unauthenticated
                 }
             } else {
@@ -96,7 +93,8 @@ class AuthTokenManager(
     }
     
     /**
-     * Get current valid token, refreshing if necessary
+     * Get current valid token (non-blocking version)
+     * Returns null if token is expired and needs refresh
      */
     suspend fun getValidToken(): String? {
         LoggerHelper.logDebug("getValidToken() called on instance ${this.hashCode()}, isInitialized: $isInitialized", "AuthTokenManager")
@@ -127,14 +125,30 @@ class AuthTokenManager(
         return if (isTokenValid(user)) {
             LoggerHelper.logDebug("Token is valid, returning token", "AuthTokenManager")
             user.token
-        } else if (isTokenExpiredButRefreshable(user)) {
+        } else {
+            LoggerHelper.logDebug("Token is expired or invalid, returning null", "AuthTokenManager")
+            // Don't refresh here - let the app handle re-authentication
+            _authState.value = AuthState.Unauthenticated
+            null
+        }
+    }
+    
+    /**
+     * Proactively refresh token if it's about to expire
+     * This should be called from background threads or during app initialization
+     */
+    suspend fun refreshTokenIfExpired(): Boolean {
+        if (!isInitialized) {
+            initialize()
+        }
+        
+        val user = currentUser ?: return false
+        
+        return if (isTokenExpiredButRefreshable(user)) {
             LoggerHelper.logDebug("Token expired but refreshable, attempting refresh", "AuthTokenManager")
             refreshTokenIfNeeded()
-            // After refresh, get the updated user from auth state
-            (_authState.value as? AuthState.Authenticated)?.user?.token
         } else {
-            LoggerHelper.logDebug("Token is invalid and not refreshable", "AuthTokenManager")
-            null
+            true // Token is still valid or not refreshable
         }
     }
     
