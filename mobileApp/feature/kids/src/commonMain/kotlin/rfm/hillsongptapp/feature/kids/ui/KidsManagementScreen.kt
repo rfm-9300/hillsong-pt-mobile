@@ -14,15 +14,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import rfm.hillsongptapp.feature.kids.domain.model.Child
 import rfm.hillsongptapp.feature.kids.ui.components.ChildCard
-import rfm.hillsongptapp.feature.kids.ui.components.CheckInDialog
 import rfm.hillsongptapp.feature.kids.ui.components.CheckOutDialog
 import rfm.hillsongptapp.feature.kids.ui.components.ConnectionStatusIndicator
 import rfm.hillsongptapp.feature.kids.ui.components.ConnectionStatusBanner
 import rfm.hillsongptapp.feature.kids.ui.components.FloatingNotificationOverlay
 import rfm.hillsongptapp.feature.kids.data.network.websocket.ConnectionStatus
+import rfm.hillsongptapp.feature.kids.data.network.websocket.StatusNotification
 
 /**
  * Main screen for Kids Management displaying list of registered children with current status
@@ -449,5 +450,178 @@ private fun SummaryItem(
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onPrimaryContainer
         )
+    }
+}
+
+/**
+ * Pure UI content for Kids Management that doesn't depend on ViewModel
+ * This can be used for previews and testing
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun KidsManagementContent(
+    uiState: KidsManagementUiState,
+    connectionStatus: ConnectionStatus,
+    notifications: List<Any> = emptyList(), // Simplified for preview
+    onNavigateToRegistration: () -> Unit = {},
+    onNavigateToServices: () -> Unit = {},
+    onNavigateToReports: () -> Unit = {},
+    onNavigateToServicesForChild: (String) -> Unit = {},
+    onNavigateToCheckIn: (String) -> Unit = {},
+    onNavigateToCheckOut: (String) -> Unit = {},
+    onNavigateToChildEdit: (String) -> Unit = {},
+    onRefreshData: () -> Unit = {},
+    onRetryConnection: () -> Unit = {},
+    onShowCheckOutDialog: (Child) -> Unit = {},
+    onCheckOutChild: (String) -> Unit = {},
+    onHideCheckOutDialog: () -> Unit = {},
+    onDismissNotification: () -> Unit = {},
+    onClearError: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Top App Bar with connection status
+            TopAppBar(
+                title = {
+                    Column {
+                        Text(
+                            text = "Kids Management",
+                            fontWeight = FontWeight.Bold
+                        )
+                        if (uiState.showConnectionStatus) {
+                            ConnectionStatusIndicator(
+                                connectionStatus = connectionStatus,
+                                showText = true,
+                                compact = true
+                            )
+                        }
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = onNavigateToServices
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.List,
+                            contentDescription = "View Services"
+                        )
+                    }
+                    
+                    // Staff Reports - only show for staff users
+                    if (uiState.hasStaffPermissions) {
+                        IconButton(
+                            onClick = onNavigateToReports
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Staff Reports"
+                            )
+                        }
+                    }
+                    
+                    IconButton(
+                        onClick = onRefreshData
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Refresh"
+                        )
+                    }
+                }
+            )
+            
+            // Connection status banner for non-connected states
+            ConnectionStatusBanner(
+                connectionStatus = connectionStatus,
+                onDismiss = null // Don't allow dismissing for now
+            )
+            
+            // Content
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                when {
+                    uiState.isLoading -> {
+                        LoadingContent()
+                    }
+                    
+                    !uiState.hasChildren -> {
+                        EmptyContent(
+                            onRegisterClick = onNavigateToRegistration
+                        )
+                    }
+                    
+                    else -> {
+                        ChildrenListContent(
+                            uiState = uiState,
+                            connectionStatus = connectionStatus,
+                            lastUpdatedTime = "Just now", // Simplified for preview
+                            onRefresh = onRefreshData,
+                            onCheckInClick = { child -> onNavigateToCheckIn(child.id) },
+                            onCheckOutClick = onShowCheckOutDialog,
+                            onEditClick = { child -> onNavigateToChildEdit(child.id) },
+                            onRegisterClick = onNavigateToRegistration,
+                            onRetryConnection = onRetryConnection
+                        )
+                    }
+                }
+                
+                // Floating Action Button for adding new child
+                FloatingActionButton(
+                    onClick = onNavigateToRegistration,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Register New Child"
+                    )
+                }
+            }
+        }
+        
+        // Floating notification overlay (simplified for preview)
+        if (notifications.isNotEmpty()) {
+            FloatingNotificationOverlay(
+                notification = notifications.firstOrNull() as StatusNotification?,
+                onDismiss = onDismissNotification,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+        }
+    }
+    
+    // Dialogs
+    if (uiState.showCheckOutDialog && uiState.selectedChild != null) {
+        CheckOutDialog(
+            child = uiState.selectedChild!!,
+            currentService = uiState.services.find { it.id == uiState.selectedChild!!.currentServiceId },
+            onCheckOut = onCheckOutChild,
+            onDismiss = onHideCheckOutDialog
+        )
+    }
+}
+
+
+// MARK: - Preview
+
+@Preview
+@Composable
+private fun KidsManagementContentPreview() {
+    MaterialTheme {
+        Surface {
+            KidsManagementContent(
+                uiState = KidsManagementUiState(
+                    children = emptyList(),
+                    services = emptyList(),
+                    isLoading = false,
+                    hasStaffPermissions = false
+                ),
+                connectionStatus = ConnectionStatus.CONNECTED
+            )
+        }
     }
 }

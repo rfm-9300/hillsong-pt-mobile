@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import rfm.hillsongptapp.feature.kids.domain.model.Child
 import rfm.hillsongptapp.feature.kids.domain.usecase.EligibleServiceInfo
@@ -380,6 +381,115 @@ private fun NoServicesAvailable(child: Child) {
                         "• No services match the child's age requirements",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onErrorContainer
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CheckInContent(
+    uiState: CheckInUiState,
+    childId: String,
+    onNavigateBack: () -> Unit = {},
+    onCheckInSuccess: () -> Unit = {},
+    onLoadChildAndServices: (String) -> Unit = {},
+    onServiceSelected: (EligibleServiceInfo) -> Unit = {},
+    onShowCheckInConfirmation: () -> Unit = {},
+    onCheckInChild: (String?) -> Unit = {},
+    onHideCheckInConfirmation: () -> Unit = {},
+    onClearError: () -> Unit = {},
+    onClearCheckInError: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { 
+                    Text(
+                        text = if (uiState.child != null) {
+                            "Check In ${uiState.child!!.name}"
+                        } else {
+                            "Check In Child"
+                        }
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when {
+                uiState.isLoading -> {
+                    LoadingContent()
+                }
+                uiState.error != null -> {
+                    ErrorContent(
+                        error = uiState.error!!,
+                        onRetry = { onLoadChildAndServices(childId) },
+                        onDismiss = onClearError
+                    )
+                }
+                uiState.child != null -> {
+                    CheckInContent(
+                        child = uiState.child!!,
+                        eligibleServices = uiState.eligibleServices,
+                        selectedService = uiState.selectedService,
+                        onServiceSelected = onServiceSelected,
+                        onCheckInClicked = onShowCheckInConfirmation,
+                        isCheckingIn = uiState.isCheckingIn
+                    )
+                }
+                else -> {
+                    EmptyContent()
+                }
+            }
+            
+            // Dialogs
+            if (uiState.showConfirmationDialog && uiState.selectedService != null && uiState.child != null) {
+                CheckInConfirmationDialog(
+                    child = uiState.child!!,
+                    service = uiState.selectedService!!.service,
+                    onConfirm = onCheckInChild,
+                    onDismiss = onHideCheckInConfirmation,
+                    isLoading = uiState.isCheckingIn
+                )
+            }
+            
+            if (uiState.checkInError != null) {
+                CheckInErrorDialog(
+                    error = uiState.checkInError!!,
+                    onDismiss = onClearCheckInError,
+                    onRetry = { onCheckInChild(null) }
+                )
+            }
+        }
+    }
+}
+
+// MARK: - Preview
+
+@Preview
+@Composable
+private fun CheckInContentPreview() {
+    MaterialTheme {
+        Surface {
+            CheckInContent(
+                uiState = CheckInUiState(
+                    child = null,
+                    eligibleServices = emptyList(),
+                    isLoading = false,
+                    error = null
+                ),
+                childId = "preview-child"
             )
         }
     }

@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import rfm.hillsongptapp.feature.kids.domain.model.Child
 import rfm.hillsongptapp.feature.kids.ui.checkout.components.CheckOutConfirmationDialog
@@ -496,5 +497,137 @@ private fun formatTime(isoTime: String): String {
         "$displayHour:$minute $amPm"
     } catch (e: Exception) {
         isoTime
+    }
+}
+/*
+*
+ * Pure UI content for Check-Out that doesn't depend on ViewModel
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CheckOutContent(
+    uiState: CheckOutUiState,
+    childId: String,
+    onNavigateBack: () -> Unit = {},
+    onLoadChild: (String) -> Unit = {},
+    onStartCheckOutProcess: () -> Unit = {},
+    onParentVerified: () -> Unit = {},
+    onHideParentVerification: () -> Unit = {},
+    onConfirmCheckOut: () -> Unit = {},
+    onHideCheckOutConfirmation: () -> Unit = {},
+    onHideSuccessDialog: () -> Unit = {},
+    onHideErrorDialog: () -> Unit = {},
+    onRetryCheckOut: () -> Unit = {},
+    onClearError: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { 
+                    Text(
+                        text = if (uiState.child != null) {
+                            "Check Out ${uiState.child!!.name}"
+                        } else {
+                            "Check Out Child"
+                        }
+                    ) 
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when {
+                uiState.isLoading -> {
+                    LoadingContent()
+                }
+                uiState.error != null -> {
+                    ErrorContent(
+                        error = uiState.error!!,
+                        onRetry = { onLoadChild(childId) },
+                        onDismiss = onClearError
+                    )
+                }
+                uiState.child != null -> {
+                    CheckOutContent(
+                        child = uiState.child!!,
+                        currentService = uiState.currentService,
+                        eligibilityInfo = uiState.eligibilityInfo,
+                        onStartCheckOut = onStartCheckOutProcess,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                else -> {
+                    EmptyContent()
+                }
+            }
+        }
+    }
+    
+    // Dialogs
+    if (uiState.showParentVerification) {
+        ParentVerificationDialog(
+            onVerified = onParentVerified,
+            onDismiss = onHideParentVerification
+        )
+    }
+    
+    if (uiState.showCheckOutConfirmation && uiState.child != null) {
+        CheckOutConfirmationDialog(
+            child = uiState.child,
+            currentService = uiState.currentService,
+            onConfirm = onConfirmCheckOut,
+            onDismiss = onHideCheckOutConfirmation
+        )
+    }
+    
+    if (uiState.showSuccessDialog && uiState.checkOutResult != null) {
+        CheckOutSuccessDialog(
+            result = uiState.checkOutResult,
+            onDismiss = { 
+                onHideSuccessDialog()
+                onNavigateBack()
+            }
+        )
+    }
+    
+    if (uiState.showErrorDialog && uiState.checkOutError != null) {
+        CheckOutErrorDialog(
+            error = uiState.checkOutError,
+            onDismiss = onHideErrorDialog,
+            onRetry = onRetryCheckOut
+        )
+    }
+}
+
+// MARK: - Preview
+
+@Preview
+@Composable
+private fun CheckOutContentPreview() {
+    MaterialTheme {
+        Surface {
+            CheckOutContent(
+                uiState = CheckOutUiState(
+                    child = null,
+                    currentService = null,
+                    isLoading = false,
+                    error = null
+                ),
+                childId = "preview-child"
+            )
+        }
     }
 }

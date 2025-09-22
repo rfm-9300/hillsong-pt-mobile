@@ -10,14 +10,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import rfm.hillsongptapp.feature.kids.domain.model.Child
 import rfm.hillsongptapp.feature.kids.domain.model.CheckInStatus
 import rfm.hillsongptapp.feature.kids.domain.model.KidsService
 import rfm.hillsongptapp.feature.kids.ui.theme.KidsColors
-import rfm.hillsongptapp.feature.kids.ui.theme.getStatusColor
+
 
 /**
  * Card component displaying child information with status indicators and action buttons
@@ -225,3 +225,4 @@ private fun formatTime(isoTime: String): String {
         isoTime // Fallback to original string
     }
 }
+

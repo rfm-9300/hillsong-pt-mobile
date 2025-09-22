@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -364,4 +365,200 @@ private fun DatePickerDialog(
             }
         }
     )
+}/**
+
+ * Pure UI content for Child Registration that doesn't depend on ViewModel
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ChildRegistrationContent(
+    uiState: ChildRegistrationUiState,
+    onNavigateBack: (() -> Unit)? = null,
+    onRegistrationSuccess: (() -> Unit)? = null,
+    onChildNameChange: (String) -> Unit = {},
+    onDateOfBirthChange: (String) -> Unit = {},
+    onMedicalInfoChange: (String) -> Unit = {},
+    onDietaryRestrictionsChange: (String) -> Unit = {},
+    onEmergencyContactNameChange: (String) -> Unit = {},
+    onEmergencyContactPhoneChange: (String) -> Unit = {},
+    onEmergencyContactRelationshipChange: (String) -> Unit = {},
+    onShowDatePicker: () -> Unit = {},
+    onHideDatePicker: () -> Unit = {},
+    onRegisterChild: () -> Unit = {},
+    onClearError: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxSize()
+    ) {
+        // Top App Bar
+        TopAppBar(
+            title = {
+                Text(
+                    text = "Register Child",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            navigationIcon = {
+                if (onNavigateBack != null) {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
+            }
+        )
+        
+        // Form Content
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            if (uiState.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator()
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Registering child...",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            } else {
+                // Form content - simplified for preview
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = "Child Information",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    
+                    OutlinedTextField(
+                        value = uiState.childName,
+                        onValueChange = onChildNameChange,
+                        label = { Text("Child Name *") },
+                        isError = uiState.nameError != null,
+                        supportingText = uiState.nameError?.let { { Text(it) } },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    
+                    OutlinedTextField(
+                        value = uiState.dateOfBirth,
+                        onValueChange = onDateOfBirthChange,
+                        label = { Text("Date of Birth *") },
+                        placeholder = { Text("YYYY-MM-DD") },
+                        isError = uiState.dateOfBirthError != null,
+                        supportingText = {
+                            Column {
+                                uiState.dateOfBirthError?.let { Text(it) }
+                                uiState.getCalculatedAge()?.let { age ->
+                                    Text(
+                                        text = "Age: $age years",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = onShowDatePicker) {
+                                Icon(
+                                    imageVector = Icons.Default.Warning,
+                                    contentDescription = "Select Date"
+                                )
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    Button(
+                        onClick = onRegisterChild,
+                        enabled = uiState.isFormValid,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Register Child")
+                    }
+                    
+                    if (!uiState.areRequiredFieldsFilled) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Text(
+                                    text = "Required Fields",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Please fill in all required fields marked with *",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Date Picker Dialog
+    if (uiState.showDatePicker) {
+        DatePickerDialog(
+            onDateSelected = { date ->
+                onDateOfBirthChange(date)
+                onHideDatePicker()
+            },
+            onDismiss = onHideDatePicker
+        )
+    }
+}
+
+// MARK: - Preview
+
+@Preview
+@Composable
+private fun ChildRegistrationContentPreview() {
+    MaterialTheme {
+        Surface {
+            ChildRegistrationContent(
+                uiState = ChildRegistrationUiState(
+                    childName = "",
+                    dateOfBirth = "",
+                    isLoading = false
+                    // areRequiredFieldsFilled and isFormValid are computed properties
+                )
+            )
+        }
+    }
 }

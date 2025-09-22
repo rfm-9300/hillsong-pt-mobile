@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import rfm.hillsongptapp.core.navigation.KidsNav
+import rfm.hillsongptapp.feature.kids.ui.KidsManagementScreen
 
 @Composable
 fun KidsScreen(
@@ -13,28 +15,30 @@ fun KidsScreen(
     // Since kids navigation is already integrated in the main app navigation,
     // this screen should just show the kids management screen directly
     // and use the main navController for navigation
-    rfm.hillsongptapp.feature.kids.ui.KidsManagementScreen(
+    KidsManagementScreen(
         modifier = modifier,
         onNavigateToRegistration = {
-            navController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.Registration)
+            navController.navigate(KidsNav.Registration)
         },
         onNavigateToServices = {
-            navController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.Services)
+            navController.navigate(KidsNav.Services)
         },
         onNavigateToReports = {
-            navController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.Reports)
+            navController.navigate(KidsNav.Reports)
         },
         onNavigateToServicesForChild = { childId ->
-            navController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.ServicesForChild(childId))
+            navController.navigate(KidsNav.ServicesForChild(childId))
         },
         onNavigateToCheckIn = { childId ->
-            navController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.CheckIn(childId))
+            navController.navigate(KidsNav.CheckIn(childId))
         },
         onNavigateToCheckOut = { childId ->
-            navController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.CheckOut(childId))
+            navController.navigate(KidsNav.CheckOut(childId))
         },
         onNavigateToChildEdit = { childId ->
-            navController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.EditChild(childId))
+            navController.navigate(KidsNav.EditChild(childId))
         }
     )
-} 
+}
+
+ 

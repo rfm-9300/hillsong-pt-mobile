@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import rfm.hillsongptapp.feature.kids.domain.model.Child
 
@@ -528,4 +529,188 @@ private fun SuccessDialog(
             }
         }
     )
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ChildEditContent(
+    uiState: ChildEditUiState,
+    childId: String,
+    onNavigateBack: () -> Unit = {},
+    onUpdateSuccess: () -> Unit = {},
+    onInitializeWithChild: (String) -> Unit = {},
+    onChildNameChange: (String) -> Unit = {},
+    onDateOfBirthChange: (String) -> Unit = {},
+    onMedicalInfoChange: (String) -> Unit = {},
+    onDietaryRestrictionsChange: (String) -> Unit = {},
+    onEmergencyContactNameChange: (String) -> Unit = {},
+    onEmergencyContactPhoneChange: (String) -> Unit = {},
+    onEmergencyContactRelationshipChange: (String) -> Unit = {},
+    onShowDatePicker: () -> Unit = {},
+    onHideDatePicker: () -> Unit = {},
+    onUpdateChild: () -> Unit = {},
+    onShowDiscardDialog: () -> Unit = {},
+    onHideDiscardDialog: () -> Unit = {},
+    onConfirmDiscard: () -> Unit = {},
+    onHideSuccessDialog: () -> Unit = {},
+    onClearError: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxSize()
+    ) {
+        // Top App Bar
+        TopAppBar(
+            title = {
+                Text(
+                    text = if (uiState.originalChild != null) {
+                        "Edit ${uiState.originalChild!!.name}"
+                    } else {
+                        "Edit Child"
+                    },
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            navigationIcon = {
+                IconButton(
+                    onClick = {
+                        if (uiState.hasChanges) {
+                            onShowDiscardDialog()
+                        } else {
+                            onNavigateBack()
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+            },
+            actions = {
+                if (uiState.hasChanges) {
+                    IconButton(
+                        onClick = { onInitializeWithChild(childId) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Reset Changes"
+                        )
+                    }
+                }
+            }
+        )
+        
+        // Content
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            CircularProgressIndicator()
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = if (uiState.isSaving) "Saving changes..." else "Loading child information...",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+                }
+                else -> {
+                    // Form content would go here - simplified for preview
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = "Child Edit Form",
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                        
+                        if (uiState.hasChanges) {
+                            Card(
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                                )
+                            ) {
+                                Text(
+                                    text = "You have unsaved changes",
+                                    modifier = Modifier.padding(16.dp),
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
+                        
+                        Button(
+                            onClick = onUpdateChild,
+                            enabled = uiState.isFormValid && !uiState.isSaving,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Save Changes")
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Dialogs
+    if (uiState.showDatePicker) {
+        DatePickerDialog(
+            currentDate = uiState.dateOfBirth,
+            onDateSelected = { date ->
+                onDateOfBirthChange(date)
+                onHideDatePicker()
+            },
+            onDismiss = onHideDatePicker
+        )
+    }
+    
+    if (uiState.showDiscardChangesDialog) {
+        DiscardChangesDialog(
+            onConfirm = {
+                onConfirmDiscard()
+                onNavigateBack()
+            },
+            onDismiss = onHideDiscardDialog
+        )
+    }
+    
+    if (uiState.showSuccessDialog) {
+        SuccessDialog(
+            onDismiss = {
+                onHideSuccessDialog()
+                onUpdateSuccess()
+            }
+        )
+    }
+}
+
+// MARK: - Preview
+
+@Preview
+@Composable
+private fun ChildEditContentPreview() {
+    MaterialTheme {
+        Surface {
+            ChildEditContent(
+                uiState = ChildEditUiState(
+                    originalChild = null,
+                    childName = "",
+                    dateOfBirth = "",
+                    isLoading = false,
+                    // hasChanges is computed property
+                ),
+                childId = "preview-child"
+            )
+        }
+    }
 }

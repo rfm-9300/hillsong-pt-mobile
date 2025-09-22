@@ -63,6 +63,9 @@ kotlin{
             api(libs.koin.core)
             api(libs.koin.compose)
         }
+        androidMain.dependencies {
+            implementation(libs.androidx.ui.tooling)
+        }
         
         commonTest.dependencies {
 

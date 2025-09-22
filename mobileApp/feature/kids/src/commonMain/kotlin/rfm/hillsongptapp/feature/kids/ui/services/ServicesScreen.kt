@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import rfm.hillsongptapp.feature.kids.domain.model.Child
 import rfm.hillsongptapp.feature.kids.domain.model.KidsService
@@ -333,6 +334,133 @@ private fun EmptyServicesContent(
             OutlinedButton(onClick = onClearFilters) {
                 Text("Clear Filters")
             }
+        }
+    }
+}/**
+
+ * Pure UI content for Services that doesn't depend on ViewModel
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ServicesScreenContent(
+    uiState: ServicesUiState,
+    selectedChild: Child? = null,
+    onNavigateBack: () -> Unit = {},
+    onServiceSelected: (KidsService) -> Unit = {},
+    onSetSelectedChild: (Child) -> Unit = {},
+    onLoadServices: () -> Unit = {},
+    onRefreshServices: () -> Unit = {},
+    onUpdateFilters: (ServiceFilters) -> Unit = {},
+    onClearFilters: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    var showFilterDialog by remember { mutableStateOf(false) }
+    
+    Column(
+        modifier = modifier.fillMaxSize()
+    ) {
+        TopAppBar(
+            title = {
+                Text(
+                    text = if (selectedChild != null) {
+                        "Services for ${selectedChild.name}"
+                    } else {
+                        "Kids Services"
+                    },
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            navigationIcon = {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+            },
+            actions = {
+                IconButton(
+                    onClick = { showFilterDialog = true }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = "Filter services"
+                    )
+                }
+            }
+        )
+        
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            when {
+                uiState.isLoading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                
+                uiState.error != null -> {
+                    ErrorContent(
+                        error = uiState.error!!,
+                        onRetry = onLoadServices,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                
+                uiState.filteredServices.isEmpty() -> {
+                    EmptyServicesContent(
+                        hasFilters = uiState.hasActiveFilters,
+                        onClearFilters = onClearFilters,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                
+                else -> {
+                    ServicesContent(
+                        services = uiState.filteredServices,
+                        selectedChild = selectedChild,
+                        onServiceSelected = onServiceSelected,
+                        onRefresh = onRefreshServices,
+                        isRefreshing = uiState.isRefreshing,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
+        }
+    }
+    
+    // Filter Dialog
+    if (showFilterDialog) {
+        ServiceFilterDialog(
+            currentFilters = uiState.filters,
+            onFiltersChanged = { filters ->
+                onUpdateFilters(filters)
+                showFilterDialog = false
+            },
+            onDismiss = { showFilterDialog = false }
+        )
+    }
+}
+
+// MARK: - Preview
+
+@Preview
+@Composable
+private fun ServicesContentPreview() {
+    MaterialTheme {
+        Surface {
+            ServicesScreenContent(
+                uiState = ServicesUiState(
+                    services = emptyList(),
+                    filteredServices = emptyList(),
+                    filters = ServiceFilters(),
+                    isLoading = false,
+                    isRefreshing = false,
+                    error = null
+                    // hasActiveFilters is computed property
+                )
+            )
         }
     }
 }
