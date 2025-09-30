@@ -878,19 +878,23 @@ private fun rfm.hillsongptapp.core.data.model.EmergencyContact.toRequest(): Emer
 
 private fun ChildResponse.toDomain(): Child {
     return Child(
-        id = id,
-        parentId = parentId,
-        name = name,
+        id = id.toString(),
+        parentId = primaryParent.id.toString(),
+        name = fullName,
         dateOfBirth = dateOfBirth,
-        medicalInfo = medicalInfo,
-        dietaryRestrictions = dietaryRestrictions,
-        emergencyContact = emergencyContact.toDomain(),
-        status = CheckInStatus.valueOf(status),
-        currentServiceId = currentServiceId,
-        checkInTime = checkInTime,
-        checkOutTime = checkOutTime,
+        medicalInfo = medicalNotes,
+        dietaryRestrictions = allergies,
+        emergencyContact = rfm.hillsongptapp.core.data.model.EmergencyContact(
+            name = emergencyContactName ?: "",
+            phoneNumber = emergencyContactPhone ?: "",
+            relationship = "Emergency Contact"
+        ),
+        status = if (currentCheckInStatus?.isCheckedIn == true) CheckInStatus.CHECKED_IN else CheckInStatus.CHECKED_OUT,
+        currentServiceId = null, // Will be determined from check-in status
+        checkInTime = currentCheckInStatus?.checkInTime,
+        checkOutTime = null, // Not provided in current DTO
         createdAt = createdAt,
-        updatedAt = updatedAt
+        updatedAt = updatedAt ?: createdAt
     )
 }
 
@@ -904,19 +908,19 @@ private fun EmergencyContactResponse.toDomain(): rfm.hillsongptapp.core.data.mod
 
 private fun ServiceResponse.toDomain(): KidsService {
     return KidsService(
-        id = id,
+        id = id.toString(),
         name = name,
-        description = description,
+        description = "$dayOfWeek service", // Backend doesn't have description, so we create one
         minAge = minAge,
         maxAge = maxAge,
         startTime = startTime,
         endTime = endTime,
         location = location,
         maxCapacity = maxCapacity,
-        currentCapacity = currentCapacity,
-        isAcceptingCheckIns = isAcceptingCheckIns,
-        staffMembers = staffMembers,
-        createdAt = createdAt
+        currentCapacity = 0, // Backend doesn't provide current capacity in this DTO
+        isAcceptingCheckIns = isActive, // Use isActive as a proxy for accepting check-ins
+        staffMembers = listOfNotNull(leaderName), // Convert leader name to staff list
+        createdAt = "2025-09-30T00:00:00" // Backend doesn't provide createdAt, use default
     )
 }
 

@@ -429,19 +429,23 @@ private fun CheckInRecord.toEntity(): rfm.hillsongptapp.core.data.repository.dat
 
 private fun rfm.hillsongptapp.core.network.ktor.responses.ChildResponse.toDomain(): Child {
     return Child(
-        id = id,
-        parentId = parentId,
-        name = name,
+        id = id.toString(),
+        parentId = primaryParent.id.toString(),
+        name = fullName,
         dateOfBirth = dateOfBirth,
-        medicalInfo = medicalInfo,
-        dietaryRestrictions = dietaryRestrictions,
-        emergencyContact = emergencyContact.toDomain(),
-        status = rfm.hillsongptapp.core.data.model.CheckInStatus.valueOf(status),
-        currentServiceId = currentServiceId,
-        checkInTime = checkInTime,
-        checkOutTime = checkOutTime,
+        medicalInfo = medicalNotes,
+        dietaryRestrictions = allergies,
+        emergencyContact = rfm.hillsongptapp.core.data.model.EmergencyContact(
+            name = emergencyContactName ?: "",
+            phoneNumber = emergencyContactPhone ?: "",
+            relationship = "Emergency Contact"
+        ),
+        status = if (currentCheckInStatus?.isCheckedIn == true) rfm.hillsongptapp.core.data.model.CheckInStatus.CHECKED_IN else rfm.hillsongptapp.core.data.model.CheckInStatus.CHECKED_OUT,
+        currentServiceId = null,
+        checkInTime = currentCheckInStatus?.checkInTime,
+        checkOutTime = null,
         createdAt = createdAt,
-        updatedAt = updatedAt
+        updatedAt = updatedAt ?: createdAt
     )
 }
 
@@ -455,19 +459,19 @@ private fun rfm.hillsongptapp.core.network.ktor.responses.EmergencyContactRespon
 
 private fun rfm.hillsongptapp.core.network.ktor.responses.ServiceResponse.toDomain(): KidsService {
     return KidsService(
-        id = id,
+        id = id.toString(),
         name = name,
-        description = description,
+        description = "$dayOfWeek service",
         minAge = minAge,
         maxAge = maxAge,
         startTime = startTime,
         endTime = endTime,
         location = location,
         maxCapacity = maxCapacity,
-        currentCapacity = currentCapacity,
-        isAcceptingCheckIns = isAcceptingCheckIns,
-        staffMembers = staffMembers,
-        createdAt = createdAt
+        currentCapacity = 0,
+        isAcceptingCheckIns = isActive,
+        staffMembers = listOfNotNull(leaderName),
+        createdAt = "2025-09-30T00:00:00"
     )
 }
 

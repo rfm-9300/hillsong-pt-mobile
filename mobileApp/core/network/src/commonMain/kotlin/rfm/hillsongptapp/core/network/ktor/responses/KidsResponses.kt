@@ -15,36 +15,59 @@ data class EmergencyContactResponse(
 
 @Serializable
 data class ChildResponse(
-    val id: String,
-    val parentId: String,
-    val name: String,
-    val dateOfBirth: String,
-    val medicalInfo: String?,
-    val dietaryRestrictions: String?,
-    val emergencyContact: EmergencyContactResponse,
-    val status: String,
-    val currentServiceId: String?,
-    val checkInTime: String?,
-    val checkOutTime: String?,
-    val createdAt: String,
-    val updatedAt: String
+    val id: Long,
+    val firstName: String,
+    val lastName: String,
+    val fullName: String,
+    val dateOfBirth: String, // Will be serialized as string from LocalDate
+    val age: Int,
+    val ageGroup: String,
+    val gender: String? = null,
+    val primaryParent: ParentResponse,
+    val secondaryParent: ParentResponse? = null,
+    val emergencyContactName: String? = null,
+    val emergencyContactPhone: String? = null,
+    val medicalNotes: String? = null,
+    val allergies: String? = null,
+    val specialNeeds: String? = null,
+    val pickupAuthorization: String? = null,
+    val isActive: Boolean,
+    val createdAt: String, // Will be serialized as string from LocalDateTime
+    val updatedAt: String? = null,
+    val currentCheckInStatus: CheckInStatusResponse? = null
+)
+
+@Serializable
+data class ParentResponse(
+    val id: Long,
+    val firstName: String,
+    val lastName: String,
+    val fullName: String,
+    val email: String,
+    val phone: String? = null
+)
+
+@Serializable
+data class CheckInStatusResponse(
+    val isCheckedIn: Boolean,
+    val serviceName: String? = null,
+    val checkInTime: String? = null
 )
 
 @Serializable
 data class ServiceResponse(
-    val id: String,
+    val id: Long,
     val name: String,
-    val description: String,
-    val minAge: Int,
-    val maxAge: Int,
+    val dayOfWeek: String,
     val startTime: String,
     val endTime: String,
     val location: String,
+    val leaderName: String? = null,
     val maxCapacity: Int,
-    val currentCapacity: Int,
-    val isAcceptingCheckIns: Boolean,
-    val staffMembers: List<String>,
-    val createdAt: String
+    val minAge: Int,
+    val maxAge: Int,
+    val ageGroups: List<String>,
+    val isActive: Boolean
 )
 
 @Serializable
@@ -71,9 +94,13 @@ data class ChildApiResponse(
 @Serializable
 data class ChildrenApiResponse(
     val success: Boolean,
-    val children: List<ChildResponse>,
+    val data: List<ChildResponse>? = null,
     val message: String
-)
+) {
+    // Convenience property to match the expected interface
+    val children: List<ChildResponse>
+        get() = data ?: emptyList()
+}
 
 @Serializable
 data class ServiceApiResponse(
@@ -85,9 +112,14 @@ data class ServiceApiResponse(
 @Serializable
 data class ServicesApiResponse(
     val success: Boolean,
-    val services: List<ServiceResponse>,
-    val message: String
-)
+    val data: List<ServiceResponse>? = null,
+    val message: String,
+    val timestamp: String? = null
+) {
+    // Convenience property to match the expected interface
+    val services: List<ServiceResponse>
+        get() = data ?: emptyList()
+}
 
 @Serializable
 data class CheckInApiResponse(
