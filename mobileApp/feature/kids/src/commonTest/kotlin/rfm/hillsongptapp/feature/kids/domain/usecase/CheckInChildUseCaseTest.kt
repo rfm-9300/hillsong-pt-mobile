@@ -2,11 +2,11 @@ package rfm.hillsongptapp.feature.kids.domain.usecase
 
 import kotlinx.coroutines.test.runTest
 import rfm.hillsongptapp.feature.kids.data.network.error.KidsManagementError
-import rfm.hillsongptapp.feature.kids.domain.model.CheckInRecord
-import rfm.hillsongptapp.feature.kids.domain.model.CheckInStatus
-import rfm.hillsongptapp.feature.kids.domain.model.Child
-import rfm.hillsongptapp.feature.kids.domain.model.EmergencyContact
-import rfm.hillsongptapp.feature.kids.domain.model.KidsService
+import rfm.hillsongptapp.core.data.model.CheckInRecord
+import rfm.hillsongptapp.core.data.model.CheckInStatus
+import rfm.hillsongptapp.core.data.model.Child
+import rfm.hillsongptapp.core.data.model.EmergencyContact
+import rfm.hillsongptapp.core.data.model.KidsService
 import rfm.hillsongptapp.feature.kids.domain.repository.KidsRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -498,8 +498,8 @@ class CheckInChildUseCaseTest {
         override suspend fun getCurrentCheckIns(serviceId: String): Result<List<CheckInRecord>> = TODO()
         override suspend fun getAllCurrentCheckIns(): Result<List<CheckInRecord>> = TODO()
         override suspend fun getCheckInRecord(recordId: String): Result<CheckInRecord> = TODO()
-        override suspend fun getServiceReport(serviceId: String): Result<rfm.hillsongptapp.feature.kids.domain.model.ServiceReport> = TODO()
-        override suspend fun getAttendanceReport(startDate: String, endDate: String): Result<rfm.hillsongptapp.feature.kids.domain.model.AttendanceReport> = TODO()
+        override suspend fun getServiceReport(serviceId: String): Result<rfm.hillsongptapp.core.data.model.ServiceReport> = TODO()
+        override suspend fun getAttendanceReport(startDate: String, endDate: String): Result<rfm.hillsongptapp.core.data.model.AttendanceReport> = TODO()
         override suspend fun subscribeToChildUpdates(childId: String, onUpdate: (Child) -> Unit) = TODO()
         override suspend fun subscribeToServiceUpdates(serviceId: String, onUpdate: (KidsService) -> Unit) = TODO()
         override suspend fun unsubscribeFromUpdates() = TODO()

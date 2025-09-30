@@ -6,7 +6,7 @@ import kotlin.test.*
 import rfm.hillsongptapp.feature.kids.data.network.error.KidsManagementError
 import rfm.hillsongptapp.feature.kids.data.network.mapper.*
 import rfm.hillsongptapp.feature.kids.data.network.dto.*
-import rfm.hillsongptapp.feature.kids.domain.model.*
+import rfm.hillsongptapp.core.data.model.*
 
 /**
  * Integration tests to verify the complete network layer works together

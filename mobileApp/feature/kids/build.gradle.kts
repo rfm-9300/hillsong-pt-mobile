@@ -6,11 +6,8 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.room)
 }
-kotlin{
+kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
@@ -18,19 +15,19 @@ kotlin{
         }
     }
 
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "feature.kids"
-            isStatic = true
-        }
-    }
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
 
-    sourceSets{
+    sourceSets {
+        androidMain.dependencies {
+            implementation(libs.androidx.ui.tooling)
+        }
         commonMain.dependencies {
+            implementation(projects.core.designsystem)
+            implementation(projects.core.data)
+            implementation(projects.core.navigation)
+
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
@@ -38,55 +35,26 @@ kotlin{
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
 
-            implementation(projects.core.designsystem)
-            implementation(projects.core.data)
-            implementation(projects.core.network)
-            implementation(projects.core.navigation)
-
             implementation(libs.navigation.compose)
-            implementation(libs.kermit)
-
+            implementation(projects.util.logging)
+            implementation(projects.core.data)
             implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.coroutines)
-            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.koin.compose.viewmodel)
             implementation(libs.kotlinx.datetime)
-            implementation(libs.room.runtime)
-            implementation(libs.sqlite.bundled)
-            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0") // Or the latest version
-            // Network dependencies
-            implementation(libs.bundles.ktor)
-            implementation(libs.ktor.client.websockets)
-            
-            // Navigation dependencies
 
             api(libs.koin.core)
             api(libs.koin.compose)
         }
-        androidMain.dependencies {
-            implementation(libs.androidx.ui.tooling)
-        }
-        
         commonTest.dependencies {
-
+            implementation(kotlin("test"))
+            implementation(libs.koin.core)
+            implementation(projects.core.data)
         }
-
     }
 }
 
-dependencies {
-    add("kspAndroid", libs.room.compiler)
 
-    if (hasProperty("kmp.enableIos")) {
-        add("kspIosSimulatorArm64", libs.room.compiler)
-        add("kspIosX64", libs.room.compiler)
-        add("kspIosArm64", libs.room.compiler)
-    }
-}
-
-room {
-    schemaDirectory("$projectDir/schemas")
-}
 
 android {
     namespace = "rfm.hillsongptapp.feature.kids"

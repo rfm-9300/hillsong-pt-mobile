@@ -6,45 +6,35 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import co.touchlab.kermit.Logger
-import rfm.hillsongptapp.feature.kids.domain.model.Child
-import rfm.hillsongptapp.feature.kids.domain.repository.KidsRepository
-import rfm.hillsongptapp.feature.kids.data.network.websocket.RealTimeStatusManager
-import rfm.hillsongptapp.feature.kids.data.network.websocket.StatusNotification
-import rfm.hillsongptapp.feature.kids.data.network.websocket.ConnectionStatus
+import rfm.hillsongptapp.logging.LoggerHelper
+import rfm.hillsongptapp.core.data.model.Child
+import rfm.hillsongptapp.core.data.model.KidsService
+import rfm.hillsongptapp.core.data.repository.KidsRepository
+import rfm.hillsongptapp.core.data.repository.KidsResult
 import rfm.hillsongptapp.core.data.repository.AuthRepository
+import kotlinx.datetime.Clock
 
 /**
  * ViewModel for the Kids Management screen
- * Manages state for children and services loading, check-in/check-out operations with real-time updates
+ * Manages state for children and services loading, check-in/check-out operations
  */
 class KidsManagementViewModel(
     private val kidsRepository: KidsRepository,
-    private val realTimeStatusManager: RealTimeStatusManager,
     private val authRepository: AuthRepository
 ) : ViewModel() {
     
-    private val logger = Logger.withTag("KidsManagementViewModel")
+    private val logger = LoggerHelper
     
     private val _uiState = MutableStateFlow(KidsManagementUiState())
     val uiState: StateFlow<KidsManagementUiState> = _uiState.asStateFlow()
-    
-    // Real-time status flows
-    val connectionStatus: StateFlow<ConnectionStatus> = realTimeStatusManager.connectionStatus
-    val notifications: StateFlow<List<StatusNotification>> = MutableStateFlow(emptyList())
     
     // Current user/parent ID from authentication system
     private var currentParentId: String = ""
     private var isStaffUser: Boolean = false
     
-    // Notification management
-    private val _activeNotifications = MutableStateFlow<List<StatusNotification>>(emptyList())
-    val activeNotifications: StateFlow<List<StatusNotification>> = _activeNotifications.asStateFlow()
-    
     init {
         loadUserSession()
         loadInitialData()
-        setupRealTimeUpdates()
     }
     
     /**
@@ -67,15 +57,15 @@ class KidsManagementViewModel(
                         currentUserId = currentParentId
                     )
                     
-                    logger.d { "User session loaded: parentId=$currentParentId, isStaff=$isStaffUser" }
+                    LoggerHelper.logDebug("User session loaded: parentId=$currentParentId, isStaff=$isStaffUser")
                 } else {
-                    logger.w { "No user session found" }
+                    LoggerHelper.logError("No user session found")
                     _uiState.value = _uiState.value.copy(
                         error = "User session not found. Please log in again."
                     )
                 }
             } catch (e: Exception) {
-                logger.e(e) { "Failed to load user session" }
+                LoggerHelper.logError("Failed to load user session", e)
                 _uiState.value = _uiState.value.copy(
                     error = "Failed to load user session: ${e.message}"
                 )
@@ -94,72 +84,6 @@ class KidsManagementViewModel(
     fun getCurrentUserId(): String = currentParentId
     
     /**
-     * Setup real-time updates and connection monitoring
-     */
-    private fun setupRealTimeUpdates() {
-        viewModelScope.launch {
-            // Connect to real-time updates
-            connectToRealTimeUpdates()
-            
-            // Listen for child status updates
-            realTimeStatusManager.childStatusUpdates.collect { update ->
-                logger.d { "Received child status update: ${update.childId} -> ${update.newStatus}" }
-                handleChildStatusUpdate(update)
-            }
-        }
-        
-        viewModelScope.launch {
-            // Listen for service status updates
-            realTimeStatusManager.serviceStatusUpdates.collect { update ->
-                logger.d { "Received service status update: ${update.serviceId} capacity: ${update.newCapacity}" }
-                handleServiceStatusUpdate(update)
-            }
-        }
-        
-        viewModelScope.launch {
-            // Listen for check-in/check-out updates
-            realTimeStatusManager.checkInUpdates.collect { update ->
-                logger.d { "Received check-in update: ${update.childName} ${update.action}" }
-                handleCheckInUpdate(update)
-            }
-        }
-        
-        viewModelScope.launch {
-            // Listen for notifications
-            realTimeStatusManager.notifications.collect { notification ->
-                logger.d { "Received notification: ${notification.title}" }
-                addNotification(notification)
-            }
-        }
-    }
-    
-    /**
-     * Connect to real-time updates
-     */
-    private suspend fun connectToRealTimeUpdates() {
-        try {
-            val result = realTimeStatusManager.connect()
-            if (result.isSuccess) {
-                logger.i { "Connected to real-time updates" }
-                
-                // Subscribe to updates for all children
-                _uiState.value.children.forEach { child ->
-                    realTimeStatusManager.subscribeToChild(child.id)
-                }
-                
-                // Subscribe to updates for all services
-                _uiState.value.services.forEach { service ->
-                    realTimeStatusManager.subscribeToService(service.id)
-                }
-            } else {
-                logger.w { "Failed to connect to real-time updates: ${result.exceptionOrNull()?.message}" }
-            }
-        } catch (e: Exception) {
-            logger.e(e) { "Error connecting to real-time updates" }
-        }
-    }
-    
-    /**
      * Load initial data (children and services)
      */
     fun loadInitialData() {
@@ -171,29 +95,49 @@ class KidsManagementViewModel(
                 val childrenResult = kidsRepository.getChildrenForParent(currentParentId)
                 val servicesResult = kidsRepository.getAvailableServices()
                 
-                val children = childrenResult.getOrElse { 
-                    throw it
-                }
-                
-                val services = servicesResult.getOrElse {
-                    throw it
-                }
-                
-                _uiState.value = _uiState.value.copy(
-                    children = children,
-                    services = services,
-                    isLoading = false,
-                    error = null,
-                    lastUpdated = System.currentTimeMillis()
-                )
-                
-                // Subscribe to real-time updates for loaded data
-                if (realTimeStatusManager.isConnected()) {
-                    children.forEach { child ->
-                        realTimeStatusManager.subscribeToChild(child.id)
+                when (childrenResult) {
+                    is KidsResult.Success -> {
+                        when (servicesResult) {
+                            is KidsResult.Success -> {
+                                _uiState.value = _uiState.value.copy(
+                                    children = childrenResult.data,
+                                    services = servicesResult.data,
+                                    isLoading = false,
+                                    error = null,
+                                    lastUpdated = Clock.System.now().toEpochMilliseconds()
+                                )
+                            }
+                            is KidsResult.Error -> {
+                                _uiState.value = _uiState.value.copy(
+                                    isLoading = false,
+                                    error = "Failed to load services: ${servicesResult.message}"
+                                )
+                            }
+                            is KidsResult.NetworkError -> {
+                                _uiState.value = _uiState.value.copy(
+                                    isLoading = false,
+                                    error = "Network error loading services: ${servicesResult.message}"
+                                )
+                            }
+                            is KidsResult.Loading -> {
+                                // Should not happen in suspend function
+                            }
+                        }
                     }
-                    services.forEach { service ->
-                        realTimeStatusManager.subscribeToService(service.id)
+                    is KidsResult.Error -> {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            error = "Failed to load children: ${childrenResult.message}"
+                        )
+                    }
+                    is KidsResult.NetworkError -> {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            error = "Network error loading children: ${childrenResult.message}"
+                        )
+                    }
+                    is KidsResult.Loading -> {
+                        // Should not happen in suspend function
                     }
                 }
                 
@@ -203,84 +147,6 @@ class KidsManagementViewModel(
                     error = "Failed to load data: ${e.message}"
                 )
             }
-        }
-    }
-    
-    /**
-     * Handle child status updates from real-time system
-     */
-    private fun handleChildStatusUpdate(update: rfm.hillsongptapp.feature.kids.data.network.websocket.ChildStatusUpdate) {
-        val currentChildren = _uiState.value.children.toMutableList()
-        val childIndex = currentChildren.indexOfFirst { it.id == update.childId }
-        
-        if (childIndex != -1) {
-            // Update the child's status in the local list
-            // Note: In a real implementation, you'd need to fetch the updated child from repository
-            // For now, we'll trigger a refresh to get the latest data
-            refreshData()
-        }
-    }
-    
-    /**
-     * Handle service status updates from real-time system
-     */
-    private fun handleServiceStatusUpdate(update: rfm.hillsongptapp.feature.kids.data.network.websocket.ServiceStatusUpdate) {
-        val currentServices = _uiState.value.services.toMutableList()
-        val serviceIndex = currentServices.indexOfFirst { it.id == update.serviceId }
-        
-        if (serviceIndex != -1) {
-            // Update the service's capacity in the local list
-            // Note: In a real implementation, you'd update the specific service object
-            // For now, we'll trigger a refresh to get the latest data
-            refreshData()
-        }
-    }
-    
-    /**
-     * Handle check-in/check-out updates from real-time system
-     */
-    private fun handleCheckInUpdate(update: rfm.hillsongptapp.feature.kids.data.network.websocket.CheckInStatusUpdate) {
-        // Refresh data to get the latest check-in status
-        refreshData()
-    }
-    
-    /**
-     * Add a notification to the active notifications list
-     */
-    private fun addNotification(notification: StatusNotification) {
-        val currentNotifications = _activeNotifications.value.toMutableList()
-        currentNotifications.add(0, notification) // Add to beginning
-        
-        // Keep only the last 5 notifications
-        if (currentNotifications.size > 5) {
-            currentNotifications.removeAt(currentNotifications.size - 1)
-        }
-        
-        _activeNotifications.value = currentNotifications
-    }
-    
-    /**
-     * Dismiss a notification
-     */
-    fun dismissNotification(notification: StatusNotification) {
-        val currentNotifications = _activeNotifications.value.toMutableList()
-        currentNotifications.remove(notification)
-        _activeNotifications.value = currentNotifications
-    }
-    
-    /**
-     * Clear all notifications
-     */
-    fun clearAllNotifications() {
-        _activeNotifications.value = emptyList()
-    }
-    
-    /**
-     * Retry connection to real-time updates
-     */
-    fun retryConnection() {
-        viewModelScope.launch {
-            connectToRealTimeUpdates()
         }
     }
     
@@ -296,21 +162,51 @@ class KidsManagementViewModel(
                 val childrenResult = kidsRepository.getChildrenForParent(currentParentId)
                 val servicesResult = kidsRepository.getAvailableServices()
                 
-                val children = childrenResult.getOrElse { 
-                    throw it
+                when (childrenResult) {
+                    is KidsResult.Success -> {
+                        when (servicesResult) {
+                            is KidsResult.Success -> {
+                                _uiState.value = _uiState.value.copy(
+                                    children = childrenResult.data,
+                                    services = servicesResult.data,
+                                    isRefreshing = false,
+                                    error = null,
+                                    lastUpdated = Clock.System.now().toEpochMilliseconds()
+                                )
+                            }
+                            is KidsResult.Error -> {
+                                _uiState.value = _uiState.value.copy(
+                                    isRefreshing = false,
+                                    error = "Failed to refresh services: ${servicesResult.message}"
+                                )
+                            }
+                            is KidsResult.NetworkError -> {
+                                _uiState.value = _uiState.value.copy(
+                                    isRefreshing = false,
+                                    error = "Network error refreshing services: ${servicesResult.message}"
+                                )
+                            }
+                            is KidsResult.Loading -> {
+                                // Should not happen in suspend function
+                            }
+                        }
+                    }
+                    is KidsResult.Error -> {
+                        _uiState.value = _uiState.value.copy(
+                            isRefreshing = false,
+                            error = "Failed to refresh children: ${childrenResult.message}"
+                        )
+                    }
+                    is KidsResult.NetworkError -> {
+                        _uiState.value = _uiState.value.copy(
+                            isRefreshing = false,
+                            error = "Network error refreshing children: ${childrenResult.message}"
+                        )
+                    }
+                    is KidsResult.Loading -> {
+                        // Should not happen in suspend function
+                    }
                 }
-                
-                val services = servicesResult.getOrElse {
-                    throw it
-                }
-                
-                _uiState.value = _uiState.value.copy(
-                    children = children,
-                    services = services,
-                    isRefreshing = false,
-                    error = null,
-                    lastUpdated = System.currentTimeMillis()
-                )
                 
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
@@ -373,18 +269,26 @@ class KidsManagementViewModel(
                     checkedInBy = currentParentId
                 )
                 
-                result.fold(
-                    onSuccess = {
+                when (result) {
+                    is KidsResult.Success -> {
                         // Refresh data to get updated status
                         refreshData()
                         hideCheckInDialog()
-                    },
-                    onFailure = { error ->
+                    }
+                    is KidsResult.Error -> {
                         _uiState.value = _uiState.value.copy(
-                            error = "Check-in failed: ${error.message}"
+                            error = "Check-in failed: ${result.message}"
                         )
                     }
-                )
+                    is KidsResult.NetworkError -> {
+                        _uiState.value = _uiState.value.copy(
+                            error = "Network error during check-in: ${result.message}"
+                        )
+                    }
+                    is KidsResult.Loading -> {
+                        // Should not happen in suspend function
+                    }
+                }
                 
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
@@ -405,18 +309,26 @@ class KidsManagementViewModel(
                     checkedOutBy = currentParentId
                 )
                 
-                result.fold(
-                    onSuccess = {
+                when (result) {
+                    is KidsResult.Success -> {
                         // Refresh data to get updated status
                         refreshData()
                         hideCheckOutDialog()
-                    },
-                    onFailure = { error ->
+                    }
+                    is KidsResult.Error -> {
                         _uiState.value = _uiState.value.copy(
-                            error = "Check-out failed: ${error.message}"
+                            error = "Check-out failed: ${result.message}"
                         )
                     }
-                )
+                    is KidsResult.NetworkError -> {
+                        _uiState.value = _uiState.value.copy(
+                            error = "Network error during check-out: ${result.message}"
+                        )
+                    }
+                    is KidsResult.Loading -> {
+                        // Should not happen in suspend function
+                    }
+                }
                 
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
@@ -436,7 +348,7 @@ class KidsManagementViewModel(
     /**
      * Get services appropriate for a specific child
      */
-    fun getServicesForChild(child: Child): List<rfm.hillsongptapp.feature.kids.domain.model.KidsService> {
+    fun getServicesForChild(child: Child): List<KidsService> {
         return _uiState.value.services.filter { service ->
             child.isEligibleForService(service) && service.canAcceptCheckIn()
         }
@@ -456,22 +368,14 @@ class KidsManagementViewModel(
         val lastUpdated = _uiState.value.lastUpdated
         if (lastUpdated == 0L) return "Never"
         
-        val now = System.currentTimeMillis()
+        val now = Clock.System.now().toEpochMilliseconds()
         val diff = now - lastUpdated
         
         return when {
             diff < 60_000 -> "Just now"
-            diff < 3600_000 -> "${diff / 60_000}m ago"
-            diff < 86400_000 -> "${diff / 3600_000}h ago"
-            else -> "${diff / 86400_000}d ago"
-        }
-    }
-    
-    override fun onCleared() {
-        super.onCleared()
-        // Cleanup real-time connections
-        viewModelScope.launch {
-            realTimeStatusManager.disconnect()
+            diff < 3600_000 -> "${(diff / 60_000)}m ago"
+            diff < 86400_000 -> "${(diff / 3600_000)}h ago"
+            else -> "${(diff / 86400_000)}d ago"
         }
     }
 }

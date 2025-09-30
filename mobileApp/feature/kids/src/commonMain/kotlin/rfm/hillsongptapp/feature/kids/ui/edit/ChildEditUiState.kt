@@ -1,7 +1,8 @@
 package rfm.hillsongptapp.feature.kids.ui.edit
 
-import rfm.hillsongptapp.feature.kids.domain.model.Child
-import rfm.hillsongptapp.feature.kids.domain.model.EmergencyContact
+import rfm.hillsongptapp.core.data.model.Child
+import rfm.hillsongptapp.core.data.model.EmergencyContact
+import kotlinx.datetime.Clock
 
 /**
  * UI state for the Child Edit screen
@@ -122,7 +123,7 @@ data class ChildEditUiState(
             medicalInfo = medicalInfo.takeIf { it.isNotBlank() },
             dietaryRestrictions = dietaryRestrictions.takeIf { it.isNotBlank() },
             emergencyContact = emergencyContact,
-            updatedAt = System.currentTimeMillis().toString() // Simplified timestamp
+            updatedAt = Clock.System.now().toEpochMilliseconds().toString() // Simplified timestamp
         )
     }
     

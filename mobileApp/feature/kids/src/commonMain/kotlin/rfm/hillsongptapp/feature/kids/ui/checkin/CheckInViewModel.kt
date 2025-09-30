@@ -6,33 +6,46 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import rfm.hillsongptapp.feature.kids.data.network.error.KidsManagementError
-import rfm.hillsongptapp.feature.kids.domain.model.Child
-import rfm.hillsongptapp.feature.kids.domain.usecase.CheckInChildUseCase
-import rfm.hillsongptapp.feature.kids.domain.usecase.EligibleServiceInfo
-import rfm.hillsongptapp.feature.kids.domain.error.ErrorHandler
-import rfm.hillsongptapp.feature.kids.domain.error.ErrorRecoveryManager
-import rfm.hillsongptapp.feature.kids.domain.offline.OfflineHandler
-import co.touchlab.kermit.Logger
-import rfm.hillsongptapp.feature.kids.domain.error.getRecoveryStrategy
+import rfm.hillsongptapp.core.data.model.Child
+import rfm.hillsongptapp.core.data.model.KidsService
+import rfm.hillsongptapp.core.data.repository.KidsRepository
+import rfm.hillsongptapp.core.data.repository.KidsResult
+import rfm.hillsongptapp.core.data.repository.AuthRepository
+import rfm.hillsongptapp.logging.LoggerHelper
 
 /**
  * ViewModel for the Check-In screen with comprehensive validation and error handling
  */
 class CheckInViewModel(
-    private val checkInChildUseCase: CheckInChildUseCase,
-    private val errorHandler: ErrorHandler,
-    private val errorRecoveryManager: ErrorRecoveryManager,
-    private val offlineHandler: OfflineHandler
+    private val kidsRepository: KidsRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
     
-    private val logger = Logger.withTag("CheckInViewModel")
+    private val logger = LoggerHelper
     
     private val _uiState = MutableStateFlow(CheckInUiState())
     val uiState: StateFlow<CheckInUiState> = _uiState.asStateFlow()
     
-    // TODO: Get actual user ID from authentication
-    private val currentUserId = "user_123"
+    // Current user ID from authentication
+    private var currentUserId = ""
+    
+    init {
+        loadCurrentUser()
+    }
+    
+    /**
+     * Load current user information
+     */
+    private fun loadCurrentUser() {
+        viewModelScope.launch {
+            try {
+                val user = authRepository.getUserById(1) // Assuming user ID 1 is logged in
+                currentUserId = user?.id?.toString() ?: ""
+            } catch (e: Exception) {
+                LoggerHelper.logError("Failed to load current user", e)
+            }
+        }
+    }
     
     /**
      * Load child information and eligible services
@@ -47,30 +60,67 @@ class CheckInViewModel(
             )
             
             try {
-                logger.d { "Loading child and eligible services for child: $childId" }
+                LoggerHelper.logDebug("Loading child and eligible services for child: $childId")
                 
-                val result = checkInChildUseCase.getEligibleServicesForChild(childId)
-                
-                result.fold(
-                    onSuccess = { eligibilityInfo ->
-                        logger.i { "Loaded child ${eligibilityInfo.child.name} with ${eligibilityInfo.eligibleServices.size} eligible services" }
+                // Load child information
+                val childResult = kidsRepository.getChildById(childId)
+                when (childResult) {
+                    is KidsResult.Success -> {
+                        val child = childResult.data
+                        
+                        // Load available services
+                        val servicesResult = kidsRepository.getServicesAcceptingCheckIns()
+                        when (servicesResult) {
+                            is KidsResult.Success -> {
+                                val allServices = servicesResult.data
+                                val eligibleServices = allServices.filter { service ->
+                                    child.isEligibleForService(service) && service.canAcceptCheckIn()
+                                }
+                                
+                                LoggerHelper.logInfo("Loaded child ${child.name} with ${eligibleServices.size} eligible services")
+                                _uiState.value = _uiState.value.copy(
+                                    isLoading = false,
+                                    child = child,
+                                    eligibleServices = eligibleServices,
+                                    error = null
+                                )
+                            }
+                            is KidsResult.Error -> {
+                                _uiState.value = _uiState.value.copy(
+                                    isLoading = false,
+                                    error = "Failed to load services: ${servicesResult.message}"
+                                )
+                            }
+                            is KidsResult.NetworkError -> {
+                                _uiState.value = _uiState.value.copy(
+                                    isLoading = false,
+                                    error = "Network error loading services: ${servicesResult.message}"
+                                )
+                            }
+                            is KidsResult.Loading -> {
+                                // Should not happen in suspend function
+                            }
+                        }
+                    }
+                    is KidsResult.Error -> {
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            child = eligibilityInfo.child,
-                            eligibleServices = eligibilityInfo.eligibleServices,
-                            error = null
-                        )
-                    },
-                    onFailure = { error ->
-                        logger.e { "Failed to load eligible services: ${error.message}" }
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            error = getErrorMessage(error)
+                            error = "Failed to load child: ${childResult.message}"
                         )
                     }
-                )
+                    is KidsResult.NetworkError -> {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            error = "Network error loading child: ${childResult.message}"
+                        )
+                    }
+                    is KidsResult.Loading -> {
+                        // Should not happen in suspend function
+                    }
+                }
+                
             } catch (e: Exception) {
-                logger.e(e) { "Unexpected error loading child and services" }
+                LoggerHelper.logError("Unexpected error loading child and services", e)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     error = "An unexpected error occurred: ${e.message}"
@@ -80,40 +130,11 @@ class CheckInViewModel(
     }
     
     /**
-     * Load child information separately
-     */
-    private suspend fun loadChildInfo(childId: String, eligibleServices: List<EligibleServiceInfo>) {
-        try {
-            // We'll need to access the repository directly for this
-            // In a real implementation, you might want to modify the use case to return both
-            // For now, we'll create a mock child or modify the approach
-            
-            // Since we can't access the repository directly here, we'll need to modify our approach
-            // Let's assume the use case will be enhanced to return child info as well
-            
-            _uiState.value = _uiState.value.copy(
-                isLoading = false,
-                eligibleServices = eligibleServices,
-                error = null
-            )
-            
-            logger.i { "Loaded ${eligibleServices.size} eligible services" }
-            
-        } catch (e: Exception) {
-            logger.e(e) { "Error loading child info" }
-            _uiState.value = _uiState.value.copy(
-                isLoading = false,
-                error = "Failed to load child information: ${e.message}"
-            )
-        }
-    }
-    
-    /**
      * Select a service for check-in
      */
-    fun selectService(serviceInfo: EligibleServiceInfo) {
-        logger.d { "Selected service: ${serviceInfo.service.name}" }
-        _uiState.value = _uiState.value.copy(selectedService = serviceInfo)
+    fun selectService(service: KidsService) {
+        LoggerHelper.logDebug("Selected service: ${service.name}")
+        _uiState.value = _uiState.value.copy(selectedService = service)
     }
     
     /**
@@ -122,10 +143,10 @@ class CheckInViewModel(
     fun showCheckInConfirmation() {
         val selectedService = _uiState.value.selectedService
         if (selectedService != null) {
-            logger.d { "Showing check-in confirmation for service: ${selectedService.service.name}" }
+            LoggerHelper.logDebug("Showing check-in confirmation for service: ${selectedService.name}")
             _uiState.value = _uiState.value.copy(showConfirmationDialog = true)
         } else {
-            logger.w { "Attempted to show confirmation without selected service" }
+            LoggerHelper.logError("Attempted to show confirmation without selected service")
         }
     }
     
@@ -144,7 +165,7 @@ class CheckInViewModel(
         val selectedService = _uiState.value.selectedService
         
         if (child == null || selectedService == null) {
-            logger.w { "Cannot check in: missing child or service" }
+            LoggerHelper.logError("Cannot check in: missing child or service")
             return
         }
         
@@ -155,34 +176,45 @@ class CheckInViewModel(
             )
             
             try {
-                logger.i { "Starting check-in process for ${child.name} to ${selectedService.service.name}" }
+                LoggerHelper.logInfo("Starting check-in process for ${child.name} to ${selectedService.name}")
                 
-                val result = checkInChildUseCase.execute(
+                val result = kidsRepository.checkInChild(
                     childId = child.id,
-                    serviceId = selectedService.service.id,
+                    serviceId = selectedService.id,
                     checkedInBy = currentUserId,
                     notes = notes
                 )
                 
-                result.fold(
-                    onSuccess = { checkInRecord ->
-                        logger.i { "Check-in successful: " }
+                when (result) {
+                    is KidsResult.Success -> {
+                        LoggerHelper.logInfo("Check-in successful")
                         _uiState.value = _uiState.value.copy(
                             isCheckingIn = false,
                             showConfirmationDialog = false,
                             checkInSuccess = true
                         )
-                    },
-                    onFailure = { error ->
-                        logger.e { "Check-in failed: ${error.message}" }
+                    }
+                    is KidsResult.Error -> {
+                        LoggerHelper.logError("Check-in failed: ${result.message}")
                         _uiState.value = _uiState.value.copy(
                             isCheckingIn = false,
-                            checkInError = getErrorMessage(error)
+                            checkInError = result.message
                         )
                     }
-                )
+                    is KidsResult.NetworkError -> {
+                        LoggerHelper.logError("Network error during check-in: ${result.message}")
+                        _uiState.value = _uiState.value.copy(
+                            isCheckingIn = false,
+                            checkInError = "Network error: ${result.message}"
+                        )
+                    }
+                    is KidsResult.Loading -> {
+                        // Should not happen in suspend function
+                    }
+                }
+                
             } catch (e: Exception) {
-                logger.e(e) { "Unexpected error during check-in" }
+                LoggerHelper.logError("Unexpected error during check-in", e)
                 _uiState.value = _uiState.value.copy(
                     isCheckingIn = false,
                     checkInError = "An unexpected error occurred: ${e.message}"
@@ -206,20 +238,10 @@ class CheckInViewModel(
     }
     
     /**
-     * Convert exception to user-friendly error message using enhanced error handler
+     * Reset success state
      */
-    private fun getErrorMessage(error: Throwable): String {
-        val errorInfo = errorHandler.handleError(error)
-        return errorInfo.userMessage
-    }
-
-    
-    /**
-     * Check if error is retryable
-     */
-    private fun isErrorRetryable(error: Throwable): Boolean {
-        val errorInfo = errorHandler.handleError(error)
-        return errorInfo.isRetryable
+    fun resetSuccessState() {
+        _uiState.value = _uiState.value.copy(checkInSuccess = false)
     }
 }
 
@@ -228,18 +250,14 @@ class CheckInViewModel(
  */
 data class CheckInUiState(
     val child: Child? = null,
-    val eligibleServices: List<EligibleServiceInfo> = emptyList(),
-    val selectedService: EligibleServiceInfo? = null,
+    val eligibleServices: List<KidsService> = emptyList(),
+    val selectedService: KidsService? = null,
     val isLoading: Boolean = false,
     val isCheckingIn: Boolean = false,
     val error: String? = null,
     val checkInError: String? = null,
     val showConfirmationDialog: Boolean = false,
-    val checkInSuccess: Boolean = false,
-    val isRetryable: Boolean = false,
-    val errorSuggestions: List<String> = emptyList(),
-    val isOffline: Boolean = false,
-    val offlineMessage: String? = null
+    val checkInSuccess: Boolean = false
 ) {
     /**
      * Check if there are any eligible services available
@@ -250,12 +268,18 @@ data class CheckInUiState(
     /**
      * Get recommended services (services with more available spots)
      */
-    val recommendedServices: List<EligibleServiceInfo>
-        get() = eligibleServices.filter { it.isRecommended }
+    val recommendedServices: List<KidsService>
+        get() = eligibleServices.filter { it.getAvailableSpots() > 5 }
     
     /**
      * Get services with limited availability
      */
-    val limitedAvailabilityServices: List<EligibleServiceInfo>
-        get() = eligibleServices.filter { !it.isRecommended && it.availableSpots > 0 }
+    val limitedAvailabilityServices: List<KidsService>
+        get() = eligibleServices.filter { it.getAvailableSpots() in 1..5 }
+    
+    /**
+     * Check if any operation is in progress
+     */
+    val isOperationInProgress: Boolean
+        get() = isLoading || isCheckingIn
 }

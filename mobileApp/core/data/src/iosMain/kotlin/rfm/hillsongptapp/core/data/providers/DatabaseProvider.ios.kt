@@ -30,5 +30,6 @@ actual fun databaseInstance(): AppDatabase {
         factory = { findDatabaseConstructorAndInitDatabaseImpl(AppDatabase::class) },
     ).setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
+        .addMigrations(MIGRATION_2_3)
         .build()
 }

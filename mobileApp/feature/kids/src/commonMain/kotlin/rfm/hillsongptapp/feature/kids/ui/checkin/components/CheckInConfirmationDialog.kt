@@ -16,8 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import rfm.hillsongptapp.feature.kids.domain.model.Child
-import rfm.hillsongptapp.feature.kids.domain.model.KidsService
+import rfm.hillsongptapp.core.data.model.Child
+import rfm.hillsongptapp.core.data.model.KidsService
 
 /**
  * Confirmation dialog for check-in with service details and optional notes

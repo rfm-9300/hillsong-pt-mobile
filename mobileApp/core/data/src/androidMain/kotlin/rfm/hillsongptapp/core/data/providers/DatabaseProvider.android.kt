@@ -9,5 +9,6 @@ actual fun databaseInstance(): AppDatabase {
         KoinPlatform.getKoin().get(),
         AppDatabase::class.java,
         dbFileName,
-    ).build()
+    ).addMigrations(MIGRATION_2_3)
+        .build()
 }

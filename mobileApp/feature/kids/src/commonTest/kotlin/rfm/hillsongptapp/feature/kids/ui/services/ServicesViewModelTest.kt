@@ -2,91 +2,113 @@ package rfm.hillsongptapp.feature.kids.ui.services
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.*
-import rfm.hillsongptapp.feature.kids.domain.model.CheckInStatus
-import rfm.hillsongptapp.feature.kids.domain.model.Child
-import rfm.hillsongptapp.feature.kids.domain.model.EmergencyContact
-import rfm.hillsongptapp.feature.kids.domain.model.KidsService
-import rfm.hillsongptapp.feature.kids.domain.repository.KidsRepository
-import kotlin.test.*
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import rfm.hillsongptapp.core.data.model.Child
+import rfm.hillsongptapp.core.data.model.CheckInStatus
+import rfm.hillsongptapp.core.data.model.EmergencyContact
+import rfm.hillsongptapp.core.data.model.KidsService
+import rfm.hillsongptapp.core.data.repository.KidsResult
+import rfm.hillsongptapp.feature.kids.ui.MockKidsRepository
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
+/**
+ * Comprehensive unit tests for ServicesViewModel
+ * Tests service loading, filtering, and UI state management
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ServicesViewModelTest {
     
     private val testDispatcher = StandardTestDispatcher()
-    private lateinit var mockRepository: MockKidsRepository
+    private val mockKidsRepository = MockKidsRepository()
+    
     private lateinit var viewModel: ServicesViewModel
     
-    private val mockService1 = KidsService(
-        id = "service-1",
-        name = "Toddler Time",
-        description = "Service for toddlers",
-        minAge = 2,
-        maxAge = 4,
-        startTime = "2025-01-01T10:00:00Z",
-        endTime = "2025-01-01T11:00:00Z",
-        location = "Room A",
-        maxCapacity = 15,
-        currentCapacity = 10,
-        isAcceptingCheckIns = true,
-        staffMembers = listOf("staff-1"),
-        createdAt = "2025-01-01T09:00:00Z"
+    // Test data
+    private val testEmergencyContact = EmergencyContact(
+        name = "Jane Doe",
+        phoneNumber = "+1234567890",
+        relationship = "Mother"
     )
     
-    private val mockService2 = KidsService(
-        id = "service-2",
-        name = "Kids Church",
-        description = "Service for school age kids",
-        minAge = 5,
-        maxAge = 12,
-        startTime = "2025-01-01T10:00:00Z",
-        endTime = "2025-01-01T11:00:00Z",
-        location = "Room B",
-        maxCapacity = 20,
-        currentCapacity = 20, // Full capacity
-        isAcceptingCheckIns = true,
-        staffMembers = listOf("staff-2", "staff-3"),
-        createdAt = "2025-01-01T09:00:00Z"
-    )
-    
-    private val mockService3 = KidsService(
-        id = "service-3",
-        name = "Youth Group",
-        description = "Service for teenagers",
-        minAge = 13,
-        maxAge = 17,
-        startTime = "2025-01-01T10:00:00Z",
-        endTime = "2025-01-01T11:00:00Z",
-        location = "Room C",
-        maxCapacity = 25,
-        currentCapacity = 5,
-        isAcceptingCheckIns = false, // Not accepting check-ins
-        staffMembers = listOf("staff-4"),
-        createdAt = "2025-01-01T09:00:00Z"
-    )
-    
-    private val mockChild = Child(
-        id = "child-123",
-        parentId = "parent-123",
-        name = "Test Child",
-        dateOfBirth = "2018-01-01", // 7 years old
-        emergencyContact = EmergencyContact(
-            name = "Emergency Contact",
-            phoneNumber = "+1234567890",
-            relationship = "Parent"
-        ),
+    private val testChild = Child(
+        id = "child-1",
+        parentId = "parent-1",
+        name = "John Doe",
+        dateOfBirth = "2015-05-15", // 8-9 years old
+        medicalInfo = "No allergies",
+        dietaryRestrictions = "None",
+        emergencyContact = testEmergencyContact,
         status = CheckInStatus.CHECKED_OUT,
-        createdAt = "2025-01-01T08:00:00Z",
-        updatedAt = "2025-01-01T08:00:00Z"
+        currentServiceId = null,
+        checkInTime = null,
+        checkOutTime = null,
+        createdAt = "2024-01-01T10:00:00Z",
+        updatedAt = "2024-01-01T10:00:00Z"
+    )
+    
+    private val testServices = listOf(
+        KidsService(
+            id = "service-1",
+            name = "Kids Church",
+            description = "Sunday kids service",
+            minAge = 5,
+            maxAge = 12,
+            startTime = "2024-01-07T10:00:00Z",
+            endTime = "2024-01-07T11:30:00Z",
+            location = "Kids Room A",
+            maxCapacity = 20,
+            currentCapacity = 5,
+            isAcceptingCheckIns = true,
+            staffMembers = listOf("staff-1", "staff-2"),
+            createdAt = "2024-01-01T09:00:00Z"
+        ),
+        KidsService(
+            id = "service-2",
+            name = "Toddler Time",
+            description = "Service for toddlers",
+            minAge = 2,
+            maxAge = 4,
+            startTime = "2024-01-07T10:00:00Z",
+            endTime = "2024-01-07T11:00:00Z",
+            location = "Toddler Room",
+            maxCapacity = 15,
+            currentCapacity = 15, // At capacity
+            isAcceptingCheckIns = true,
+            staffMembers = listOf("staff-3"),
+            createdAt = "2024-01-01T09:00:00Z"
+        ),
+        KidsService(
+            id = "service-3",
+            name = "Youth Group",
+            description = "Service for teenagers",
+            minAge = 13,
+            maxAge = 18,
+            startTime = "2024-01-07T11:00:00Z",
+            endTime = "2024-01-07T12:30:00Z",
+            location = "Youth Room",
+            maxCapacity = 25,
+            currentCapacity = 10,
+            isAcceptingCheckIns = false, // Not accepting check-ins
+            staffMembers = listOf("staff-4", "staff-5"),
+            createdAt = "2024-01-01T09:00:00Z"
+        )
     )
     
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        mockRepository = MockKidsRepository()
-        mockRepository.servicesResult = Result.success(listOf(mockService1, mockService2, mockService3))
-        viewModel = ServicesViewModel(mockRepository)
+        mockKidsRepository.getAvailableServicesResult = KidsResult.Success(testServices)
+        viewModel = ServicesViewModel(mockKidsRepository)
     }
     
     @AfterTest
@@ -95,142 +117,192 @@ class ServicesViewModelTest {
     }
     
     @Test
-    fun `initial state loads services successfully`() = runTest {
-        // Wait for initial load
+    fun `initial state loads services automatically`() = runTest {
+        // When
         testDispatcher.scheduler.advanceUntilIdle()
         
-        val state = viewModel.uiState.first()
-        
+        // Then
+        val state = viewModel.uiState.value
         assertFalse(state.isLoading)
-        assertNull(state.error)
         assertEquals(3, state.services.size)
-        assertEquals(3, state.filteredServices.size)
-        assertEquals("Toddler Time", state.services[0].name)
-        assertEquals("Kids Church", state.services[1].name)
-        assertEquals("Youth Group", state.services[2].name)
+        assertEquals(3, state.filteredServices.size) // No filters applied initially
+        assertNull(state.error)
+        assertNull(state.selectedChild)
     }
     
     @Test
-    fun `loadServices handles error correctly`() = runTest {
-        // Setup error
-        mockRepository.servicesResult = Result.failure(Exception("Network error"))
+    fun `loadServices handles success result`() = runTest {
+        // Given
+        mockKidsRepository.getAvailableServicesResult = KidsResult.Success(testServices)
         
+        // When
         viewModel.loadServices()
         testDispatcher.scheduler.advanceUntilIdle()
         
-        val state = viewModel.uiState.first()
-        
+        // Then
+        val state = viewModel.uiState.value
         assertFalse(state.isLoading)
-        assertNotNull(state.error)
-        assertTrue(state.error!!.contains("Network error"))
+        assertEquals(3, state.services.size)
+        assertEquals("Kids Church", state.services[0].name)
+        assertNull(state.error)
+    }
+    
+    @Test
+    fun `loadServices handles error result`() = runTest {
+        // Given
+        mockKidsRepository.getAvailableServicesResult = KidsResult.Error("Failed to load services")
+        
+        // When
+        viewModel.loadServices()
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        // Then
+        val state = viewModel.uiState.value
+        assertFalse(state.isLoading)
         assertTrue(state.services.isEmpty())
+        assertNotNull(state.error)
+        assertTrue(state.error!!.contains("Failed to load services"))
     }
     
     @Test
-    fun `refreshServices updates data`() = runTest {
-        // Initial load
+    fun `loadServices handles network error result`() = runTest {
+        // Given
+        mockKidsRepository.getAvailableServicesResult = KidsResult.NetworkError("Network connection failed")
+        
+        // When
+        viewModel.loadServices()
         testDispatcher.scheduler.advanceUntilIdle()
         
-        // Update mock data
-        val updatedService = mockService1.copy(currentCapacity = 12)
-        mockRepository.servicesResult = Result.success(listOf(updatedService, mockService2, mockService3))
+        // Then
+        val state = viewModel.uiState.value
+        assertFalse(state.isLoading)
+        assertTrue(state.services.isEmpty())
+        assertNotNull(state.error)
+        assertTrue(state.error!!.contains("Network error loading services"))
+    }
+    
+    @Test
+    fun `refreshServices updates isRefreshing state`() = runTest {
+        // Given
+        testDispatcher.scheduler.advanceUntilIdle() // Complete initial load
         
+        // When
         viewModel.refreshServices()
+        
+        // Then (before completion)
+        assertTrue(viewModel.uiState.value.isRefreshing)
+        
+        // When (after completion)
         testDispatcher.scheduler.advanceUntilIdle()
         
-        val state = viewModel.uiState.first()
-        
+        // Then
+        val state = viewModel.uiState.value
         assertFalse(state.isRefreshing)
-        assertEquals(12, state.services[0].currentCapacity)
+        assertEquals(3, state.services.size)
     }
     
     @Test
-    fun `setSelectedChild filters services by age eligibility`() = runTest {
-        // Initial load
-        testDispatcher.scheduler.advanceUntilIdle()
+    fun `setSelectedChild updates state and filters services`() = runTest {
+        // Given
+        testDispatcher.scheduler.advanceUntilIdle() // Complete initial load
         
-        // Set child (7 years old - eligible for Kids Church only)
-        viewModel.setSelectedChild(mockChild)
+        // When
+        viewModel.setSelectedChild(testChild)
         
-        val state = viewModel.uiState.first()
+        // Then
+        val state = viewModel.uiState.value
+        assertNotNull(state.selectedChild)
+        assertEquals(testChild.id, state.selectedChild?.id)
         
-        assertEquals(mockChild, state.selectedChild)
-        // Services should be sorted with eligible ones first
-        // Kids Church (5-12) should be first, then others
-        assertTrue(state.filteredServices.any { it.id == "service-2" })
+        // Services should be sorted with eligible services first
+        val eligibleServices = state.filteredServices.filter { service ->
+            service.isAgeEligible(testChild.calculateAge())
+        }
+        assertTrue(eligibleServices.isNotEmpty())
     }
     
     @Test
     fun `updateFilters applies availability filter correctly`() = runTest {
-        // Initial load
-        testDispatcher.scheduler.advanceUntilIdle()
+        // Given
+        testDispatcher.scheduler.advanceUntilIdle() // Complete initial load
         
-        // Apply filter for available services only
+        // When - Filter to only available services
         val filters = ServiceFilters(availability = ServiceFilters.Availability.AVAILABLE_ONLY)
         viewModel.updateFilters(filters)
         
-        val state = viewModel.uiState.first()
-        
+        // Then
+        val state = viewModel.uiState.value
         assertEquals(filters, state.filters)
-        // Should exclude service-2 (full capacity) and service-3 (not accepting)
-        assertEquals(1, state.filteredServices.size)
-        assertEquals("service-1", state.filteredServices[0].id)
+        
+        // Should exclude the service at capacity (service-2)
+        val availableServices = state.filteredServices
+        assertTrue(availableServices.all { it.hasAvailableSpots() })
+        assertFalse(availableServices.any { it.id == "service-2" })
     }
     
     @Test
     fun `updateFilters applies accepting check-ins filter correctly`() = runTest {
-        // Initial load
-        testDispatcher.scheduler.advanceUntilIdle()
+        // Given
+        testDispatcher.scheduler.advanceUntilIdle() // Complete initial load
         
-        // Apply filter for services accepting check-ins
+        // When - Filter to only services accepting check-ins
         val filters = ServiceFilters(availability = ServiceFilters.Availability.ACCEPTING_CHECKINS)
         viewModel.updateFilters(filters)
         
-        val state = viewModel.uiState.first()
+        // Then
+        val state = viewModel.uiState.value
+        val acceptingServices = state.filteredServices
+        assertTrue(acceptingServices.all { it.canAcceptCheckIn() })
         
-        // Should exclude service-3 (not accepting check-ins) but include service-2 (full but accepting)
-        assertEquals(2, state.filteredServices.size)
-        assertTrue(state.filteredServices.all { it.isAcceptingCheckIns })
+        // Should exclude service-3 (not accepting check-ins) and service-2 (at capacity)
+        assertFalse(acceptingServices.any { it.id == "service-3" })
+        assertFalse(acceptingServices.any { it.id == "service-2" })
     }
     
     @Test
     fun `updateFilters applies age range filter correctly`() = runTest {
-        // Initial load
-        testDispatcher.scheduler.advanceUntilIdle()
+        // Given
+        testDispatcher.scheduler.advanceUntilIdle() // Complete initial load
         
-        // Apply age filter for 5-10 year olds
+        // When - Filter to services for ages 5-10
         val filters = ServiceFilters(minAge = 5, maxAge = 10)
         viewModel.updateFilters(filters)
         
-        val state = viewModel.uiState.first()
+        // Then
+        val state = viewModel.uiState.value
+        val ageFilteredServices = state.filteredServices
         
-        // Should include Kids Church (5-12) but exclude Toddler Time (2-4) and Youth Group (13-17)
-        assertEquals(1, state.filteredServices.size)
-        assertEquals("service-2", state.filteredServices[0].id)
+        // Should include service-1 (5-12 age range overlaps with 5-10)
+        // Should exclude service-2 (2-4 age range) and service-3 (13-18 age range)
+        assertTrue(ageFilteredServices.any { it.id == "service-1" })
+        assertFalse(ageFilteredServices.any { it.id == "service-2" })
+        assertFalse(ageFilteredServices.any { it.id == "service-3" })
     }
     
     @Test
-    fun `updateFilters applies show full services filter correctly`() = runTest {
-        // Initial load
-        testDispatcher.scheduler.advanceUntilIdle()
+    fun `updateFilters applies showFullServices filter correctly`() = runTest {
+        // Given
+        testDispatcher.scheduler.advanceUntilIdle() // Complete initial load
         
-        // Apply filter to hide full services
+        // When - Hide full services
         val filters = ServiceFilters(showFullServices = false)
         viewModel.updateFilters(filters)
         
-        val state = viewModel.uiState.first()
+        // Then
+        val state = viewModel.uiState.value
+        val nonFullServices = state.filteredServices
         
-        // Should exclude service-2 (at capacity)
-        assertEquals(2, state.filteredServices.size)
-        assertFalse(state.filteredServices.any { it.isAtCapacity() })
+        // Should exclude service-2 which is at capacity
+        assertTrue(nonFullServices.all { !it.isAtCapacity() })
+        assertFalse(nonFullServices.any { it.id == "service-2" })
     }
     
     @Test
     fun `clearFilters resets to default state`() = runTest {
-        // Initial load
-        testDispatcher.scheduler.advanceUntilIdle()
+        // Given
+        testDispatcher.scheduler.advanceUntilIdle() // Complete initial load
         
-        // Apply some filters
+        // Apply some filters first
         val filters = ServiceFilters(
             availability = ServiceFilters.Availability.AVAILABLE_ONLY,
             minAge = 5,
@@ -238,87 +310,85 @@ class ServicesViewModelTest {
         )
         viewModel.updateFilters(filters)
         
-        // Clear filters
+        // When
         viewModel.clearFilters()
         
-        val state = viewModel.uiState.first()
-        
+        // Then
+        val state = viewModel.uiState.value
         assertEquals(ServiceFilters(), state.filters)
-        assertEquals(3, state.filteredServices.size) // All services should be shown
+        assertEquals(3, state.filteredServices.size) // All services should be shown again
+        assertFalse(state.hasActiveFilters)
     }
     
     @Test
-    fun `getServicesForChild returns eligible and available services only`() = runTest {
-        // Initial load
-        testDispatcher.scheduler.advanceUntilIdle()
+    fun `getServicesForChild returns eligible services`() = runTest {
+        // Given
+        testDispatcher.scheduler.advanceUntilIdle() // Complete initial load
         
-        val eligibleServices = viewModel.getServicesForChild(mockChild)
+        // When
+        val eligibleServices = viewModel.getServicesForChild(testChild)
         
-        // Child is 7 years old, so only Kids Church (5-12) is age-eligible
-        // But Kids Church is full, so no services should be returned
-        assertEquals(0, eligibleServices.size)
-    }
-    
-    @Test
-    fun `getServicesForChild returns available services for eligible child`() = runTest {
-        // Setup service with available spots
-        val availableService = mockService2.copy(currentCapacity = 15) // Not full
-        mockRepository.servicesResult = Result.success(listOf(mockService1, availableService, mockService3))
-        viewModel.loadServices()
-        testDispatcher.scheduler.advanceUntilIdle()
-        
-        val eligibleServices = viewModel.getServicesForChild(mockChild)
-        
-        // Child is 7 years old, Kids Church (5-12) is age-eligible and has spots
+        // Then
+        // testChild is 8-9 years old, so should be eligible for service-1 (5-12 age range)
+        // and service-1 can accept check-ins
         assertEquals(1, eligibleServices.size)
-        assertEquals("service-2", eligibleServices[0].id)
+        assertEquals("service-1", eligibleServices[0].id)
     }
     
     @Test
     fun `clearError removes error message`() = runTest {
-        // Setup error state
-        mockRepository.servicesResult = Result.failure(Exception("Test error"))
+        // Given
+        mockKidsRepository.getAvailableServicesResult = KidsResult.Error("Test error")
         viewModel.loadServices()
         testDispatcher.scheduler.advanceUntilIdle()
         
-        // Verify error exists
-        var state = viewModel.uiState.first()
-        assertNotNull(state.error)
-        
-        // Clear error
+        // When
         viewModel.clearError()
         
-        state = viewModel.uiState.first()
+        // Then
+        val state = viewModel.uiState.value
         assertNull(state.error)
     }
     
-    // Mock repository implementation
-    private class MockKidsRepository : KidsRepository {
-        var servicesResult: Result<List<KidsService>> = Result.success(emptyList())
-        var childrenResult: Result<List<Child>> = Result.success(emptyList())
+    @Test
+    fun `UI state computed properties work correctly`() = runTest {
+        // Given
+        testDispatcher.scheduler.advanceUntilIdle() // Complete initial load
         
-        override suspend fun getAvailableServices(): Result<List<KidsService>> = servicesResult
-        override suspend fun getServicesForAge(age: Int): Result<List<KidsService>> = servicesResult
-        override suspend fun getServiceById(serviceId: String): Result<KidsService> = 
-            Result.failure(NotImplementedError())
-        override suspend fun getServicesAcceptingCheckIns(): Result<List<KidsService>> = servicesResult
+        // When
+        val state = viewModel.uiState.value
         
-        override suspend fun getChildrenForParent(parentId: String): Result<List<Child>> = childrenResult
-        override suspend fun registerChild(child: Child): Result<Child> = Result.failure(NotImplementedError())
-        override suspend fun updateChild(child: Child): Result<Child> = Result.failure(NotImplementedError())
-        override suspend fun deleteChild(childId: String): Result<Unit> = Result.failure(NotImplementedError())
+        // Then
+        assertEquals(2, state.availableServices.size) // Services with available spots
+        assertEquals(1, state.fullServices.size) // Services at capacity
         
-        override suspend fun checkInChild(childId: String, serviceId: String): Result<rfm.hillsongptapp.feature.kids.domain.model.CheckInRecord> = 
-            Result.failure(NotImplementedError())
-        override suspend fun checkOutChild(childId: String): Result<rfm.hillsongptapp.feature.kids.domain.model.CheckInRecord> = 
-            Result.failure(NotImplementedError())
-        override suspend fun getCheckInHistory(childId: String): Result<List<rfm.hillsongptapp.feature.kids.domain.model.CheckInRecord>> = 
-            Result.failure(NotImplementedError())
-        override suspend fun getCurrentCheckIns(serviceId: String): Result<List<rfm.hillsongptapp.feature.kids.domain.model.CheckInRecord>> = 
-            Result.failure(NotImplementedError())
-        override suspend fun getServiceReport(serviceId: String): Result<rfm.hillsongptapp.feature.kids.domain.model.ServiceReport> = 
-            Result.failure(NotImplementedError())
-        override suspend fun getAllCurrentCheckIns(): Result<List<rfm.hillsongptapp.feature.kids.domain.model.CheckInRecord>> = 
-            Result.failure(NotImplementedError())
+        // Test with selected child
+        viewModel.setSelectedChild(testChild)
+        val stateWithChild = viewModel.uiState.value
+        assertEquals(1, stateWithChild.eligibleServices.size) // Services eligible for child
+        
+        // Test with active filters
+        val filters = ServiceFilters(availability = ServiceFilters.Availability.AVAILABLE_ONLY)
+        viewModel.updateFilters(filters)
+        val stateWithFilters = viewModel.uiState.value
+        assertTrue(stateWithFilters.hasActiveFilters)
+    }
+    
+    @Test
+    fun `isOperationInProgress reflects loading and refreshing states`() = runTest {
+        // Test loading state
+        mockKidsRepository.getAvailableServicesResult = KidsResult.Success(testServices)
+        viewModel.loadServices()
+        assertTrue(viewModel.uiState.value.isOperationInProgress)
+        
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.isOperationInProgress)
+        
+        // Test refreshing state
+        viewModel.refreshServices()
+        assertTrue(viewModel.uiState.value.isOperationInProgress)
+        
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.isOperationInProgress)
     }
 }

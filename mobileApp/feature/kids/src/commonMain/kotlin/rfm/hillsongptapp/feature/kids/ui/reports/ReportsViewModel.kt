@@ -7,10 +7,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
-import rfm.hillsongptapp.feature.kids.domain.repository.KidsRepository
-import rfm.hillsongptapp.feature.kids.domain.model.AttendanceReport
-import rfm.hillsongptapp.feature.kids.domain.model.KidsService
-import rfm.hillsongptapp.feature.kids.domain.model.ServiceReport
+import rfm.hillsongptapp.core.data.repository.KidsRepository
+import rfm.hillsongptapp.core.data.repository.KidsResult
+import rfm.hillsongptapp.core.data.model.AttendanceReport
+import rfm.hillsongptapp.core.data.model.KidsService
+import rfm.hillsongptapp.core.data.model.ServiceReport
 
 /**
  * ViewModel for the Reports screen
@@ -45,19 +46,36 @@ class ReportsViewModel(
             try {
                 // Load available services
                 val servicesResult = kidsRepository.getAvailableServices()
-                if (servicesResult.isSuccess) {
-                    val services = servicesResult.getOrNull() ?: emptyList()
-                    _uiState.value = _uiState.value.copy(
-                        availableServices = services,
-                        selectedServices = services.map { it.id }.toSet()
-                    )
+                when (servicesResult) {
+                    is KidsResult.Success -> {
+                        val services = servicesResult.data
+                        _uiState.value = _uiState.value.copy(
+                            availableServices = services,
+                            selectedServices = services.map { it.id }.toSet()
+                        )
+                        
+                        // Load current service reports
+                        loadServiceReports()
+                        
+                        // Load attendance report for selected date range
+                        loadAttendanceReport()
+                    }
+                    is KidsResult.Error -> {
+                        _uiState.value = _uiState.value.copy(
+                            error = "Failed to load services: ${servicesResult.message}",
+                            isLoading = false
+                        )
+                    }
+                    is KidsResult.NetworkError -> {
+                        _uiState.value = _uiState.value.copy(
+                            error = "Network error loading services: ${servicesResult.message}",
+                            isLoading = false
+                        )
+                    }
+                    is KidsResult.Loading -> {
+                        // Should not happen in suspend function
+                    }
                 }
-                
-                // Load current service reports
-                loadServiceReports()
-                
-                // Load attendance report for selected date range
-                loadAttendanceReport()
                 
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
@@ -136,9 +154,18 @@ class ReportsViewModel(
             
             for (service in _uiState.value.availableServices) {
                 val reportResult = kidsRepository.getServiceReport(service.id)
-                if (reportResult.isSuccess) {
-                    reportResult.getOrNull()?.let { report ->
-                        serviceReports.add(report)
+                when (reportResult) {
+                    is KidsResult.Success -> {
+                        serviceReports.add(reportResult.data)
+                    }
+                    is KidsResult.Error -> {
+                        // Log error but continue with other services
+                    }
+                    is KidsResult.NetworkError -> {
+                        // Log error but continue with other services
+                    }
+                    is KidsResult.Loading -> {
+                        // Should not happen in suspend function
                     }
                 }
             }
@@ -166,36 +193,46 @@ class ReportsViewModel(
                 if (startDate.isNotBlank() && endDate.isNotBlank()) {
                     val reportResult = kidsRepository.getAttendanceReport(startDate, endDate)
                     
-                    if (reportResult.isSuccess) {
-                        val report = reportResult.getOrNull()
-                        
-                        // Filter report by selected services if needed
-                        val filteredReport = report?.let { originalReport ->
-                            if (_uiState.value.selectedServices.size < _uiState.value.availableServices.size) {
+                    when (reportResult) {
+                        is KidsResult.Success -> {
+                            val report = reportResult.data
+                            
+                            // Filter report by selected services if needed
+                            val filteredReport = if (_uiState.value.selectedServices.size < _uiState.value.availableServices.size) {
                                 // Filter the service breakdown to only include selected services
-                                val filteredServiceBreakdown = originalReport.serviceBreakdown
+                                val filteredServiceBreakdown = report.serviceBreakdown
                                     .filterKeys { serviceId -> _uiState.value.selectedServices.contains(serviceId) }
                                 
                                 val filteredTotalCheckIns = filteredServiceBreakdown.values.sum()
                                 
-                                originalReport.copy(
+                                report.copy(
                                     totalCheckIns = filteredTotalCheckIns,
                                     serviceBreakdown = filteredServiceBreakdown
                                 )
                             } else {
-                                originalReport
+                                report
                             }
+                            
+                            _uiState.value = _uiState.value.copy(
+                                attendanceReport = filteredReport,
+                                isLoading = false
+                            )
                         }
-                        
-                        _uiState.value = _uiState.value.copy(
-                            attendanceReport = filteredReport,
-                            isLoading = false
-                        )
-                    } else {
-                        _uiState.value = _uiState.value.copy(
-                            error = "Failed to load attendance report",
-                            isLoading = false
-                        )
+                        is KidsResult.Error -> {
+                            _uiState.value = _uiState.value.copy(
+                                error = "Failed to load attendance report: ${reportResult.message}",
+                                isLoading = false
+                            )
+                        }
+                        is KidsResult.NetworkError -> {
+                            _uiState.value = _uiState.value.copy(
+                                error = "Network error loading attendance report: ${reportResult.message}",
+                                isLoading = false
+                            )
+                        }
+                        is KidsResult.Loading -> {
+                            // Should not happen in suspend function
+                        }
                     }
                 }
             } catch (e: Exception) {

@@ -1,8 +1,8 @@
 package rfm.hillsongptapp.feature.kids.ui.reports
 
-import rfm.hillsongptapp.feature.kids.domain.model.AttendanceReport
-import rfm.hillsongptapp.feature.kids.domain.model.KidsService
-import rfm.hillsongptapp.feature.kids.domain.model.ServiceReport
+import rfm.hillsongptapp.core.data.model.AttendanceReport
+import rfm.hillsongptapp.core.data.model.KidsService
+import rfm.hillsongptapp.core.data.model.ServiceReport
 
 /**
  * UI state for the Reports screen

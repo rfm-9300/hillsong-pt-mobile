@@ -13,9 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import rfm.hillsongptapp.feature.kids.domain.model.Child
-import rfm.hillsongptapp.feature.kids.domain.model.CheckInStatus
-import rfm.hillsongptapp.feature.kids.domain.model.KidsService
+import rfm.hillsongptapp.core.data.model.Child
+import rfm.hillsongptapp.core.data.model.CheckInStatus
+import rfm.hillsongptapp.core.data.model.KidsService
 import rfm.hillsongptapp.feature.kids.ui.theme.KidsColors
 
 
@@ -98,13 +98,15 @@ fun ChildCard(
             }
             
             // Show last checkout time if recently checked out
-            if (child.status == CheckInStatus.CHECKED_OUT && child.checkOutTime != null) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Last checked out: ${formatTime(child.checkOutTime)}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            child.checkOutTime?.let { checkOutTime ->
+                if (child.status == CheckInStatus.CHECKED_OUT) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Last checked out: ${formatTime(checkOutTime)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -170,7 +172,7 @@ private fun StatusIndicator(
     status: CheckInStatus,
     modifier: Modifier = Modifier
 ) {
-    val (icon, color, text) = when (status) {
+    val statusInfo = when (status) {
         CheckInStatus.CHECKED_IN -> Triple(
             Icons.Filled.CheckCircle,
             KidsColors.CheckedInColor,
@@ -186,7 +188,14 @@ private fun StatusIndicator(
             KidsColors.NotInServiceColor,
             "Not in Service"
         )
+        else -> Triple(
+            Icons.Outlined.Warning,
+            KidsColors.NotInServiceColor,
+            "Unknown"
+        )
     }
+    
+    val (icon, color, text) = statusInfo
     
     Row(
         verticalAlignment = Alignment.CenterVertically,

@@ -7,8 +7,12 @@ import rfm.hillsongptapp.core.data.auth.AuthTokenProviderImpl
 import rfm.hillsongptapp.core.data.providers.databaseInstance
 import rfm.hillsongptapp.core.data.repository.PostRepository
 import rfm.hillsongptapp.core.data.repository.AuthRepository
+import rfm.hillsongptapp.core.data.repository.KidsRepository
 import rfm.hillsongptapp.core.data.repository.database.UserDao
 import rfm.hillsongptapp.core.data.repository.database.UserProfileDao
+import rfm.hillsongptapp.core.data.repository.database.ChildDao
+import rfm.hillsongptapp.core.data.repository.database.CheckInRecordDao
+import rfm.hillsongptapp.core.data.repository.database.KidsServiceDao
 import rfm.hillsongptapp.core.network.HillsongApiClient
 import rfm.hillsongptapp.core.network.auth.AuthTokenProvider
 import rfm.hillsongptapp.core.network.di.networkModule
@@ -23,6 +27,15 @@ val dataModule =
         }
         single<UserProfileDao> {
             databaseInstance().userProfileDao()
+        }
+        single<ChildDao> {
+            databaseInstance().childDao()
+        }
+        single<CheckInRecordDao> {
+            databaseInstance().checkInRecordDao()
+        }
+        single<KidsServiceDao> {
+            databaseInstance().kidsServiceDao()
         }
 
         // Auth Token Manager - handles token storage and refresh (without apiClient dependency for now)
@@ -56,4 +69,14 @@ val dataModule =
                 apiClient = get<HillsongApiClient>()
             )
         }
+
+        // TODO: Add KidsRepository implementation when KidsRepositoryImpl is created in task 5.2
+        // single<KidsRepository> {
+        //     KidsRepositoryImpl(
+        //         childDao = get<ChildDao>(),
+        //         checkInRecordDao = get<CheckInRecordDao>(),
+        //         kidsServiceDao = get<KidsServiceDao>(),
+        //         apiClient = get<HillsongApiClient>()
+        //     )
+        // }
     }

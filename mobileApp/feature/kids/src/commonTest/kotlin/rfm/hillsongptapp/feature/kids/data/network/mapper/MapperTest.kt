@@ -3,7 +3,7 @@ package rfm.hillsongptapp.feature.kids.data.network.mapper
 import kotlin.test.*
 import rfm.hillsongptapp.feature.kids.data.network.dto.*
 import rfm.hillsongptapp.feature.kids.data.network.mapper.*
-import rfm.hillsongptapp.feature.kids.domain.model.*
+import rfm.hillsongptapp.core.data.model.*
 
 class MapperTest {
     

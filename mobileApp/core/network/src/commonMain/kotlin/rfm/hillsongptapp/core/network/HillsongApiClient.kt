@@ -3,6 +3,7 @@ package rfm.hillsongptapp.core.network
 import rfm.hillsongptapp.core.network.api.AuthApiService
 import rfm.hillsongptapp.core.network.api.EventsApiService
 import rfm.hillsongptapp.core.network.api.GroupsApiService
+import rfm.hillsongptapp.core.network.api.KidsApiService
 import rfm.hillsongptapp.core.network.api.PostsApiService
 import rfm.hillsongptapp.core.network.api.PrayerApiService
 import rfm.hillsongptapp.core.network.api.ProfileApiService
@@ -25,7 +26,8 @@ class HillsongApiClient(
     val profile: ProfileApiService,
     val events: EventsApiService,
     val groups: GroupsApiService,
-    val prayer: PrayerApiService
+    val prayer: PrayerApiService,
+    val kids: KidsApiService
 ) {
     companion object {
         const val API_VERSION = "v1"

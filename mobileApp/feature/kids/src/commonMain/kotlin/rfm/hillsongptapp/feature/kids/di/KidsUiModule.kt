@@ -1,7 +1,7 @@
 package rfm.hillsongptapp.feature.kids.di
 
-import org.koin.core.module.dsl.viewModelOf
-import org.koin.dsl.module
+import org.koin.core.module.dsl.viewModel
+import org.koin.dsl.lazyModule
 import rfm.hillsongptapp.feature.kids.ui.KidsManagementViewModel
 import rfm.hillsongptapp.feature.kids.ui.checkin.CheckInViewModel
 import rfm.hillsongptapp.feature.kids.ui.checkout.CheckOutViewModel
@@ -11,19 +11,57 @@ import rfm.hillsongptapp.feature.kids.ui.reports.ReportsViewModel
 import rfm.hillsongptapp.feature.kids.ui.services.ServicesViewModel
 
 /**
- * Koin module for Kids Management UI layer dependencies
- * Note: This module is now included in the main featureKidsModule
- * @deprecated Use featureKidsModule instead
+ * Simplified Koin module for Kids Management UI layer dependencies
+ * Only contains ViewModels that depend on core repositories
+ * Follows the same pattern as feed and auth features
  */
-@Deprecated("Use featureKidsModule instead", ReplaceWith("featureKidsModule"))
-val kidsUiModule = module {
+val featureKidsModule = lazyModule {
     
-    // ViewModels
-    viewModelOf(::KidsManagementViewModel)
-    viewModelOf(::CheckInViewModel)
-    viewModelOf(::CheckOutViewModel)
-    viewModelOf(::ChildRegistrationViewModel)
-    viewModelOf(::ChildEditViewModel)
-    viewModelOf(::ReportsViewModel)
-    viewModelOf(::ServicesViewModel)
+    // ViewModels - using core repositories from DI
+    viewModel<KidsManagementViewModel> {
+        KidsManagementViewModel(
+            kidsRepository = get(),
+            authRepository = get()
+        )
+    }
+    
+    viewModel<CheckInViewModel> {
+        CheckInViewModel(
+            kidsRepository = get(),
+            authRepository = get()
+        )
+    }
+    
+    viewModel<CheckOutViewModel> {
+        CheckOutViewModel(
+            kidsRepository = get(),
+            authRepository = get()
+        )
+    }
+    
+    viewModel<ChildRegistrationViewModel> {
+        ChildRegistrationViewModel(
+            kidsRepository = get(),
+            authRepository = get()
+        )
+    }
+    
+    viewModel<ChildEditViewModel> {
+        ChildEditViewModel(
+            kidsRepository = get(),
+            authRepository = get()
+        )
+    }
+    
+    viewModel<ReportsViewModel> {
+        ReportsViewModel(
+            kidsRepository = get()
+        )
+    }
+    
+    viewModel<ServicesViewModel> {
+        ServicesViewModel(
+            kidsRepository = get()
+        )
+    }
 }

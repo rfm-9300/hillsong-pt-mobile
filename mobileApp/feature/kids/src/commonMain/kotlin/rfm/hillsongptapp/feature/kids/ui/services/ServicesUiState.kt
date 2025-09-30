@@ -1,7 +1,7 @@
 package rfm.hillsongptapp.feature.kids.ui.services
 
-import rfm.hillsongptapp.feature.kids.domain.model.Child
-import rfm.hillsongptapp.feature.kids.domain.model.KidsService
+import rfm.hillsongptapp.core.data.model.Child
+import rfm.hillsongptapp.core.data.model.KidsService
 
 /**
  * UI state for the Services screen

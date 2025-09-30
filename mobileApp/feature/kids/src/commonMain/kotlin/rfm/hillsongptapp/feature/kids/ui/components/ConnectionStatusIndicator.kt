@@ -15,7 +15,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import rfm.hillsongptapp.feature.kids.data.network.websocket.ConnectionStatus
+import rfm.hillsongptapp.feature.kids.ui.model.ConnectionStatus
+import rfm.hillsongptapp.feature.kids.ui.model.*
 
 /**
  * Connection status indicator component that shows the real-time connection status
@@ -43,17 +44,17 @@ fun ConnectionStatusIndicator(
             "Reconnecting...",
             true
         )
-        ConnectionStatus.DISCONNECTING -> Triple(
+        ConnectionStatus.DISCONNECTED -> Triple(
             Color(0xFF9E9E9E), // Gray
-            "Disconnecting...",
+            "Disconnected",
             false
         )
-        ConnectionStatus.DISCONNECTED -> Triple(
+        ConnectionStatus.OFFLINE -> Triple(
             Color(0xFF9E9E9E), // Gray
             "Offline",
             false
         )
-        ConnectionStatus.FAILED -> Triple(
+        ConnectionStatus.ERROR -> Triple(
             Color(0xFFF44336), // Red
             "Connection Failed",
             false
@@ -140,7 +141,7 @@ fun ConnectionStatusCard(
         colors = CardDefaults.cardColors(
             containerColor = when (connectionStatus) {
                 ConnectionStatus.CONNECTED -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f)
-                ConnectionStatus.FAILED -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f)
+                ConnectionStatus.ERROR -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f)
                 else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             }
         )
@@ -162,7 +163,7 @@ fun ConnectionStatusCard(
                 Spacer(modifier = Modifier.weight(1f))
                 
                 // Retry button for failed connections
-                if (connectionStatus == ConnectionStatus.FAILED && onRetryClick != null) {
+                if (connectionStatus == ConnectionStatus.ERROR && onRetryClick != null) {
                     TextButton(onClick = onRetryClick) {
                         Text("Retry")
                     }
@@ -174,9 +175,9 @@ fun ConnectionStatusCard(
                 ConnectionStatus.CONNECTED -> "Real-time updates are active. You'll receive live notifications for check-ins and status changes."
                 ConnectionStatus.CONNECTING -> "Establishing connection for real-time updates..."
                 ConnectionStatus.RECONNECTING -> "Connection lost. Attempting to reconnect..."
-                ConnectionStatus.DISCONNECTING -> "Disconnecting from real-time updates..."
                 ConnectionStatus.DISCONNECTED -> "Real-time updates are not available. Data will be refreshed manually."
-                ConnectionStatus.FAILED -> "Unable to establish real-time connection. You can still use the app with manual refresh."
+                ConnectionStatus.OFFLINE -> "Offline mode. Data will sync when connection is restored."
+                ConnectionStatus.ERROR -> "Unable to establish real-time connection. You can still use the app with manual refresh."
             }
             
             Text(
@@ -210,13 +211,13 @@ fun ConnectionStatusBanner(
     if (connectionStatus == ConnectionStatus.CONNECTED) return
     
     val backgroundColor = when (connectionStatus) {
-        ConnectionStatus.FAILED -> MaterialTheme.colorScheme.errorContainer
+        ConnectionStatus.ERROR -> MaterialTheme.colorScheme.errorContainer
         ConnectionStatus.CONNECTING, ConnectionStatus.RECONNECTING -> MaterialTheme.colorScheme.primaryContainer
         else -> MaterialTheme.colorScheme.surfaceVariant
     }
     
     val contentColor = when (connectionStatus) {
-        ConnectionStatus.FAILED -> MaterialTheme.colorScheme.onErrorContainer
+        ConnectionStatus.ERROR -> MaterialTheme.colorScheme.onErrorContainer
         ConnectionStatus.CONNECTING, ConnectionStatus.RECONNECTING -> MaterialTheme.colorScheme.onPrimaryContainer
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }

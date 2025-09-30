@@ -14,8 +14,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
-import rfm.hillsongptapp.feature.kids.domain.model.Child
-import rfm.hillsongptapp.feature.kids.domain.model.KidsService
+import rfm.hillsongptapp.core.data.model.Child
+import rfm.hillsongptapp.core.data.model.KidsService
 import rfm.hillsongptapp.feature.kids.ui.services.components.ServiceCard
 import rfm.hillsongptapp.feature.kids.ui.services.components.ServiceFilterDialog
 

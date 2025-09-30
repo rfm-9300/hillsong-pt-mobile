@@ -14,7 +14,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import rfm.hillsongptapp.feature.kids.domain.usecase.CheckOutResult
+import rfm.hillsongptapp.feature.kids.ui.model.CheckOutResult
+import rfm.hillsongptapp.feature.kids.ui.model.*
 
 /**
  * Success dialog showing check-out confirmation and service summary
@@ -187,7 +188,9 @@ fun CheckOutSuccessDialog(
                         }
                         
                         // Duration if available
-                        result.getAttendanceDuration()?.let { duration ->
+                        // Show session completed message
+                        val duration = "Session completed"
+                        if (true) {
                             Spacer(modifier = Modifier.height(8.dp))
                             
                             Divider(

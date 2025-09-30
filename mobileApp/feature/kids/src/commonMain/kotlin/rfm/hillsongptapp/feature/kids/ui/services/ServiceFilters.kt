@@ -31,7 +31,7 @@ data class ServiceFilters(
     /**
      * Check if a service matches the current filter criteria
      */
-    fun matches(service: rfm.hillsongptapp.feature.kids.domain.model.KidsService): Boolean {
+    fun matches(service: rfm.hillsongptapp.core.data.model.KidsService): Boolean {
         // Check availability filter
         when (availability) {
             Availability.AVAILABLE_ONLY -> {

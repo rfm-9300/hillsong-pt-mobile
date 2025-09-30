@@ -11,7 +11,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import rfm.hillsongptapp.feature.kids.domain.validation.ValidationResult
+import rfm.hillsongptapp.feature.kids.ui.model.ValidationResult
 
 /**
  * Enhanced text field with real-time validation

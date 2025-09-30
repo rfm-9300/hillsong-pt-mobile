@@ -4,7 +4,7 @@ import rfm.hillsongptapp.feature.kids.data.database.entity.CheckInRecordEntity
 import rfm.hillsongptapp.feature.kids.data.database.entity.ChildEntity
 import rfm.hillsongptapp.feature.kids.data.database.entity.KidsServiceEntity
 import rfm.hillsongptapp.feature.kids.data.network.dto.*
-import rfm.hillsongptapp.feature.kids.domain.model.*
+import rfm.hillsongptapp.core.data.model.*
 
 /**
  * Factory for creating test data objects

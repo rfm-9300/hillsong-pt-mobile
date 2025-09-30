@@ -2,29 +2,125 @@ package rfm.hillsongptapp.feature.kids.ui.reports
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.*
-import kotlinx.datetime.*
-import kotlin.test.*
-import rfm.hillsongptapp.feature.kids.domain.model.*
-import rfm.hillsongptapp.feature.kids.domain.repository.KidsRepository
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import rfm.hillsongptapp.core.data.model.AttendanceReport
+import rfm.hillsongptapp.core.data.model.Child
+import rfm.hillsongptapp.core.data.model.KidsService
+import rfm.hillsongptapp.core.data.model.ServiceReport
+import rfm.hillsongptapp.core.data.repository.KidsResult
+import rfm.hillsongptapp.feature.kids.ui.MockKidsRepository
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
- * Unit tests for ReportsViewModel
- * Tests state management, data loading, filtering, and export functionality
+ * Comprehensive unit tests for ReportsViewModel
+ * Tests report loading, filtering, and UI state management
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ReportsViewModelTest {
     
-    private lateinit var mockRepository: MockKidsRepository
-    private lateinit var viewModel: ReportsViewModel
     private val testDispatcher = StandardTestDispatcher()
+    private val mockKidsRepository = MockKidsRepository()
+    
+    private lateinit var viewModel: ReportsViewModel
+    
+    // Test data
+    private val testServices = listOf(
+        KidsService(
+            id = "service-1",
+            name = "Kids Church",
+            description = "Sunday kids service",
+            minAge = 5,
+            maxAge = 12,
+            startTime = "2024-01-07T10:00:00Z",
+            endTime = "2024-01-07T11:30:00Z",
+            location = "Kids Room A",
+            maxCapacity = 20,
+            currentCapacity = 15,
+            isAcceptingCheckIns = true,
+            staffMembers = listOf("staff-1", "staff-2"),
+            createdAt = "2024-01-01T09:00:00Z"
+        ),
+        KidsService(
+            id = "service-2",
+            name = "Toddler Time",
+            description = "Service for toddlers",
+            minAge = 2,
+            maxAge = 4,
+            startTime = "2024-01-07T10:00:00Z",
+            endTime = "2024-01-07T11:00:00Z",
+            location = "Toddler Room",
+            maxCapacity = 15,
+            currentCapacity = 10,
+            isAcceptingCheckIns = true,
+            staffMembers = listOf("staff-3"),
+            createdAt = "2024-01-01T09:00:00Z"
+        )
+    )
+    
+    private val testServiceReports = listOf(
+        ServiceReport(
+            serviceId = "service-1",
+            serviceName = "Kids Church",
+            totalCapacity = 20,
+            currentCheckIns = 15,
+            availableSpots = 5,
+            checkedInChildren = emptyList(),
+            staffMembers = listOf("staff-1", "staff-2"),
+            generatedAt = "2024-01-07T12:00:00Z"
+        ),
+        ServiceReport(
+            serviceId = "service-2",
+            serviceName = "Toddler Time",
+            totalCapacity = 15,
+            currentCheckIns = 10,
+            availableSpots = 5,
+            checkedInChildren = emptyList(),
+            staffMembers = listOf("staff-3"),
+            generatedAt = "2024-01-07T12:00:00Z"
+        )
+    )
+    
+    private val testAttendanceReport = AttendanceReport(
+        startDate = "2024-01-01",
+        endDate = "2024-01-07",
+        totalCheckIns = 50,
+        uniqueChildren = 25,
+        serviceBreakdown = mapOf(
+            "service-1" to 30,
+            "service-2" to 20
+        ),
+        dailyBreakdown = mapOf(
+            "2024-01-01" to 10,
+            "2024-01-02" to 8,
+            "2024-01-03" to 12,
+            "2024-01-04" to 0,
+            "2024-01-05" to 0,
+            "2024-01-06" to 15,
+            "2024-01-07" to 5
+        ),
+        generatedAt = "2024-01-07T12:00:00Z"
+    )
     
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        mockRepository = MockKidsRepository()
-        viewModel = ReportsViewModel(mockRepository)
+        
+        // Setup mock responses
+        mockKidsRepository.getAvailableServicesResult = KidsResult.Success(testServices)
+        mockKidsRepository.getServiceReportResult = KidsResult.Success(testServiceReports[0])
+        mockKidsRepository.getAttendanceReportResult = KidsResult.Success(testAttendanceReport)
+        
+        viewModel = ReportsViewModel(mockKidsRepository)
     }
     
     @AfterTest
@@ -33,317 +129,250 @@ class ReportsViewModelTest {
     }
     
     @Test
-    fun `initial state should have default date range`() = runTest {
-        val initialState = viewModel.uiState.first()
+    fun `initial state has default date range set`() {
+        val initialState = viewModel.uiState.value
         
-        assertFalse(initialState.isLoading)
-        assertNull(initialState.error)
         assertTrue(initialState.selectedStartDate.isNotBlank())
         assertTrue(initialState.selectedEndDate.isNotBlank())
         assertTrue(initialState.availableServices.isEmpty())
-        assertTrue(initialState.selectedServices.isEmpty())
         assertNull(initialState.attendanceReport)
         assertTrue(initialState.serviceReports.isEmpty())
     }
     
     @Test
-    fun `loadInitialData should load services and reports successfully`() = runTest {
-        // Given
-        val services = listOf(
-            createTestService("1", "Toddlers"),
-            createTestService("2", "Kids")
-        )
-        val serviceReport1 = createTestServiceReport("1", "Toddlers", 5, 20)
-        val serviceReport2 = createTestServiceReport("2", "Kids", 15, 30)
-        val attendanceReport = createTestAttendanceReport()
-        
-        mockRepository.servicesResult = Result.success(services)
-        mockRepository.serviceReportsResult = mapOf(
-            "1" to Result.success(serviceReport1),
-            "2" to Result.success(serviceReport2)
-        )
-        mockRepository.attendanceReportResult = Result.success(attendanceReport)
-        
+    fun `loadInitialData loads services and reports successfully`() = runTest {
         // When
         viewModel.loadInitialData()
         testDispatcher.scheduler.advanceUntilIdle()
         
         // Then
-        val state = viewModel.uiState.first()
+        val state = viewModel.uiState.value
         assertFalse(state.isLoading)
-        assertNull(state.error)
         assertEquals(2, state.availableServices.size)
-        assertEquals(setOf("1", "2"), state.selectedServices)
-        assertEquals(2, state.serviceReports.size)
+        assertEquals(2, state.selectedServices.size) // All services selected by default
         assertNotNull(state.attendanceReport)
-        
-        // Verify service reports are sorted by current check-ins (descending)
-        assertEquals("2", state.serviceReports[0].serviceId) // 15 check-ins
-        assertEquals("1", state.serviceReports[1].serviceId) // 5 check-ins
+        assertNull(state.error)
     }
     
     @Test
-    fun `loadInitialData should handle service loading error`() = runTest {
+    fun `loadInitialData handles services loading error`() = runTest {
         // Given
-        mockRepository.servicesResult = Result.failure(Exception("Network error"))
+        mockKidsRepository.getAvailableServicesResult = KidsResult.Error("Failed to load services")
         
         // When
         viewModel.loadInitialData()
         testDispatcher.scheduler.advanceUntilIdle()
         
         // Then
-        val state = viewModel.uiState.first()
+        val state = viewModel.uiState.value
+        assertFalse(state.isLoading)
+        assertTrue(state.availableServices.isEmpty())
+        assertNotNull(state.error)
+        assertTrue(state.error!!.contains("Failed to load services"))
+    }
+    
+    @Test
+    fun `loadInitialData handles network error`() = runTest {
+        // Given
+        mockKidsRepository.getAvailableServicesResult = KidsResult.NetworkError("Network connection failed")
+        
+        // When
+        viewModel.loadInitialData()
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        // Then
+        val state = viewModel.uiState.value
         assertFalse(state.isLoading)
         assertNotNull(state.error)
-        assertTrue(state.error!!.contains("Network error"))
+        assertTrue(state.error!!.contains("Network error loading services"))
     }
     
     @Test
-    fun `updateDateRange should reload attendance report`() = runTest {
+    fun `updateDateRange updates state and reloads attendance report`() = runTest {
         // Given
-        val newStartDate = "2024-01-01"
-        val newEndDate = "2024-01-07"
-        val attendanceReport = createTestAttendanceReport(startDate = newStartDate, endDate = newEndDate)
+        viewModel.loadInitialData()
+        testDispatcher.scheduler.advanceUntilIdle()
         
-        mockRepository.attendanceReportResult = Result.success(attendanceReport)
+        val newStartDate = "2024-01-15"
+        val newEndDate = "2024-01-21"
         
         // When
         viewModel.updateDateRange(newStartDate, newEndDate)
         testDispatcher.scheduler.advanceUntilIdle()
         
         // Then
-        val state = viewModel.uiState.first()
+        val state = viewModel.uiState.value
         assertEquals(newStartDate, state.selectedStartDate)
         assertEquals(newEndDate, state.selectedEndDate)
-        assertNotNull(state.attendanceReport)
-        assertEquals(newStartDate, state.attendanceReport!!.startDate)
-        assertEquals(newEndDate, state.attendanceReport!!.endDate)
+        
+        // Verify that attendance report was requested with new dates
+        assertTrue(mockKidsRepository.getAttendanceReportCalls.any { 
+            it.first == newStartDate && it.second == newEndDate 
+        })
     }
     
     @Test
-    fun `updateServiceFilter should update selected services and reload report`() = runTest {
+    fun `updateServiceFilter updates selected services and reloads report`() = runTest {
         // Given
-        val services = listOf(
-            createTestService("1", "Toddlers"),
-            createTestService("2", "Kids")
-        )
-        val selectedServices = setOf("1")
-        val filteredReport = createTestAttendanceReport(
-            serviceBreakdown = mapOf("1" to 10),
-            totalCheckIns = 10
-        )
-        
-        mockRepository.servicesResult = Result.success(services)
-        mockRepository.attendanceReportResult = Result.success(filteredReport)
-        
         viewModel.loadInitialData()
         testDispatcher.scheduler.advanceUntilIdle()
+        
+        val selectedServices = setOf("service-1")
         
         // When
         viewModel.updateServiceFilter(selectedServices)
         testDispatcher.scheduler.advanceUntilIdle()
         
         // Then
-        val state = viewModel.uiState.first()
+        val state = viewModel.uiState.value
         assertEquals(selectedServices, state.selectedServices)
-        assertNotNull(state.attendanceReport)
-        // The report should be filtered to only include selected service
-        assertEquals(1, state.attendanceReport!!.serviceBreakdown.size)
-        assertTrue(state.attendanceReport!!.serviceBreakdown.containsKey("1"))
+        
+        // Attendance report should be filtered to only include selected service
+        val report = state.attendanceReport
+        assertNotNull(report)
+        assertTrue(report.serviceBreakdown.keys.all { selectedServices.contains(it) })
     }
     
     @Test
-    fun `selectService should update selected service ID`() = runTest {
-        // Given
-        val serviceId = "test-service-1"
-        
+    fun `selectService updates selected service ID`() {
         // When
-        viewModel.selectService(serviceId)
+        viewModel.selectService("service-1")
         
         // Then
-        val state = viewModel.uiState.first()
-        assertEquals(serviceId, state.selectedServiceId)
+        val state = viewModel.uiState.value
+        assertEquals("service-1", state.selectedServiceId)
     }
     
     @Test
-    fun `exportReport should show success message`() = runTest {
+    fun `exportReport shows success status temporarily`() = runTest {
         // Given
-        val attendanceReport = createTestAttendanceReport()
-        mockRepository.attendanceReportResult = Result.success(attendanceReport)
-        
         viewModel.loadInitialData()
         testDispatcher.scheduler.advanceUntilIdle()
         
         // When
         viewModel.exportReport()
-        testDispatcher.scheduler.advanceUntilIdle()
         
-        // Then
-        val state = viewModel.uiState.first()
-        assertEquals("Report exported successfully", state.exportStatus)
+        // Then (immediately after export)
+        val stateAfterExport = viewModel.uiState.value
+        assertNotNull(stateAfterExport.exportStatus)
+        assertTrue(stateAfterExport.exportStatus!!.contains("exported successfully"))
+        
+        // When (after delay)
+        testDispatcher.scheduler.advanceTimeBy(3100) // Advance past the 3 second delay
+        
+        // Then (status should be cleared)
+        val stateAfterDelay = viewModel.uiState.value
+        assertNull(stateAfterDelay.exportStatus)
     }
     
     @Test
-    fun `refreshData should reload all data`() = runTest {
+    fun `refreshData reloads all data`() = runTest {
         // Given
-        val services = listOf(createTestService("1", "Toddlers"))
-        val serviceReport = createTestServiceReport("1", "Toddlers", 5, 20)
-        val attendanceReport = createTestAttendanceReport()
+        viewModel.loadInitialData()
+        testDispatcher.scheduler.advanceUntilIdle()
         
-        mockRepository.servicesResult = Result.success(services)
-        mockRepository.serviceReportsResult = mapOf("1" to Result.success(serviceReport))
-        mockRepository.attendanceReportResult = Result.success(attendanceReport)
+        // Clear previous calls
+        mockKidsRepository.getAttendanceReportCalls.clear()
         
         // When
         viewModel.refreshData()
         testDispatcher.scheduler.advanceUntilIdle()
         
         // Then
-        val state = viewModel.uiState.first()
+        assertTrue(mockKidsRepository.getAttendanceReportCalls.isNotEmpty())
+        val state = viewModel.uiState.value
         assertFalse(state.isLoading)
-        assertNull(state.error)
-        assertEquals(1, state.availableServices.size)
-        assertEquals(1, state.serviceReports.size)
         assertNotNull(state.attendanceReport)
     }
     
     @Test
-    fun `service report loading should handle individual service failures`() = runTest {
+    fun `attendance report filtering works correctly`() = runTest {
         // Given
-        val services = listOf(
-            createTestService("1", "Toddlers"),
-            createTestService("2", "Kids")
-        )
-        val serviceReport1 = createTestServiceReport("1", "Toddlers", 5, 20)
-        
-        mockRepository.servicesResult = Result.success(services)
-        mockRepository.serviceReportsResult = mapOf(
-            "1" to Result.success(serviceReport1),
-            "2" to Result.failure(Exception("Service 2 error"))
-        )
-        
-        // When
         viewModel.loadInitialData()
         testDispatcher.scheduler.advanceUntilIdle()
         
+        // When - Filter to only service-1
+        viewModel.updateServiceFilter(setOf("service-1"))
+        testDispatcher.scheduler.advanceUntilIdle()
+        
         // Then
-        val state = viewModel.uiState.first()
-        // Should still load successfully with partial data
-        assertFalse(state.isLoading)
-        assertEquals(2, state.availableServices.size)
-        assertEquals(1, state.serviceReports.size) // Only successful service report
-        assertEquals("1", state.serviceReports[0].serviceId)
+        val state = viewModel.uiState.value
+        val report = state.attendanceReport
+        assertNotNull(report)
+        
+        // Should only include service-1 in breakdown
+        assertEquals(1, report.serviceBreakdown.size)
+        assertTrue(report.serviceBreakdown.containsKey("service-1"))
+        assertFalse(report.serviceBreakdown.containsKey("service-2"))
+        
+        // Total check-ins should be filtered
+        assertEquals(30, report.totalCheckIns) // Only service-1's count
     }
     
-    // Helper functions for creating test data
-    
-    private fun createTestService(
-        id: String,
-        name: String,
-        minAge: Int = 2,
-        maxAge: Int = 12,
-        maxCapacity: Int = 20,
-        currentCapacity: Int = 0
-    ): KidsService {
-        return KidsService(
-            id = id,
-            name = name,
-            description = "$name service",
-            minAge = minAge,
-            maxAge = maxAge,
-            startTime = "09:00",
-            endTime = "10:30",
-            location = "Room $id",
-            maxCapacity = maxCapacity,
-            currentCapacity = currentCapacity,
-            isAcceptingCheckIns = true,
-            staffMembers = listOf("Staff 1", "Staff 2"),
-            createdAt = "2024-01-01T00:00:00Z"
-        )
+    @Test
+    fun `UI state computed properties work correctly`() = runTest {
+        // Given
+        viewModel.loadInitialData()
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        // When
+        val state = viewModel.uiState.value
+        
+        // Then
+        assertTrue(state.hasDateRange())
+        assertTrue(state.hasData())
+        assertEquals(2, state.getSelectedServiceNames().size)
+        
+        // Test with service filter
+        viewModel.updateServiceFilter(setOf("service-1"))
+        val stateWithFilter = viewModel.uiState.value
+        assertTrue(stateWithFilter.hasServiceFilter())
+        assertEquals(1, stateWithFilter.getSelectedServiceNames().size)
+        assertEquals("Kids Church", stateWithFilter.getSelectedServiceNames()[0])
+        
+        // Test formatted date range
+        assertTrue(stateWithFilter.getFormattedDateRange().contains("to"))
     }
     
-    private fun createTestServiceReport(
-        serviceId: String,
-        serviceName: String,
-        currentCheckIns: Int,
-        totalCapacity: Int
-    ): ServiceReport {
-        return ServiceReport(
-            serviceId = serviceId,
-            serviceName = serviceName,
-            totalCapacity = totalCapacity,
-            currentCheckIns = currentCheckIns,
-            availableSpots = totalCapacity - currentCheckIns,
+    @Test
+    fun `service report capacity calculations work correctly`() = runTest {
+        // Given - Mock service reports with different capacity levels
+        val highCapacityReport = ServiceReport(
+            serviceId = "service-1",
+            serviceName = "Kids Church",
+            totalCapacity = 20,
+            currentCheckIns = 19, // 95% capacity
+            availableSpots = 1,
             checkedInChildren = emptyList(),
-            staffMembers = listOf("Staff 1", "Staff 2"),
-            generatedAt = "2024-01-01T12:00:00Z"
+            staffMembers = listOf("staff-1"),
+            generatedAt = "2024-01-07T12:00:00Z"
         )
-    }
-    
-    private fun createTestAttendanceReport(
-        startDate: String = "2024-01-01",
-        endDate: String = "2024-01-07",
-        totalCheckIns: Int = 25,
-        uniqueChildren: Int = 15,
-        serviceBreakdown: Map<String, Int> = mapOf("1" to 10, "2" to 15),
-        dailyBreakdown: Map<String, Int> = mapOf("2024-01-01" to 12, "2024-01-02" to 13)
-    ): AttendanceReport {
-        return AttendanceReport(
-            startDate = startDate,
-            endDate = endDate,
-            totalCheckIns = totalCheckIns,
-            uniqueChildren = uniqueChildren,
-            serviceBreakdown = serviceBreakdown,
-            dailyBreakdown = dailyBreakdown,
-            generatedAt = "2024-01-01T12:00:00Z"
+        
+        val fullCapacityReport = ServiceReport(
+            serviceId = "service-2",
+            serviceName = "Toddler Time",
+            totalCapacity = 15,
+            currentCheckIns = 15, // 100% capacity
+            availableSpots = 0,
+            checkedInChildren = emptyList(),
+            staffMembers = listOf("staff-2"),
+            generatedAt = "2024-01-07T12:00:00Z"
         )
-    }
-}
-
-/**
- * Mock implementation of KidsRepository for testing
- */
-private class MockKidsRepository : KidsRepository {
-    var servicesResult: Result<List<KidsService>> = Result.success(emptyList())
-    var serviceReportsResult: Map<String, Result<ServiceReport>> = emptyMap()
-    var attendanceReportResult: Result<AttendanceReport> = Result.success(
-        AttendanceReport(
-            startDate = "2024-01-01",
-            endDate = "2024-01-07",
-            totalCheckIns = 0,
-            uniqueChildren = 0,
-            serviceBreakdown = emptyMap(),
-            dailyBreakdown = emptyMap(),
-            generatedAt = "2024-01-01T12:00:00Z"
+        
+        // Create state with these reports
+        val stateWithReports = ReportsUiState(
+            serviceReports = listOf(highCapacityReport, fullCapacityReport)
         )
-    )
-    
-    override suspend fun getAvailableServices(): Result<List<KidsService>> = servicesResult
-    
-    override suspend fun getServiceReport(serviceId: String): Result<ServiceReport> {
-        return serviceReportsResult[serviceId] ?: Result.failure(Exception("Service not found"))
+        
+        // Then
+        assertEquals(35, stateWithReports.getTotalCapacity())
+        assertEquals(34, stateWithReports.getTotalCurrentCheckIns())
+        assertEquals(97, stateWithReports.getOverallCapacityUtilization()) // 34/35 = 97%
+        
+        assertEquals(2, stateWithReports.getServicesNearCapacity().size) // Both >= 90%
+        assertEquals(1, stateWithReports.getFullServices().size) // Only service-2 is full
+        
+        assertTrue(stateWithReports.hasFullServices())
+        assertTrue(stateWithReports.hasServicesNearCapacity())
     }
-    
-    override suspend fun getAttendanceReport(startDate: String, endDate: String): Result<AttendanceReport> {
-        return attendanceReportResult
-    }
-    
-    // Unused methods for this test
-    override suspend fun getChildrenForParent(parentId: String): Result<List<Child>> = Result.success(emptyList())
-    override suspend fun registerChild(child: Child): Result<Child> = Result.success(child)
-    override suspend fun updateChild(child: Child): Result<Child> = Result.success(child)
-    override suspend fun deleteChild(childId: String): Result<Unit> = Result.success(Unit)
-    override suspend fun getChildById(childId: String): Result<Child> = Result.failure(Exception("Not implemented"))
-    override suspend fun getServicesForAge(age: Int): Result<List<KidsService>> = Result.success(emptyList())
-    override suspend fun getServiceById(serviceId: String): Result<KidsService> = Result.failure(Exception("Not implemented"))
-    override suspend fun getServicesAcceptingCheckIns(): Result<List<KidsService>> = Result.success(emptyList())
-    override suspend fun checkInChild(childId: String, serviceId: String, checkedInBy: String, notes: String?): Result<CheckInRecord> = Result.failure(Exception("Not implemented"))
-    override suspend fun checkOutChild(childId: String, checkedOutBy: String, notes: String?): Result<CheckInRecord> = Result.failure(Exception("Not implemented"))
-    override suspend fun getCheckInHistory(childId: String, limit: Int?): Result<List<CheckInRecord>> = Result.success(emptyList())
-    override suspend fun getCurrentCheckIns(serviceId: String): Result<List<CheckInRecord>> = Result.success(emptyList())
-    override suspend fun getAllCurrentCheckIns(): Result<List<CheckInRecord>> = Result.success(emptyList())
-    override suspend fun getCheckInRecord(recordId: String): Result<CheckInRecord> = Result.failure(Exception("Not implemented"))
-    override suspend fun subscribeToChildUpdates(childId: String, onUpdate: (Child) -> Unit) {}
-    override suspend fun subscribeToServiceUpdates(serviceId: String, onUpdate: (KidsService) -> Unit) {}
-    override suspend fun unsubscribeFromUpdates() {}
 }

@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import rfm.hillsongptapp.feature.kids.domain.usecase.EligibleServiceInfo
+import rfm.hillsongptapp.feature.kids.ui.model.EligibleServiceInfo
 
 /**
  * Card component for displaying an eligible service with selection capability

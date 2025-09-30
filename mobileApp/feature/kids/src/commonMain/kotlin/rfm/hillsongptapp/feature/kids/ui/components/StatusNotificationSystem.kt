@@ -20,8 +20,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
-import rfm.hillsongptapp.feature.kids.data.network.websocket.StatusNotification
-import rfm.hillsongptapp.feature.kids.data.network.websocket.NotificationType
+import rfm.hillsongptapp.feature.kids.ui.model.StatusNotification
+import rfm.hillsongptapp.feature.kids.ui.model.NotificationType
+import rfm.hillsongptapp.feature.kids.ui.model.*
 
 /**
  * Notification system for displaying status change notifications
@@ -135,7 +136,7 @@ private fun NotificationContent(
                 
                 // Timestamp
                 Text(
-                    text = formatTimestamp(notification.timestamp),
+                    text = formatTimestamp(notification.timestamp.toEpochMilliseconds()),
                     fontSize = 10.sp,
                     color = contentColor.copy(alpha = 0.7f)
                 )
@@ -160,48 +161,51 @@ private fun NotificationContent(
 @Composable
 private fun getNotificationStyle(type: NotificationType): Triple<Color, Color, ImageVector> {
     return when (type) {
-        NotificationType.CONNECTION_ESTABLISHED -> Triple(
-            MaterialTheme.colorScheme.primaryContainer,
-            MaterialTheme.colorScheme.onPrimaryContainer,
-            Icons.Default.Warning
-        )
-        NotificationType.CONNECTION_LOST -> Triple(
-            MaterialTheme.colorScheme.errorContainer,
-            MaterialTheme.colorScheme.onErrorContainer,
-            Icons.Default.Warning        )
-        NotificationType.CONNECTION_FAILED -> Triple(
-            MaterialTheme.colorScheme.errorContainer,
-            MaterialTheme.colorScheme.onErrorContainer,
-            Icons.Default.Warning        )
-        NotificationType.CHILD_STATUS_CHANGED -> Triple(
-            MaterialTheme.colorScheme.secondaryContainer,
-            MaterialTheme.colorScheme.onSecondaryContainer,
-            Icons.Default.Person
-        )
-        NotificationType.CHILD_CHECKED_IN -> Triple(
+        NotificationType.SUCCESS -> Triple(
             MaterialTheme.colorScheme.primaryContainer,
             MaterialTheme.colorScheme.onPrimaryContainer,
             Icons.Default.CheckCircle
         )
-        NotificationType.CHILD_CHECKED_OUT -> Triple(
-            MaterialTheme.colorScheme.tertiaryContainer,
-            MaterialTheme.colorScheme.onTertiaryContainer,
-            Icons.Default.ExitToApp
-        )
-        NotificationType.SERVICE_FULL -> Triple(
+        NotificationType.WARNING -> Triple(
             MaterialTheme.colorScheme.errorContainer,
             MaterialTheme.colorScheme.onErrorContainer,
             Icons.Default.Warning
-        )
-        NotificationType.SERVICE_AVAILABLE -> Triple(
-            MaterialTheme.colorScheme.primaryContainer,
-            MaterialTheme.colorScheme.onPrimaryContainer,
-            Icons.Default.CheckCircle
         )
         NotificationType.ERROR -> Triple(
             MaterialTheme.colorScheme.errorContainer,
             MaterialTheme.colorScheme.onErrorContainer,
-            Icons.Default.Warning        )
+            Icons.Default.Warning
+        )
+        NotificationType.INFO -> Triple(
+            MaterialTheme.colorScheme.secondaryContainer,
+            MaterialTheme.colorScheme.onSecondaryContainer,
+            Icons.Default.Info
+        )
+        NotificationType.CHECK_IN -> Triple(
+            MaterialTheme.colorScheme.primaryContainer,
+            MaterialTheme.colorScheme.onPrimaryContainer,
+            Icons.Default.CheckCircle
+        )
+        NotificationType.CHECK_OUT -> Triple(
+            MaterialTheme.colorScheme.tertiaryContainer,
+            MaterialTheme.colorScheme.onTertiaryContainer,
+            Icons.Default.ExitToApp
+        )
+        NotificationType.SYNC -> Triple(
+            MaterialTheme.colorScheme.surfaceVariant,
+            MaterialTheme.colorScheme.onSurfaceVariant,
+            Icons.Default.Refresh
+        )
+        NotificationType.REGISTRATION -> Triple(
+            MaterialTheme.colorScheme.primaryContainer,
+            MaterialTheme.colorScheme.onPrimaryContainer,
+            Icons.Default.Person
+        )
+        NotificationType.SYSTEM -> Triple(
+            MaterialTheme.colorScheme.surfaceVariant,
+            MaterialTheme.colorScheme.onSurfaceVariant,
+            Icons.Default.Settings
+        )
     }
 }
 

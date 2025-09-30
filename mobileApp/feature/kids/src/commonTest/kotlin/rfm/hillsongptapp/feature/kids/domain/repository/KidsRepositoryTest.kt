@@ -1,10 +1,10 @@
 package rfm.hillsongptapp.feature.kids.domain.repository
 
-import rfm.hillsongptapp.feature.kids.domain.model.CheckInStatus
-import rfm.hillsongptapp.feature.kids.domain.model.Child
-import rfm.hillsongptapp.feature.kids.domain.model.CheckInRecord
-import rfm.hillsongptapp.feature.kids.domain.model.EmergencyContact
-import rfm.hillsongptapp.feature.kids.domain.model.KidsService
+import rfm.hillsongptapp.core.data.model.CheckInStatus
+import rfm.hillsongptapp.core.data.model.Child
+import rfm.hillsongptapp.core.data.model.CheckInRecord
+import rfm.hillsongptapp.core.data.model.EmergencyContact
+import rfm.hillsongptapp.core.data.model.KidsService
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

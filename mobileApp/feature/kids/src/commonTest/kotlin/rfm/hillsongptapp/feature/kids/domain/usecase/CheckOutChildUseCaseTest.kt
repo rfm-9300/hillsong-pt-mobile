@@ -2,7 +2,7 @@ package rfm.hillsongptapp.feature.kids.domain.usecase
 
 import kotlinx.coroutines.test.runTest
 import rfm.hillsongptapp.feature.kids.data.network.error.KidsManagementError
-import rfm.hillsongptapp.feature.kids.domain.model.*
+import rfm.hillsongptapp.core.data.model.*
 import rfm.hillsongptapp.feature.kids.domain.repository.KidsRepository
 import kotlin.test.*
 

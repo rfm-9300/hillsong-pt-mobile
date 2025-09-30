@@ -1,4 +1,4 @@
-package rfm.hillsongptapp.feature.kids.domain.model
+package rfm.hillsongptapp.core.data.model
 
 import kotlinx.serialization.json.Json
 import kotlin.test.Test

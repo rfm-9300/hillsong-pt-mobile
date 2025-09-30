@@ -6,13 +6,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import rfm.hillsongptapp.feature.kids.domain.repository.KidsRepository
-import rfm.hillsongptapp.feature.kids.domain.usecase.CheckOutChildUseCase
-import rfm.hillsongptapp.feature.kids.domain.usecase.CheckOutEligibilityInfo
-import rfm.hillsongptapp.feature.kids.domain.usecase.CheckOutResult
-import rfm.hillsongptapp.feature.kids.domain.model.Child
-import rfm.hillsongptapp.feature.kids.domain.model.KidsService
-import co.touchlab.kermit.Logger
+import rfm.hillsongptapp.core.data.model.Child
+import rfm.hillsongptapp.core.data.model.KidsService
+import rfm.hillsongptapp.core.data.model.CheckInRecord
+import rfm.hillsongptapp.core.data.repository.KidsRepository
+import rfm.hillsongptapp.core.data.repository.KidsResult
+import rfm.hillsongptapp.core.data.repository.AuthRepository
+import rfm.hillsongptapp.logging.LoggerHelper
 
 /**
  * ViewModel for the Check-Out screen
@@ -20,16 +20,34 @@ import co.touchlab.kermit.Logger
  */
 class CheckOutViewModel(
     private val kidsRepository: KidsRepository,
-    private val checkOutChildUseCase: CheckOutChildUseCase
+    private val authRepository: AuthRepository
 ) : ViewModel() {
     
-    private val logger = Logger.withTag("CheckOutViewModel")
+    private val logger = LoggerHelper
     
     private val _uiState = MutableStateFlow(CheckOutUiState())
     val uiState: StateFlow<CheckOutUiState> = _uiState.asStateFlow()
     
-    // TODO: Get actual parent ID from user session/authentication
-    private val currentParentId = "parent_123"
+    // Current parent ID from user session/authentication
+    private var currentParentId = ""
+    
+    init {
+        loadCurrentUser()
+    }
+    
+    /**
+     * Load current user information
+     */
+    private fun loadCurrentUser() {
+        viewModelScope.launch {
+            try {
+                val user = authRepository.getUserById(1) // Assuming user ID 1 is logged in
+                currentParentId = user?.id?.toString() ?: ""
+            } catch (e: Exception) {
+                LoggerHelper.logError("Failed to load current user", e)
+            }
+        }
+    }
     
     /**
      * Load child information and check-out eligibility
@@ -45,39 +63,46 @@ class CheckOutViewModel(
             try {
                 // Load child information
                 val childResult = kidsRepository.getChildById(childId)
-                if (childResult.isFailure) {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        error = "Child not found: ${childResult.exceptionOrNull()?.message}"
-                    )
-                    return@launch
+                when (childResult) {
+                    is KidsResult.Success -> {
+                        val child = childResult.data
+                        LoggerHelper.logDebug("Loaded child: ${child.name}, status: ${child.status}")
+                        
+                        // Load current service if child is checked in
+                        val currentService = child.currentServiceId?.let { serviceId ->
+                            val serviceResult = kidsRepository.getServiceById(serviceId)
+                            when (serviceResult) {
+                                is KidsResult.Success -> serviceResult.data
+                                else -> null
+                            }
+                        }
+                        
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            child = child,
+                            currentService = currentService,
+                            error = null
+                        )
+                    }
+                    is KidsResult.Error -> {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            error = "Failed to load child: ${childResult.message}"
+                        )
+                    }
+                    is KidsResult.NetworkError -> {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            error = "Network error loading child: ${childResult.message}"
+                        )
+                    }
+                    is KidsResult.Loading -> {
+                        // Should not happen in suspend function
+                    }
                 }
-                
-                val child = childResult.getOrThrow()
-                logger.d { "Loaded child: ${child.name}, status: ${child.status}" }
-                
-                // Load current service if child is checked in
-                val currentService = if (child.currentServiceId != null) {
-                    val serviceResult = kidsRepository.getServiceById(child.currentServiceId)
-                    serviceResult.getOrNull()
-                } else {
-                    null
-                }
-                
-                // Get check-out eligibility information
-                val eligibilityResult = checkOutChildUseCase.getCheckOutEligibilityInfo(childId)
-                val eligibilityInfo = eligibilityResult.getOrNull()
-                
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    child = child,
-                    currentService = currentService,
-                    eligibilityInfo = eligibilityInfo,
-                    error = null
-                )
                 
             } catch (e: Exception) {
-                logger.e(e) { "Error loading child information" }
+                LoggerHelper.logError("Error loading child information", e)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     error = "Failed to load child information: ${e.message}"
@@ -90,7 +115,7 @@ class CheckOutViewModel(
      * Start the check-out process with parent verification
      */
     fun startCheckOutProcess() {
-        logger.d { "Starting check-out process" }
+        LoggerHelper.logDebug("Starting check-out process")
         _uiState.value = _uiState.value.copy(
             showParentVerification = true
         )
@@ -100,7 +125,7 @@ class CheckOutViewModel(
      * Handle parent verification completion
      */
     fun onParentVerified() {
-        logger.d { "Parent verification completed" }
+        LoggerHelper.logDebug("Parent verification completed")
         _uiState.value = _uiState.value.copy(
             showParentVerification = false,
             showCheckOutConfirmation = true
@@ -128,10 +153,10 @@ class CheckOutViewModel(
     /**
      * Confirm and execute the check-out
      */
-    fun confirmCheckOut() {
+    fun confirmCheckOut(notes: String? = null) {
         val childId = _uiState.value.childId
         if (childId == null) {
-            logger.e { "Cannot check out: child ID is null" }
+            LoggerHelper.logError("Cannot check out: child ID is null")
             return
         }
         
@@ -142,34 +167,45 @@ class CheckOutViewModel(
             )
             
             try {
-                logger.d { "Executing check-out for child $childId" }
-                val result = checkOutChildUseCase.execute(
+                LoggerHelper.logDebug("Executing check-out for child $childId")
+                val result = kidsRepository.checkOutChild(
                     childId = childId,
                     checkedOutBy = currentParentId,
-                    notes = null // Could be extended to allow notes
+                    notes = notes
                 )
                 
-                result.fold(
-                    onSuccess = { checkOutResult ->
-                        logger.i { "Check-out successful for child " }
+                when (result) {
+                    is KidsResult.Success -> {
+                        LoggerHelper.logInfo("Check-out successful for child")
                         _uiState.value = _uiState.value.copy(
                             isCheckingOut = false,
-                            checkOutResult = checkOutResult as CheckOutResult?,
+                            checkOutRecord = result.data,
                             showSuccessDialog = true
                         )
-                    },
-                    onFailure = { error ->
-                        logger.e { "Check-out failed: ${error.message}" }
+                    }
+                    is KidsResult.Error -> {
+                        LoggerHelper.logError("Check-out failed: ${result.message}")
                         _uiState.value = _uiState.value.copy(
                             isCheckingOut = false,
-                            checkOutError = error.message ?: "Check-out failed",
+                            checkOutError = result.message,
                             showErrorDialog = true
                         )
                     }
-                )
+                    is KidsResult.NetworkError -> {
+                        LoggerHelper.logError("Network error during check-out: ${result.message}")
+                        _uiState.value = _uiState.value.copy(
+                            isCheckingOut = false,
+                            checkOutError = "Network error: ${result.message}",
+                            showErrorDialog = true
+                        )
+                    }
+                    is KidsResult.Loading -> {
+                        // Should not happen in suspend function
+                    }
+                }
                 
             } catch (e: Exception) {
-                logger.e(e) { "Unexpected error during check-out" }
+                LoggerHelper.logError("Unexpected error during check-out", e)
                 _uiState.value = _uiState.value.copy(
                     isCheckingOut = false,
                     checkOutError = "Unexpected error: ${e.message}",
@@ -185,7 +221,7 @@ class CheckOutViewModel(
     fun hideSuccessDialog() {
         _uiState.value = _uiState.value.copy(
             showSuccessDialog = false,
-            checkOutResult = null
+            checkOutRecord = null
         )
     }
     
@@ -222,7 +258,6 @@ data class CheckOutUiState(
     val childId: String? = null,
     val child: Child? = null,
     val currentService: KidsService? = null,
-    val eligibilityInfo: CheckOutEligibilityInfo? = null,
     val isLoading: Boolean = false,
     val isCheckingOut: Boolean = false,
     val error: String? = null,
@@ -230,7 +265,7 @@ data class CheckOutUiState(
     val showCheckOutConfirmation: Boolean = false,
     val showSuccessDialog: Boolean = false,
     val showErrorDialog: Boolean = false,
-    val checkOutResult: CheckOutResult? = null,
+    val checkOutRecord: CheckInRecord? = null,
     val checkOutError: String? = null
 ) {
     /**
@@ -243,5 +278,5 @@ data class CheckOutUiState(
      * Check if the child can be checked out
      */
     val canCheckOut: Boolean
-        get() = eligibilityInfo?.canCheckOut == true
+        get() = child?.status?.canBeCheckedOut() == true
 }

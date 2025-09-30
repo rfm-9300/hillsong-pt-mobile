@@ -1,6 +1,6 @@
 package rfm.hillsongptapp.feature.kids.domain.validation
 
-import rfm.hillsongptapp.feature.kids.domain.model.EmergencyContact
+import rfm.hillsongptapp.core.data.model.EmergencyContact
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

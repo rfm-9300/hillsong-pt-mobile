@@ -6,15 +6,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import rfm.hillsongptapp.feature.kids.domain.model.Child
-import rfm.hillsongptapp.feature.kids.domain.repository.KidsRepository
+import rfm.hillsongptapp.core.data.model.Child
+import rfm.hillsongptapp.core.data.repository.KidsRepository
+import rfm.hillsongptapp.core.data.repository.KidsResult
+import rfm.hillsongptapp.core.data.repository.AuthRepository
 
 /**
  * ViewModel for Child Edit screen
  * Manages form state, validation, and child update operations with optimistic updates
  */
 class ChildEditViewModel(
-    private val kidsRepository: KidsRepository
+    private val kidsRepository: KidsRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(ChildEditUiState())
@@ -23,13 +26,32 @@ class ChildEditViewModel(
     /**
      * Initialize the form with existing child data
      */
-    suspend fun initializeWithChild(childId: String)  {
-        val child = kidsRepository.getChildById(childId).getOrNull()
-        if (child == null) {
-            _uiState.value = ChildEditUiState(error = "Failed to load child data")
-            return
+    fun initializeWithChild(childId: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            
+            val result = kidsRepository.getChildById(childId)
+            when (result) {
+                is KidsResult.Success -> {
+                    _uiState.value = ChildEditUiState.fromChild(result.data)
+                }
+                is KidsResult.Error -> {
+                    _uiState.value = ChildEditUiState(
+                        isLoading = false,
+                        error = "Failed to load child: ${result.message}"
+                    )
+                }
+                is KidsResult.NetworkError -> {
+                    _uiState.value = ChildEditUiState(
+                        isLoading = false,
+                        error = "Network error loading child: ${result.message}"
+                    )
+                }
+                is KidsResult.Loading -> {
+                    // Should not happen in suspend function
+                }
+            }
         }
-        _uiState.value = ChildEditUiState.fromChild(child)
     }
     
     /**
@@ -202,25 +224,36 @@ class ChildEditViewModel(
                 
                 val result = kidsRepository.updateChild(updatedChild)
                 
-                result.fold(
-                    onSuccess = { savedChild ->
+                when (result) {
+                    is KidsResult.Success -> {
                         _uiState.value = _uiState.value.copy(
                             isSaving = false,
                             isUpdateSuccessful = true,
-                            originalChild = savedChild,
+                            originalChild = result.data,
                             error = null
                         )
                         showSuccessDialog()
-                    },
-                    onFailure = { error ->
+                    }
+                    is KidsResult.Error -> {
                         // Revert optimistic update on failure
                         _uiState.value = _uiState.value.copy(
                             isSaving = false,
                             originalChild = currentState.originalChild,
-                            error = "Failed to save changes: ${error.message}"
+                            error = "Failed to save changes: ${result.message}"
                         )
                     }
-                )
+                    is KidsResult.NetworkError -> {
+                        // Revert optimistic update on failure
+                        _uiState.value = _uiState.value.copy(
+                            isSaving = false,
+                            originalChild = currentState.originalChild,
+                            error = "Network error saving changes: ${result.message}"
+                        )
+                    }
+                    is KidsResult.Loading -> {
+                        // Should not happen in suspend function
+                    }
+                }
                 
             } catch (e: Exception) {
                 // Revert optimistic update on exception

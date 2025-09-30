@@ -18,6 +18,8 @@ import rfm.hillsongptapp.core.network.api.EventsApiService
 import rfm.hillsongptapp.core.network.api.EventsApiServiceImpl
 import rfm.hillsongptapp.core.network.api.GroupsApiService
 import rfm.hillsongptapp.core.network.api.GroupsApiServiceImpl
+import rfm.hillsongptapp.core.network.api.KidsApiService
+import rfm.hillsongptapp.core.network.api.KidsApiServiceImpl
 import rfm.hillsongptapp.logging.LoggerHelper
 import rfm.hillsongptapp.core.network.api.PostsApiService
 import rfm.hillsongptapp.core.network.api.PostsApiServiceImpl
@@ -127,6 +129,13 @@ val networkModule =
             )
         }
         
+        single<KidsApiService> {
+            KidsApiServiceImpl(
+                httpClient = get(),
+                baseUrl = get(qualifier = org.koin.core.qualifier.named("baseUrl"))
+            )
+        }
+        
         // Main API Client aggregating all services
         single {
             rfm.hillsongptapp.core.network.HillsongApiClient(
@@ -135,7 +144,8 @@ val networkModule =
                 profile = get(),
                 events = get(),
                 groups = get(),
-                prayer = get()
+                prayer = get(),
+                kids = get()
             )
         }
         

@@ -18,7 +18,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
-import rfm.hillsongptapp.feature.kids.domain.model.Child
+import rfm.hillsongptapp.core.data.model.Child
 
 /**
  * Screen for editing existing child information with pre-populated form

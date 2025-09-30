@@ -10,9 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import rfm.hillsongptapp.feature.kids.domain.error.ErrorInfo
-import rfm.hillsongptapp.feature.kids.domain.error.ErrorType
-import rfm.hillsongptapp.feature.kids.domain.error.ErrorSeverity
+import rfm.hillsongptapp.feature.kids.ui.model.ErrorInfo
+import rfm.hillsongptapp.feature.kids.ui.model.ErrorType
+import rfm.hillsongptapp.feature.kids.ui.model.ErrorSeverity
 
 /**
  * Comprehensive error display component with recovery options
@@ -47,7 +47,7 @@ fun ErrorDisplay(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ErrorIcon(errorInfo.iconType)
+                ErrorIcon(errorInfo.type)
                 
                 Text(
                     text = errorInfo.summary,
@@ -73,7 +73,7 @@ fun ErrorDisplay(
             )
             
             // Suggested action
-            if (errorInfo.suggestedAction.isNotBlank()) {
+            if (!errorInfo.suggestedAction.isNullOrBlank()) {
                 Text(
                     text = errorInfo.suggestedAction,
                     style = MaterialTheme.typography.bodySmall,
@@ -152,7 +152,7 @@ fun ErrorDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = {
-            ErrorIcon(errorInfo.iconType)
+            ErrorIcon(errorInfo.type)
         },
         title = {
             Text(
@@ -170,7 +170,7 @@ fun ErrorDialog(
                     style = MaterialTheme.typography.bodyMedium
                 )
                 
-                if (errorInfo.suggestedAction.isNotBlank()) {
+                if (!errorInfo.suggestedAction.isNullOrBlank()) {
                     Text(
                         text = errorInfo.suggestedAction,
                         style = MaterialTheme.typography.bodySmall,
@@ -209,7 +209,7 @@ fun ErrorDialog(
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = errorInfo.technicalMessage,
+                                text = errorInfo.technicalMessage ?: "No technical details available",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -219,7 +219,7 @@ fun ErrorDialog(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "Timestamp: ${java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(java.util.Date(errorInfo.timestamp))}",
+                                text = "Timestamp: ${errorInfo.timestamp}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -326,7 +326,7 @@ fun OfflineStatusIndicator(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ErrorIcon(rfm.hillsongptapp.feature.kids.domain.error.ErrorIconType.NETWORK)
+                ErrorIcon(ErrorType.NETWORK)
                 
                 Column(
                     modifier = Modifier.weight(1f),
@@ -364,19 +364,20 @@ fun OfflineStatusIndicator(
  * Error icon based on error type
  */
 @Composable
-private fun ErrorIcon(iconType: rfm.hillsongptapp.feature.kids.domain.error.ErrorIconType) {
+private fun ErrorIcon(iconType: ErrorType) {
     // This would use actual icons from the design system
     // For now, using text representations
     Text(
         text = when (iconType) {
-            rfm.hillsongptapp.feature.kids.domain.error.ErrorIconType.NETWORK -> "📶"
-            rfm.hillsongptapp.feature.kids.domain.error.ErrorIconType.WARNING -> "⚠️"
-            rfm.hillsongptapp.feature.kids.domain.error.ErrorIconType.INFO -> "ℹ️"
-            rfm.hillsongptapp.feature.kids.domain.error.ErrorIconType.SEARCH -> "🔍"
-            rfm.hillsongptapp.feature.kids.domain.error.ErrorIconType.LOCK -> "🔒"
-            rfm.hillsongptapp.feature.kids.domain.error.ErrorIconType.SERVER -> "🖥️"
-            rfm.hillsongptapp.feature.kids.domain.error.ErrorIconType.SYNC -> "🔄"
-            rfm.hillsongptapp.feature.kids.domain.error.ErrorIconType.ERROR -> "❌"
+            ErrorType.NETWORK -> "📶"
+            ErrorType.VALIDATION -> "⚠️"
+            ErrorType.DATA -> "ℹ️"
+            ErrorType.USER -> "🔍"
+            ErrorType.PERMISSION -> "🔒"
+            ErrorType.SYSTEM -> "🖥️"
+            ErrorType.TIMEOUT -> "🔄"
+            ErrorType.AUTHENTICATION -> "❌"
+            ErrorType.UNKNOWN -> "❓"
         },
         style = MaterialTheme.typography.titleMedium
     )

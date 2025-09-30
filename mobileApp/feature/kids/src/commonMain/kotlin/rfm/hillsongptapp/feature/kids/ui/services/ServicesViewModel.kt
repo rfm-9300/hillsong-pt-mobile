@@ -6,9 +6,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import rfm.hillsongptapp.feature.kids.domain.model.Child
-import rfm.hillsongptapp.feature.kids.domain.model.KidsService
-import rfm.hillsongptapp.feature.kids.domain.repository.KidsRepository
+import rfm.hillsongptapp.core.data.model.Child
+import rfm.hillsongptapp.core.data.model.KidsService
+import rfm.hillsongptapp.core.data.repository.KidsRepository
+import rfm.hillsongptapp.core.data.repository.KidsResult
 
 /**
  * ViewModel for the Services screen
@@ -35,22 +36,31 @@ class ServicesViewModel(
             try {
                 val result = kidsRepository.getAvailableServices()
                 
-                result.fold(
-                    onSuccess = { services ->
+                when (result) {
+                    is KidsResult.Success -> {
                         _uiState.value = _uiState.value.copy(
-                            services = services,
-                            filteredServices = applyFilters(services, _uiState.value.filters),
+                            services = result.data,
+                            filteredServices = applyFilters(result.data, _uiState.value.filters),
                             isLoading = false,
                             error = null
                         )
-                    },
-                    onFailure = { error ->
+                    }
+                    is KidsResult.Error -> {
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            error = "Failed to load services: ${error.message}"
+                            error = "Failed to load services: ${result.message}"
                         )
                     }
-                )
+                    is KidsResult.NetworkError -> {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            error = "Network error loading services: ${result.message}"
+                        )
+                    }
+                    is KidsResult.Loading -> {
+                        // Should not happen in suspend function
+                    }
+                }
                 
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
@@ -71,22 +81,31 @@ class ServicesViewModel(
             try {
                 val result = kidsRepository.getAvailableServices()
                 
-                result.fold(
-                    onSuccess = { services ->
+                when (result) {
+                    is KidsResult.Success -> {
                         _uiState.value = _uiState.value.copy(
-                            services = services,
-                            filteredServices = applyFilters(services, _uiState.value.filters),
+                            services = result.data,
+                            filteredServices = applyFilters(result.data, _uiState.value.filters),
                             isRefreshing = false,
                             error = null
                         )
-                    },
-                    onFailure = { error ->
+                    }
+                    is KidsResult.Error -> {
                         _uiState.value = _uiState.value.copy(
                             isRefreshing = false,
-                            error = "Failed to refresh services: ${error.message}"
+                            error = "Failed to refresh services: ${result.message}"
                         )
                     }
-                )
+                    is KidsResult.NetworkError -> {
+                        _uiState.value = _uiState.value.copy(
+                            isRefreshing = false,
+                            error = "Network error refreshing services: ${result.message}"
+                        )
+                    }
+                    is KidsResult.Loading -> {
+                        // Should not happen in suspend function
+                    }
+                }
                 
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(

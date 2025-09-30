@@ -6,24 +6,45 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import rfm.hillsongptapp.feature.kids.domain.model.Child
-import rfm.hillsongptapp.feature.kids.domain.model.CheckInStatus
-import rfm.hillsongptapp.feature.kids.domain.repository.KidsRepository
-// Using simple timestamp for now - in real implementation would use kotlinx-datetime
+import rfm.hillsongptapp.core.data.model.Child
+import rfm.hillsongptapp.core.data.model.CheckInStatus
+import rfm.hillsongptapp.core.data.repository.KidsRepository
+import rfm.hillsongptapp.core.data.repository.KidsResult
+import rfm.hillsongptapp.core.data.repository.AuthRepository
+import kotlinx.datetime.Clock
 
 /**
  * ViewModel for Child Registration screen
  * Manages form state, validation, and child registration operations
  */
 class ChildRegistrationViewModel(
-    private val kidsRepository: KidsRepository
+    private val kidsRepository: KidsRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(ChildRegistrationUiState())
     val uiState: StateFlow<ChildRegistrationUiState> = _uiState.asStateFlow()
     
-    // TODO: Get actual parent ID from user session/authentication
-    private val currentParentId = "parent_123" // This would come from authentication
+    // Current parent ID from user session/authentication
+    private var currentParentId = ""
+    
+    init {
+        loadCurrentUser()
+    }
+    
+    /**
+     * Load current user information
+     */
+    private fun loadCurrentUser() {
+        viewModelScope.launch {
+            try {
+                val user = authRepository.getUserById(1) // Assuming user ID 1 is logged in
+                currentParentId = user?.id?.toString() ?: ""
+            } catch (e: Exception) {
+                // Handle error silently for now
+            }
+        }
+    }
     
     /**
      * Update child name field
@@ -155,7 +176,7 @@ class ChildRegistrationViewModel(
         }
         
         // Create child object
-        val currentTime = System.currentTimeMillis().toString() // Simplified timestamp
+        val currentTime = Clock.System.now().toEpochMilliseconds().toString() // Simplified timestamp
         val child = Child(
             id = "", // Will be assigned by repository
             parentId = currentParentId,
@@ -179,21 +200,30 @@ class ChildRegistrationViewModel(
             try {
                 val result = kidsRepository.registerChild(child)
                 
-                result.fold(
-                    onSuccess = { registeredChild ->
+                when (result) {
+                    is KidsResult.Success -> {
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
                             isRegistrationSuccessful = true,
                             error = null
                         )
-                    },
-                    onFailure = { error ->
+                    }
+                    is KidsResult.Error -> {
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            error = "Registration failed: ${error.message}"
+                            error = "Registration failed: ${result.message}"
                         )
                     }
-                )
+                    is KidsResult.NetworkError -> {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            error = "Network error during registration: ${result.message}"
+                        )
+                    }
+                    is KidsResult.Loading -> {
+                        // Should not happen in suspend function
+                    }
+                }
                 
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(

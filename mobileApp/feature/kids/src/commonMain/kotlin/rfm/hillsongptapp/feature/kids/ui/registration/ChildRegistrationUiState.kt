@@ -1,6 +1,6 @@
 package rfm.hillsongptapp.feature.kids.ui.registration
 
-import rfm.hillsongptapp.feature.kids.domain.model.EmergencyContact
+import rfm.hillsongptapp.core.data.model.EmergencyContact
 
 /**
  * UI state for the Child Registration screen
