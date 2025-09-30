@@ -8,12 +8,14 @@ import rfm.hillsongptapp.core.data.providers.databaseInstance
 import rfm.hillsongptapp.core.data.repository.PostRepository
 import rfm.hillsongptapp.core.data.repository.AuthRepository
 import rfm.hillsongptapp.core.data.repository.KidsRepository
+import rfm.hillsongptapp.core.data.repository.KidsRepositoryImpl
 import rfm.hillsongptapp.core.data.repository.database.UserDao
 import rfm.hillsongptapp.core.data.repository.database.UserProfileDao
 import rfm.hillsongptapp.core.data.repository.database.ChildDao
 import rfm.hillsongptapp.core.data.repository.database.CheckInRecordDao
 import rfm.hillsongptapp.core.data.repository.database.KidsServiceDao
 import rfm.hillsongptapp.core.network.HillsongApiClient
+import rfm.hillsongptapp.core.network.api.KidsApiService
 import rfm.hillsongptapp.core.network.auth.AuthTokenProvider
 import rfm.hillsongptapp.core.network.di.networkModule
 import rfm.hillsongptapp.core.network.ktor.ApiService
@@ -70,13 +72,12 @@ val dataModule =
             )
         }
 
-        // TODO: Add KidsRepository implementation when KidsRepositoryImpl is created in task 5.2
-        // single<KidsRepository> {
-        //     KidsRepositoryImpl(
-        //         childDao = get<ChildDao>(),
-        //         checkInRecordDao = get<CheckInRecordDao>(),
-        //         kidsServiceDao = get<KidsServiceDao>(),
-        //         apiClient = get<HillsongApiClient>()
-        //     )
-        // }
+        single<KidsRepository> {
+            KidsRepositoryImpl(
+                childDao = get<ChildDao>(),
+                checkInRecordDao = get<CheckInRecordDao>(),
+                kidsServiceDao = get<KidsServiceDao>(),
+                kidsApiService = get<KidsApiService>()
+            )
+        }
     }
