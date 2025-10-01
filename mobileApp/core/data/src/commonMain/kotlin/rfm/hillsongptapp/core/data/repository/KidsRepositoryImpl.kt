@@ -29,7 +29,7 @@ import rfm.hillsongptapp.core.network.ktor.requests.CheckInRequest
 import rfm.hillsongptapp.core.network.ktor.requests.CheckOutRequest
 import rfm.hillsongptapp.core.network.ktor.requests.ChildRegistrationRequest
 import rfm.hillsongptapp.core.network.ktor.requests.ChildUpdateRequest
-import rfm.hillsongptapp.core.network.ktor.requests.EmergencyContactRequest
+
 import rfm.hillsongptapp.core.network.ktor.responses.ChildResponse
 import rfm.hillsongptapp.core.network.ktor.responses.EmergencyContactResponse
 import rfm.hillsongptapp.core.network.ktor.responses.ServiceResponse
@@ -395,12 +395,8 @@ class KidsRepositoryImpl(
                         checkInRecordDao.insertCheckInRecord(serverRecord.toEntity())
                         
                         // Update child and service from server response if provided
-                        response.updatedChild?.let { childDto ->
-                            childDao.insertChild(childDto.toDomain().toEntity())
-                        }
-                        response.updatedService?.let { serviceDto ->
-                            kidsServiceDao.insertKidsService(serviceDto.toDomain().toEntity())
-                        }
+                        // Backend no longer returns updatedChild in response
+                        // Backend no longer returns updatedService in response
                         
                         KidsResult.Success(serverRecord)
                     } else {
@@ -486,12 +482,8 @@ class KidsRepositoryImpl(
                         checkInRecordDao.insertCheckInRecord(serverRecord.toEntity())
                         
                         // Update child and service from server response if provided
-                        response.updatedChild?.let { childDto ->
-                            childDao.insertChild(childDto.toDomain().toEntity())
-                        }
-                        response.updatedService?.let { serviceDto ->
-                            kidsServiceDao.insertKidsService(serviceDto.toDomain().toEntity())
-                        }
+                        // Backend no longer returns updatedChild in response
+                        // Backend no longer returns updatedService in response
                         
                         KidsResult.Success(serverRecord)
                     } else {
@@ -846,33 +838,49 @@ private fun CheckInRecordEntity.toDomain(): CheckInRecord {
 // Extension functions for converting to request DTOs
 
 private fun Child.toRegistrationRequest(): ChildRegistrationRequest {
+    // Split the name into first and last name
+    val nameParts = name.trim().split(" ", limit = 2)
+    val firstName = nameParts.getOrNull(0) ?: ""
+    val lastName = nameParts.getOrNull(1) ?: ""
+    
     return ChildRegistrationRequest(
-        parentId = parentId,
-        name = name,
+        firstName = firstName,
+        lastName = lastName,
         dateOfBirth = dateOfBirth,
-        medicalInfo = medicalInfo,
-        dietaryRestrictions = dietaryRestrictions,
-        emergencyContact = emergencyContact.toRequest()
+        gender = null, // Not currently captured in Child model
+        secondaryParentId = null, // Not currently captured in Child model
+        emergencyContactName = emergencyContact.name,
+        emergencyContactPhone = emergencyContact.phoneNumber,
+        medicalNotes = medicalInfo,
+        allergies = dietaryRestrictions, // Map dietary restrictions to allergies for now
+        specialNeeds = null, // Not currently captured in Child model
+        pickupAuthorization = null // Not currently captured in Child model
     )
 }
 
 private fun Child.toUpdateRequest(): ChildUpdateRequest {
+    // Split the name into first and last name
+    val nameParts = name.trim().split(" ", limit = 2)
+    val firstName = nameParts.getOrNull(0) ?: ""
+    val lastName = nameParts.getOrNull(1) ?: ""
+    
     return ChildUpdateRequest(
-        name = name,
+        firstName = firstName,
+        lastName = lastName,
         dateOfBirth = dateOfBirth,
-        medicalInfo = medicalInfo,
-        dietaryRestrictions = dietaryRestrictions,
-        emergencyContact = emergencyContact.toRequest()
+        gender = null, // Not currently captured in Child model
+        secondaryParentId = null, // Not currently captured in Child model
+        emergencyContactName = emergencyContact.name,
+        emergencyContactPhone = emergencyContact.phoneNumber,
+        medicalNotes = medicalInfo,
+        allergies = dietaryRestrictions, // Map dietary restrictions to allergies for now
+        specialNeeds = null, // Not currently captured in Child model
+        pickupAuthorization = null, // Not currently captured in Child model
+        isActive = null // Keep current active status
     )
 }
 
-private fun rfm.hillsongptapp.core.data.model.EmergencyContact.toRequest(): EmergencyContactRequest {
-    return EmergencyContactRequest(
-        name = name,
-        phoneNumber = phoneNumber,
-        relationship = relationship
-    )
-}
+
 
 // Extension functions for converting from response DTOs to domain models
 
@@ -881,19 +889,19 @@ private fun ChildResponse.toDomain(): Child {
         id = id.toString(),
         parentId = primaryParent.id.toString(),
         name = fullName,
-        dateOfBirth = dateOfBirth,
+        dateOfBirth = dateOfBirth, // Backend sends as string in YYYY-MM-DD format
         medicalInfo = medicalNotes,
         dietaryRestrictions = allergies,
         emergencyContact = rfm.hillsongptapp.core.data.model.EmergencyContact(
             name = emergencyContactName ?: "",
             phoneNumber = emergencyContactPhone ?: "",
-            relationship = "Emergency Contact"
+            relationship = "Emergency Contact" // Backend doesn't store relationship separately
         ),
         status = if (currentCheckInStatus?.isCheckedIn == true) CheckInStatus.CHECKED_IN else CheckInStatus.CHECKED_OUT,
-        currentServiceId = null, // Will be determined from check-in status
+        currentServiceId = currentCheckInStatus?.serviceId?.toString(),
         checkInTime = currentCheckInStatus?.checkInTime,
         checkOutTime = null, // Not provided in current DTO
-        createdAt = createdAt,
+        createdAt = createdAt, // Backend sends as string in ISO format
         updatedAt = updatedAt ?: createdAt
     )
 }

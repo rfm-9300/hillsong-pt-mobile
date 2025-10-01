@@ -80,7 +80,13 @@ fun ChildRegistrationScreen(
                     onEmergencyContactPhoneChange = viewModel::updateEmergencyContactPhone,
                     onEmergencyContactRelationshipChange = viewModel::updateEmergencyContactRelationship,
                     onDatePickerClick = viewModel::showDatePicker,
-                    onRegisterClick = viewModel::registerChild
+                    onRegisterClick = viewModel::registerChild,
+                    // Debug functions for testing
+                    onFillDebugData = viewModel::fillWithDebugData,
+                    onFillAlternativeData = viewModel::fillWithAlternativeDebugData,
+                    onFillMinimalData = viewModel::fillWithMinimalDebugData,
+                    onClearData = viewModel::clearDebugData,
+                    isDebugMode = viewModel.isInDebugMode()
                 )
             }
         }
@@ -143,7 +149,13 @@ private fun RegistrationForm(
     onEmergencyContactPhoneChange: (String) -> Unit,
     onEmergencyContactRelationshipChange: (String) -> Unit,
     onDatePickerClick: () -> Unit,
-    onRegisterClick: () -> Unit
+    onRegisterClick: () -> Unit,
+    // Debug functions
+    onFillDebugData: () -> Unit = {},
+    onFillAlternativeData: () -> Unit = {},
+    onFillMinimalData: () -> Unit = {},
+    onClearData: () -> Unit = {},
+    isDebugMode: Boolean = false
 ) {
     Column(
         modifier = Modifier
@@ -152,6 +164,16 @@ private fun RegistrationForm(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Debug Controls (only shown in debug mode)
+        if (isDebugMode) {
+            DebugControls(
+                onFillDebugData = onFillDebugData,
+                onFillAlternativeData = onFillAlternativeData,
+                onFillMinimalData = onFillMinimalData,
+                onClearData = onClearData
+            )
+        }
+        
         // Child Information Section
         SectionHeader(title = "Child Information")
         
@@ -541,6 +563,93 @@ fun ChildRegistrationContent(
             },
             onDismiss = onHideDatePicker
         )
+    }
+}
+
+/**
+ * Debug controls for easy testing - pre-fills form with test data
+ */
+@Composable
+private fun DebugControls(
+    onFillDebugData: () -> Unit,
+    onFillAlternativeData: () -> Unit,
+    onFillMinimalData: () -> Unit,
+    onClearData: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onErrorContainer
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Debug Mode - Test Data",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = onFillDebugData,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text("Fill Emma", style = MaterialTheme.typography.bodySmall)
+                }
+                
+                Button(
+                    onClick = onFillAlternativeData,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    )
+                ) {
+                    Text("Fill Liam", style = MaterialTheme.typography.bodySmall)
+                }
+            }
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = onFillMinimalData,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary
+                    )
+                ) {
+                    Text("Fill Zoe", style = MaterialTheme.typography.bodySmall)
+                }
+                
+                OutlinedButton(
+                    onClick = onClearData,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Clear", style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        }
     }
 }
 

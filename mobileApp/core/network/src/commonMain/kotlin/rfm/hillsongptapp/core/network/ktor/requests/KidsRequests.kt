@@ -6,30 +6,37 @@ import kotlinx.serialization.Serializable
  * Network request DTOs for Kids API
  */
 
-@Serializable
-data class EmergencyContactRequest(
-    val name: String,
-    val phoneNumber: String,
-    val relationship: String
-)
+
 
 @Serializable
 data class ChildRegistrationRequest(
-    val parentId: String,
-    val name: String,
-    val dateOfBirth: String,
-    val medicalInfo: String?,
-    val dietaryRestrictions: String?,
-    val emergencyContact: EmergencyContactRequest
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: String, // Will be parsed as LocalDate on backend
+    val gender: String? = null,
+    val secondaryParentId: Long? = null,
+    val emergencyContactName: String? = null,
+    val emergencyContactPhone: String? = null,
+    val medicalNotes: String? = null,
+    val allergies: String? = null,
+    val specialNeeds: String? = null,
+    val pickupAuthorization: String? = null
 )
 
 @Serializable
 data class ChildUpdateRequest(
-    val name: String,
-    val dateOfBirth: String,
-    val medicalInfo: String?,
-    val dietaryRestrictions: String?,
-    val emergencyContact: EmergencyContactRequest
+    val firstName: String? = null,
+    val lastName: String? = null,
+    val dateOfBirth: String? = null, // Will be parsed as LocalDate on backend
+    val gender: String? = null,
+    val secondaryParentId: Long? = null,
+    val emergencyContactName: String? = null,
+    val emergencyContactPhone: String? = null,
+    val medicalNotes: String? = null,
+    val allergies: String? = null,
+    val specialNeeds: String? = null,
+    val pickupAuthorization: String? = null,
+    val isActive: Boolean? = null
 )
 
 @Serializable

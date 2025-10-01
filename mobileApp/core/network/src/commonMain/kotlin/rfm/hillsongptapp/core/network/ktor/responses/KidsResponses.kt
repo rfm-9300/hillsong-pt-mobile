@@ -19,7 +19,7 @@ data class ChildResponse(
     val firstName: String,
     val lastName: String,
     val fullName: String,
-    val dateOfBirth: String, // Will be serialized as string from LocalDate
+    val dateOfBirth: String, // Serialized as string from LocalDate (YYYY-MM-DD)
     val age: Int,
     val ageGroup: String,
     val gender: String? = null,
@@ -32,7 +32,7 @@ data class ChildResponse(
     val specialNeeds: String? = null,
     val pickupAuthorization: String? = null,
     val isActive: Boolean,
-    val createdAt: String, // Will be serialized as string from LocalDateTime
+    val createdAt: String, // Serialized as string from LocalDateTime (ISO format)
     val updatedAt: String? = null,
     val currentCheckInStatus: CheckInStatusResponse? = null
 )
@@ -51,7 +51,9 @@ data class ParentResponse(
 data class CheckInStatusResponse(
     val isCheckedIn: Boolean,
     val serviceName: String? = null,
-    val checkInTime: String? = null
+    val serviceId: Long? = null,
+    val checkInTime: String? = null, // ISO format string
+    val checkedInBy: String? = null
 )
 
 @Serializable
@@ -87,9 +89,13 @@ data class CheckInRecordResponse(
 @Serializable
 data class ChildApiResponse(
     val success: Boolean,
-    val child: ChildResponse?,
+    val data: ChildResponse?,
     val message: String
-)
+) {
+    // Convenience property to match the expected interface
+    val child: ChildResponse?
+        get() = data
+}
 
 @Serializable
 data class ChildrenApiResponse(
@@ -105,9 +111,13 @@ data class ChildrenApiResponse(
 @Serializable
 data class ServiceApiResponse(
     val success: Boolean,
-    val service: ServiceResponse?,
+    val data: ServiceResponse?,
     val message: String
-)
+) {
+    // Convenience property to match the expected interface
+    val service: ServiceResponse?
+        get() = data
+}
 
 @Serializable
 data class ServicesApiResponse(
@@ -124,42 +134,58 @@ data class ServicesApiResponse(
 @Serializable
 data class CheckInApiResponse(
     val success: Boolean,
-    val record: CheckInRecordResponse?,
-    val updatedChild: ChildResponse?,
-    val updatedService: ServiceResponse?,
+    val data: CheckInRecordResponse?,
     val message: String
-)
+) {
+    // Convenience properties to match the expected interface
+    val record: CheckInRecordResponse?
+        get() = data
+}
 
 @Serializable
 data class CheckOutApiResponse(
     val success: Boolean,
-    val record: CheckInRecordResponse?,
-    val updatedChild: ChildResponse?,
-    val updatedService: ServiceResponse?,
+    val data: CheckInRecordResponse?,
     val message: String
-)
+) {
+    // Convenience properties to match the expected interface
+    val record: CheckInRecordResponse?
+        get() = data
+}
 
 @Serializable
 data class CurrentCheckInsApiResponse(
     val success: Boolean,
-    val records: List<CheckInRecordResponse>,
+    val data: List<CheckInRecordResponse>? = null,
     val message: String
-)
+) {
+    // Convenience property to match the expected interface
+    val records: List<CheckInRecordResponse>
+        get() = data ?: emptyList()
+}
 
 @Serializable
 data class CheckInHistoryApiResponse(
     val success: Boolean,
-    val records: List<CheckInRecordResponse>,
-    val totalCount: Int,
+    val data: List<CheckInRecordResponse>? = null,
+    val totalCount: Int? = null,
     val message: String
-)
+) {
+    // Convenience property to match the expected interface
+    val records: List<CheckInRecordResponse>
+        get() = data ?: emptyList()
+}
 
 @Serializable
 data class AttendanceReportApiResponse(
     val success: Boolean,
-    val report: AttendanceReportResponse?,
+    val data: AttendanceReportResponse?,
     val message: String
-)
+) {
+    // Convenience property to match the expected interface
+    val report: AttendanceReportResponse?
+        get() = data
+}
 
 @Serializable
 data class AttendanceReportResponse(

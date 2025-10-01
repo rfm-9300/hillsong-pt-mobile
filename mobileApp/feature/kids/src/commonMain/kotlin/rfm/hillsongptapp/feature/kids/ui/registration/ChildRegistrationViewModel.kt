@@ -28,8 +28,15 @@ class ChildRegistrationViewModel(
     // Current parent ID from user session/authentication
     private var currentParentId = ""
     
+    // Debug mode flag - set to true for easier testing
+    private var isDebugMode = true
+    
     init {
         loadCurrentUser()
+        // Pre-fill form with debug data for easier testing when in debug mode
+        if (isDebugMode) {
+            fillDebugData()
+        }
     }
     
     /**
@@ -137,6 +144,83 @@ class ChildRegistrationViewModel(
     fun resetForm() {
         _uiState.value = ChildRegistrationUiState()
     }
+    
+    /**
+     * Fill form with debug data for testing purposes
+     * This makes testing easier by pre-populating all required fields
+     */
+    private fun fillDebugData() {
+        _uiState.value = _uiState.value.copy(
+            childName = "Emma Johnson",
+            dateOfBirth = "2018-03-15",
+            medicalInfo = "No known allergies. Takes daily vitamin supplement.",
+            dietaryRestrictions = "Vegetarian - no meat or fish",
+            emergencyContactName = "Sarah Johnson",
+            emergencyContactPhone = "+1 (555) 123-4567",
+            emergencyContactRelationship = "Mother"
+        )
+    }
+    
+    /**
+     * Toggle debug mode and fill/clear data accordingly
+     */
+    fun toggleDebugMode() {
+        isDebugMode = !isDebugMode
+        if (isDebugMode) {
+            fillDebugData()
+        } else {
+            resetForm()
+        }
+    }
+    
+    /**
+     * Fill form with debug data (public function for manual testing)
+     */
+    fun fillWithDebugData() {
+        fillDebugData()
+    }
+    
+    /**
+     * Fill form with alternative debug data for testing different scenarios
+     */
+    fun fillWithAlternativeDebugData() {
+        _uiState.value = _uiState.value.copy(
+            childName = "Liam Chen",
+            dateOfBirth = "2020-07-22",
+            medicalInfo = "Asthma - carries inhaler. Allergic to peanuts.",
+            dietaryRestrictions = "Nut-free diet required",
+            emergencyContactName = "Michael Chen",
+            emergencyContactPhone = "+1 (555) 987-6543",
+            emergencyContactRelationship = "Father"
+        )
+    }
+    
+    /**
+     * Fill form with minimal debug data (only required fields)
+     */
+    fun fillWithMinimalDebugData() {
+        _uiState.value = _uiState.value.copy(
+            childName = "Zoe Smith",
+            dateOfBirth = "2019-11-08",
+            medicalInfo = "",
+            dietaryRestrictions = "",
+            emergencyContactName = "Jennifer Smith",
+            emergencyContactPhone = "+1 (555) 456-7890",
+            emergencyContactRelationship = "Mother"
+        )
+    }
+    
+    /**
+     * Clear debug data and reset form (useful for testing reset functionality)
+     */
+    fun clearDebugData() {
+        resetForm()
+    }
+    
+    /**
+     * Get current debug mode state
+     */
+    fun isInDebugMode(): Boolean = isDebugMode
     
     /**
      * Register child with current form data
