@@ -42,10 +42,11 @@ class SecurityConfig(
                     // Public endpoints
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/files/**").permitAll()
+                    .requestMatchers("/api/health").permitAll()
                     .requestMatchers("/actuator/**").permitAll()
                     .requestMatchers("/error").permitAll()
-                    // Admin endpoints
-                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                    // Admin endpoints (handled by custom token authentication)
+                    .requestMatchers("/api/admin/**").permitAll()
                     // All other endpoints require authentication
                     .anyRequest().authenticated()
             }
