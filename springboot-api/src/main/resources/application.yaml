@@ -95,6 +95,9 @@ app:
   
   reset:
     token-expiry: 3600000 # 1 hour
+  
+  admin:
+    token: ${ADMIN_TOKEN:admin-secret-token-12345}
 
 management:
   endpoints:

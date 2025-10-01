@@ -6,11 +6,12 @@ import org.springframework.transaction.annotation.Transactional
 import rfm.com.dto.*
 import rfm.com.entity.*
 import rfm.com.repository.*
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Service
 @Transactional
-class KidsManagementService(
+class KidsService(
     private val kidRepository: KidRepository,
     private val kidsServiceRepository: KidsServiceRepository,
     private val kidAttendanceRepository: KidAttendanceRepository,
@@ -60,14 +61,7 @@ class KidsManagementService(
         return mapToKidsServiceResponse(service)
     }
 
-    /**
-     * Get services available for a specific age
-     */
-    @Transactional(readOnly = true)
-    fun getServicesForAge(age: Int): List<KidsServiceResponse> {
-        val services = kidsServiceRepository.findByAgeRange(age)
-        return services.map { mapToKidsServiceResponse(it) }
-    }
+
 
     /**
      * Register a new child
@@ -353,6 +347,7 @@ class KidsManagementService(
             id = service.id!!,
             name = service.name,
             dayOfWeek = service.dayOfWeek.name,
+            serviceDate = service.serviceDate,
             startTime = service.startTime.toString(),
             endTime = service.endTime.toString(),
             location = service.location,

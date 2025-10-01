@@ -3,6 +3,7 @@ package rfm.com.entity
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
@@ -12,39 +13,42 @@ data class KidsService(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
-    
+
     @Column(name = "name", nullable = false, length = 255)
     val name: String,
-    
+
     @Column(name = "description", columnDefinition = "TEXT")
     val description: String? = null,
-    
+
     @Enumerated(EnumType.STRING)
     @Column(name = "day_of_week", nullable = false, length = 15)
     val dayOfWeek: DayOfWeek,
-    
+
+    @Column(name = "service_date", nullable = false)
+    val serviceDate: LocalDate,
+
     @Column(name = "start_time", nullable = false)
     val startTime: LocalTime,
-    
+
     @Column(name = "end_time", nullable = false)
     val endTime: LocalTime,
-    
+
     @Column(name = "location", nullable = false, length = 255)
     val location: String,
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leader_id", nullable = true)
     val leader: UserProfile? = null,
-    
+
     @Column(name = "max_capacity", nullable = false)
     val maxCapacity: Int,
-    
+
     @Column(name = "min_age", nullable = false)
     val minAge: Int,
-    
+
     @Column(name = "max_age", nullable = false)
     val maxAge: Int,
-    
+
     @ElementCollection(targetClass = AgeGroup::class, fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     @CollectionTable(
@@ -53,41 +57,41 @@ data class KidsService(
     )
     @Column(name = "age_group", length = 20)
     val ageGroups: MutableSet<AgeGroup> = mutableSetOf(),
-    
+
     @Column(name = "is_active", nullable = false)
     val isActive: Boolean = true,
-    
+
     @Column(name = "requires_pre_registration", nullable = false)
     val requiresPreRegistration: Boolean = false,
-    
+
     @Column(name = "check_in_starts_minutes_before")
     val checkInStartsMinutesBefore: Int = 30,
-    
+
     @Column(name = "check_in_ends_minutes_after")
     val checkInEndsMinutesAfter: Int = 15,
-    
+
     @Column(name = "volunteer_to_child_ratio")
     val volunteerToChildRatio: String? = null, // e.g., "1:5" for 1 volunteer per 5 children
-    
+
     @Column(name = "special_requirements", columnDefinition = "TEXT")
     val specialRequirements: String? = null,
-    
+
     @Column(name = "notes", columnDefinition = "TEXT")
     val notes: String? = null,
-    
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
-    
+
     @Column(name = "updated_at")
     val updatedAt: LocalDateTime? = null,
-    
+
     @OneToMany(mappedBy = "kidsService", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     val attendanceRecords: MutableSet<Attendance> = mutableSetOf(),
-    
+
     @OneToMany(mappedBy = "kidsService", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     val kidAttendanceRecords: MutableSet<KidAttendance> = mutableSetOf(),
-    
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "kids_service_enrollment",
@@ -95,7 +99,7 @@ data class KidsService(
         inverseJoinColumns = [JoinColumn(name = "kid_id")]
     )
     val enrolledKids: MutableSet<Kid> = mutableSetOf(),
-    
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "kids_service_volunteers",
@@ -185,13 +189,7 @@ data class KidsService(
         
         return now.isAfter(checkInStart) && now.isBefore(checkInEnd)
     }
-    
-    fun getKidsEligibleForAge(): List<Kid> {
-        return enrolledKids.filter { kid ->
-            kid.age >= minAge && kid.age <= maxAge && ageGroups.contains(kid.ageGroup)
-        }
-    }
-    
+
     private fun getNextServiceDateTime(): LocalDateTime {
         val now = LocalDateTime.now()
         val today = now.dayOfWeek

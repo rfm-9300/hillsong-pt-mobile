@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service as SpringService
 import org.springframework.transaction.annotation.Transactional
 import rfm.com.dto.*
 import rfm.com.entity.*
+import rfm.com.entity.KidsService
 import rfm.com.repository.*
 import java.time.LocalDateTime
 import kotlin.jvm.optionals.getOrNull
@@ -300,7 +301,7 @@ class AttendanceService(
         user: User, 
         event: Event?, 
         serviceEntity: rfm.com.entity.Service?, 
-        kidsService: KidsService?
+        kidsService: rfm.com.entity.KidsService?
     ): Attendance? {
         val today = LocalDateTime.now().toLocalDate()
         val startOfDay = today.atStartOfDay()
@@ -408,6 +409,7 @@ class AttendanceService(
             id = kidsService.id!!,
             name = kidsService.name,
             dayOfWeek = kidsService.dayOfWeek.name,
+            serviceDate = kidsService.serviceDate,
             startTime = kidsService.startTime.toString(),
             endTime = kidsService.endTime.toString(),
             location = kidsService.location,

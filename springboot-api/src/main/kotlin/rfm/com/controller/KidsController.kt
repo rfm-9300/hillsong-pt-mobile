@@ -1,21 +1,18 @@
 package rfm.com.controller
 
 import jakarta.validation.Valid
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import rfm.com.dto.*
-import rfm.com.service.KidsManagementService
+import rfm.com.service.KidsService
 import rfm.com.util.getCurrentUserId
 
 @RestController
 @RequestMapping("/api/kids")
-class KidsController(private val kidsService: KidsManagementService) {
+class KidsController(private val kidsService: KidsService) {
 
     /** Get all available kids services */
     @GetMapping("/services")
@@ -75,30 +72,7 @@ class KidsController(private val kidsService: KidsManagementService) {
         }
     }
 
-    /** Get available services for a specific child age */
-    @GetMapping("/services/available")
-    @PreAuthorize("hasRole('USER')")
-    fun getAvailableServices(@RequestParam age: Int): ResponseEntity<ApiResponse<List<KidsServiceResponse>>> {
-        return try {
-            val services = kidsService.getServicesForAge(age)
-            
-            ResponseEntity.ok(
-                ApiResponse(
-                    success = true,
-                    message = "Available services retrieved successfully",
-                    data = services
-                )
-            )
-        } catch (e: Exception) {
-            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(
-                    ApiResponse(
-                        success = false,
-                        message = "An error occurred while retrieving available services"
-                    )
-                )
-        }
-    }
+
 
     /** Register a new child */
     @PostMapping("/children")
@@ -173,7 +147,7 @@ class KidsController(private val kidsService: KidsManagementService) {
     ): ResponseEntity<ApiResponse<List<ChildResponse>>> {
         return try {
             val currentUserId = authentication.getCurrentUserId()
-            // Users can only see their own children unless they're admin
+            // Users can only see their own children unless they are admin
             if (currentUserId != parentId && !authentication.authorities.any { it.authority == "ROLE_ADMIN" }) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponse(success = false, message = "Access denied"))

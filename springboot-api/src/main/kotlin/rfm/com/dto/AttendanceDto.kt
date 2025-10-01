@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import jakarta.validation.constraints.*
 import rfm.com.entity.AttendanceStatus
 import rfm.com.entity.AttendanceType
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 /**
@@ -175,6 +176,10 @@ data class KidsServiceResponse(
     val id: Long,
     val name: String,
     val dayOfWeek: String,
+    
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    val serviceDate: LocalDate,
+    
     val startTime: String,
     val endTime: String,
     val location: String,
