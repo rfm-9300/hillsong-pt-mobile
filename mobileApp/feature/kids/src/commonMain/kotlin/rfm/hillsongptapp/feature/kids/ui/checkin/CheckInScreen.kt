@@ -87,8 +87,14 @@ fun CheckInScreen(
                     )
                 }
                 uiState.child != null -> {
-                    // TODO: Fix type mismatch between KidsService and EligibleServiceInfo
-                    Text("Check-in functionality temporarily disabled during migration")
+                    CheckInContent(
+                        child = uiState.child!!,
+                        eligibleServices = uiState.eligibleServices,
+                        selectedService = uiState.selectedService,
+                        onServiceSelected = viewModel::selectService,
+                        onCheckInClicked = viewModel::showCheckInConfirmation,
+                        isCheckingIn = uiState.isCheckingIn
+                    )
                 }
                 else -> {
                     EmptyContent()

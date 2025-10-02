@@ -695,6 +695,7 @@ class KidsRepositoryImpl(
         try {
             val remoteResult = kidsApiService.getServices()
             if (remoteResult is NetworkResult.Success) {
+                kidsServiceDao.deleteAllKidsServices()
                 val response = remoteResult.data
                 if (response.success) {
                     val services = response.services.map { it.toDomain().toEntity() }

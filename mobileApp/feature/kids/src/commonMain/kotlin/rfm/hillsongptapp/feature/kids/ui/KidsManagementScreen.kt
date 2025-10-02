@@ -16,7 +16,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
+import rfm.hillsongptapp.core.data.model.CheckInStatus
 import rfm.hillsongptapp.core.data.model.Child
+import rfm.hillsongptapp.core.data.model.EmergencyContact
 import rfm.hillsongptapp.feature.kids.ui.components.CheckOutDialog
 import rfm.hillsongptapp.feature.kids.ui.components.ChildCard
 import rfm.hillsongptapp.feature.kids.ui.components.ConnectionStatusBanner
@@ -338,11 +340,6 @@ private fun SummaryCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
             ) {
-                ConnectionStatusIndicator(
-                        connectionStatus = connectionStatus,
-                        showText = true,
-                        compact = true
-                )
 
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
@@ -413,22 +410,9 @@ fun KidsManagementContent(
                     title = {
                         Column {
                             Text(text = "Kids Management", fontWeight = FontWeight.Bold)
-                            if (uiState.showConnectionStatus) {
-                                ConnectionStatusIndicator(
-                                        connectionStatus = connectionStatus,
-                                        showText = true,
-                                        compact = true
-                                )
-                            }
                         }
                     },
                     actions = {
-                        IconButton(onClick = onNavigateToServices) {
-                            Icon(
-                                    imageVector = Icons.Default.List,
-                                    contentDescription = "View Services"
-                            )
-                        }
 
                         // Staff Reports - only show for staff users
                         if (uiState.hasStaffPermissions) {
@@ -516,6 +500,154 @@ fun KidsManagementContent(
 @Preview
 @Composable
 private fun KidsManagementContentPreview() {
+    // Sample children data
+    val sampleChildren = listOf(
+        Child(
+            id = "1",
+            parentId = "parent-1",
+            name = "Emma Smith",
+            dateOfBirth = "2018-05-15",
+            medicalInfo = "Mild asthma",
+            dietaryRestrictions = "Peanuts",
+            emergencyContact = EmergencyContact(
+                name = "Jane Smith",
+                phoneNumber = "+1234567890",
+                relationship = "Mother"
+            ),
+            status = CheckInStatus.CHECKED_IN,
+            currentServiceId = "service-1",
+            checkInTime = "2025-01-10T09:30:00",
+            checkOutTime = null,
+            createdAt = "2025-01-01T00:00:00",
+            updatedAt = "2025-01-10T09:30:00"
+        ),
+        Child(
+            id = "2",
+            parentId = "parent-1",
+            name = "Lucas Johnson",
+            dateOfBirth = "2020-03-22",
+            medicalInfo = null,
+            dietaryRestrictions = null,
+            emergencyContact = EmergencyContact(
+                name = "Mike Johnson",
+                phoneNumber = "+1234567891",
+                relationship = "Father"
+            ),
+            status = CheckInStatus.NOT_IN_SERVICE,
+            currentServiceId = null,
+            checkInTime = null,
+            checkOutTime = null,
+            createdAt = "2025-01-01T00:00:00",
+            updatedAt = "2025-01-05T10:00:00"
+        ),
+        Child(
+            id = "3",
+            parentId = "parent-1",
+            name = "Sofia Martinez",
+            dateOfBirth = "2016-11-08",
+            medicalInfo = null,
+            dietaryRestrictions = "Dairy",
+            emergencyContact = EmergencyContact(
+                name = "Maria Martinez",
+                phoneNumber = "+1234567892",
+                relationship = "Mother"
+            ),
+            status = CheckInStatus.CHECKED_IN,
+            currentServiceId = "service-2",
+            checkInTime = "2025-01-10T11:30:00",
+            checkOutTime = null,
+            createdAt = "2025-01-01T00:00:00",
+            updatedAt = "2025-01-10T11:30:00"
+        )
+    )
+    
+    // Sample services data
+    val sampleServices = listOf(
+        rfm.hillsongptapp.core.data.model.KidsService(
+            id = "service-1",
+            name = "Morning 09h:30",
+            description = "Sunday morning service for preschool and elementary children",
+            minAge = 3,
+            maxAge = 10,
+            startTime = "2025-01-12T09:30:00",
+            endTime = "2025-01-12T11:30:00",
+            location = "Main Hall",
+            maxCapacity = 50,
+            currentCapacity = 15,
+            isAcceptingCheckIns = true,
+            staffMembers = listOf("Sarah Johnson", "Mike Davis"),
+            createdAt = "2025-01-01T00:00:00"
+        ),
+        rfm.hillsongptapp.core.data.model.KidsService(
+            id = "service-2",
+            name = "Morning 11h:30",
+            description = "Sunday late morning service for elementary children",
+            minAge = 6,
+            maxAge = 12,
+            startTime = "2025-01-12T11:30:00",
+            endTime = "2025-01-12T13:30:00",
+            location = "Main Hall",
+            maxCapacity = 50,
+            currentCapacity = 22,
+            isAcceptingCheckIns = true,
+            staffMembers = listOf("Emily Brown", "Tom Wilson"),
+            createdAt = "2025-01-01T00:00:00"
+        ),
+        rfm.hillsongptapp.core.data.model.KidsService(
+            id = "service-3",
+            name = "Evening 17h:30",
+            description = "Sunday evening service for all ages",
+            minAge = 1,
+            maxAge = 12,
+            startTime = "2025-01-12T17:30:00",
+            endTime = "2025-01-12T19:30:00",
+            location = "Main Hall",
+            maxCapacity = 50,
+            currentCapacity = 8,
+            isAcceptingCheckIns = true,
+            staffMembers = listOf("Lisa Anderson", "John Smith"),
+            createdAt = "2025-01-01T00:00:00"
+        )
+    )
+    
+    MaterialTheme {
+        Surface {
+            KidsManagementContent(
+                    uiState =
+                            KidsManagementUiState(
+                                    children = sampleChildren,
+                                    services = sampleServices,
+                                    isLoading = false,
+                                    hasStaffPermissions = false
+                            ),
+                    connectionStatus = ConnectionStatus.CONNECTED
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun KidsManagementContentLoadingPreview() {
+    MaterialTheme {
+        Surface {
+            KidsManagementContent(
+                    uiState =
+                            KidsManagementUiState(
+                                    children = emptyList(),
+                                    services = emptyList(),
+                                    isLoading = true,
+                                    hasStaffPermissions = false
+                            ),
+                    connectionStatus = ConnectionStatus.CONNECTING
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun KidsManagementContentEmptyPreview() {
     MaterialTheme {
         Surface {
             KidsManagementContent(
