@@ -47,22 +47,30 @@ data class UserPrincipal(
         fun create(user: User): UserPrincipal {
             val authorities = mutableListOf<GrantedAuthority>()
             logger.debug("Creating UserPrincipal for user: ${user.email}")
-            logger.debug("User profile: ${user.profile}")
-            logger.debug("User profile isAdmin: ${user.profile?.isAdmin}")
             
-            // Add default USER role
-            authorities.add(SimpleGrantedAuthority("ROLE_USER"))
-            logger.debug("Added ROLE_USER")
+            // Get roles from user_roles table
+            val roleNames = user.getRoleNames()
+            logger.debug("User roles from database: $roleNames")
             
-            // Add ADMIN role if user is admin
-            user.profile?.let { profile ->
-                if (profile.isAdmin) {
-                    authorities.add(SimpleGrantedAuthority("ROLE_ADMIN"))
-                    logger.debug("Added ROLE_ADMIN for user: ${user.email}")
-                } else {
-                    logger.debug("User ${user.email} is not admin (isAdmin = ${profile.isAdmin})")
+            // Add authorities based on roles
+            roleNames.forEach { roleName ->
+                authorities.add(SimpleGrantedAuthority("ROLE_$roleName"))
+                logger.debug("Added ROLE_$roleName for user: ${user.email}")
+            }
+            
+            // Fallback: If no roles found in user_roles table, check legacy isAdmin flag
+            if (authorities.isEmpty()) {
+                logger.debug("No roles found in user_roles table, checking legacy isAdmin flag")
+                authorities.add(SimpleGrantedAuthority("ROLE_USER"))
+                logger.debug("Added ROLE_USER (fallback)")
+                
+                user.profile?.let { profile ->
+                    if (profile.isAdmin) {
+                        authorities.add(SimpleGrantedAuthority("ROLE_ADMIN"))
+                        logger.debug("Added ROLE_ADMIN from legacy flag for user: ${user.email}")
+                    }
                 }
-            } ?: logger.debug("User ${user.email} has no profile")
+            }
             
             logger.debug("Final authorities for ${user.email}: ${authorities.map { it.authority }}")
             

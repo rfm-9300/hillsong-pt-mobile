@@ -23,6 +23,7 @@ jetbrainsKotlinJvm = "2.1.10"
 uiTooling = "1.8.2"
 popcorn_guineapig = "3.1.2"
 googleid = "1.1.1"
+qrose = "1.0.1"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
@@ -71,6 +72,7 @@ gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "gr
 com-google-devtools-ksp-gradle-plugin = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 popcorn_guineapig = { group = "io.github.codandotv", name = "popcornguineapig", version.ref = "popcorn_guineapig" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
+qrose = { group = "io.github.alexzhirkevich", name = "qrose", version.ref = "qrose" }
 
 
 

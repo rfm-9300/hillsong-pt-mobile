@@ -27,10 +27,13 @@ import rfm.hillsongptapp.feature.kids.ui.theme.KidsColors
 fun ChildCard(
     child: Child,
     currentService: KidsService? = null,
+    checkInRequest: rfm.hillsongptapp.core.network.ktor.responses.CheckInRequestResponse? = null,
     onCheckInClick: (Child) -> Unit,
     onCheckOutClick: (Child) -> Unit,
     onEditClick: (Child) -> Unit,
     onViewServicesClick: ((Child) -> Unit)? = null,
+    onQRCheckInClick: ((Child) -> Unit)? = null,
+    onCancelCheckInRequest: ((Long) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -109,6 +112,19 @@ fun ChildCard(
                 }
             }
             
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Check-in status widget
+            CheckInStatusWidget(
+                checkInRequest = checkInRequest,
+                isCheckedIn = child.status == CheckInStatus.CHECKED_IN,
+                checkInTime = child.checkInTime?.let { formatTime(it) },
+                approvedByStaff = null, // TODO: Add approvedByStaff to Child model
+                onCancelRequest = if (checkInRequest != null && onCancelCheckInRequest != null) {
+                    { onCancelCheckInRequest(checkInRequest.id) }
+                } else null
+            )
+            
             Spacer(modifier = Modifier.height(16.dp))
             
             // Action buttons
@@ -150,7 +166,17 @@ fun ChildCard(
                     }
                 }
                 
-                // Secondary action row
+                // Secondary action row - QR Check-In
+                if (onQRCheckInClick != null && child.status != CheckInStatus.CHECKED_IN) {
+                    OutlinedButton(
+                        onClick = { onQRCheckInClick(child) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("QR Check-In")
+                    }
+                }
+                
+                // Tertiary action row
                 if (onViewServicesClick != null) {
                     OutlinedButton(
                         onClick = { onViewServicesClick(child) },

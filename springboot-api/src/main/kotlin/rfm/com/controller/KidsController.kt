@@ -279,7 +279,19 @@ class KidsController(private val kidsService: KidsService) {
         }
     }
 
-    /** Check in a child to a service */
+    /** 
+     * Check in a child to a service
+     * 
+     * @deprecated This endpoint is deprecated in favor of the QR code-based check-in system.
+     * Please use POST /api/kids/checkin-requests to create a check-in request, then have staff
+     * scan the QR code to complete the check-in. This endpoint is maintained for backward
+     * compatibility but will be removed in a future version.
+     */
+    @Deprecated(
+        message = "Use QR code-based check-in system instead. Create a check-in request via POST /api/kids/checkin-requests",
+        replaceWith = ReplaceWith("createCheckInRequest"),
+        level = DeprecationLevel.WARNING
+    )
     @PostMapping("/checkin")
     @PreAuthorize("hasRole('USER')")
     fun checkInChild(

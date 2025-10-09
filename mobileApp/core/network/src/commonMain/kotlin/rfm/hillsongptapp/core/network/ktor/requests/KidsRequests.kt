@@ -74,3 +74,21 @@ data class AttendanceReportRequest(
     val endDate: String,
     val serviceIds: List<String>?
 )
+
+// Check-in Request DTOs
+@Serializable
+data class CreateCheckInRequestDto(
+    val childId: Long,
+    val serviceId: Long,
+    val notes: String? = null
+)
+
+@Serializable
+data class ApproveCheckInDto(
+    val notes: String? = null
+)
+
+@Serializable
+data class RejectCheckInDto(
+    val reason: String
+)

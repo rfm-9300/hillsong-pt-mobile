@@ -18,6 +18,9 @@ import rfm.hillsongptapp.core.navigation.navigateToKidsRegistration
 import rfm.hillsongptapp.core.navigation.navigateToKidsReports
 import rfm.hillsongptapp.core.navigation.navigateToKidsServices
 import rfm.hillsongptapp.core.navigation.navigateToKidsServicesForChild
+import rfm.hillsongptapp.core.navigation.navigateToStaffDashboard
+import rfm.hillsongptapp.core.navigation.navigateToQRCodeScanner
+import rfm.hillsongptapp.core.navigation.navigateToCheckInVerification
 import rfm.hillsongptapp.feature.kids.ui.KidsManagementScreen
 import rfm.hillsongptapp.feature.kids.ui.checkin.CheckInScreen
 import rfm.hillsongptapp.feature.kids.ui.checkout.CheckOutScreen
@@ -25,6 +28,9 @@ import rfm.hillsongptapp.feature.kids.ui.edit.ChildEditScreen
 import rfm.hillsongptapp.feature.kids.ui.registration.ChildRegistrationScreen
 import rfm.hillsongptapp.feature.kids.ui.reports.ReportsScreen
 import rfm.hillsongptapp.feature.kids.ui.services.ServicesScreen
+import rfm.hillsongptapp.feature.kids.ui.staff.StaffDashboardScreen
+import rfm.hillsongptapp.feature.kids.ui.staff.QRCodeScannerScreen
+import rfm.hillsongptapp.feature.kids.ui.staff.CheckInVerificationScreen
 
 /**
  * Main navigation composable for Kids feature
@@ -72,6 +78,9 @@ fun NavGraphBuilder.kidsNavigationGraph(
             },
             onNavigateToChildEdit = { childId ->
                 navController.navigateToKidsEditChild(childId)
+            },
+            onNavigateToStaffDashboard = {
+                navController.navigateToStaffDashboard()
             }
         )
     }
@@ -148,6 +157,38 @@ fun NavGraphBuilder.kidsNavigationGraph(
             }
         )
     }
+    
+    composable<KidsNav.StaffDashboard> {
+        StaffDashboardScreen(
+            onNavigateBack = {
+                navController.popBackStack()
+            },
+            onNavigateToScanner = {
+                navController.navigateToQRCodeScanner()
+            }
+        )
+    }
+    
+    composable<KidsNav.QRCodeScanner> {
+        QRCodeScannerScreen(
+            onNavigateBack = {
+                navController.popBackStack()
+            },
+            onQRCodeScanned = { token ->
+                navController.navigateToCheckInVerification(token)
+            }
+        )
+    }
+    
+    composable<KidsNav.CheckInVerification> { backStackEntry ->
+        val route = backStackEntry.toRoute<KidsNav.CheckInVerification>()
+        CheckInVerificationScreen(
+            token = route.token,
+            onNavigateBack = {
+                navController.popBackStack()
+            }
+        )
+    }
 }
 
 /**
@@ -202,6 +243,28 @@ fun generateKidsBreadcrumbs(currentRoute: KidsNav): List<KidsBreadcrumb> {
         is KidsNav.Reports -> listOf(
             KidsBreadcrumb("Kids Management", KidsNav.Management),
             KidsBreadcrumb("Reports", KidsNav.Reports, false)
+        )
+        
+        is KidsNav.StaffDashboard -> listOf(
+            KidsBreadcrumb("Kids Management", KidsNav.Management),
+            KidsBreadcrumb("Staff Dashboard", KidsNav.StaffDashboard, false)
+        )
+        
+        is KidsNav.QRCodeScanner -> listOf(
+            KidsBreadcrumb("Kids Management", KidsNav.Management),
+            KidsBreadcrumb("Staff Dashboard", KidsNav.StaffDashboard),
+            KidsBreadcrumb("QR Scanner", KidsNav.QRCodeScanner, false)
+        )
+        
+        is KidsNav.CheckInVerification -> listOf(
+            KidsBreadcrumb("Kids Management", KidsNav.Management),
+            KidsBreadcrumb("Staff Dashboard", KidsNav.StaffDashboard),
+            KidsBreadcrumb("Verification", currentRoute, false)
+        )
+        
+        is KidsNav.QRCodeDisplay -> listOf(
+            KidsBreadcrumb("Kids Management", KidsNav.Management),
+            KidsBreadcrumb("QR Check-In", currentRoute, false)
         )
     }
 }

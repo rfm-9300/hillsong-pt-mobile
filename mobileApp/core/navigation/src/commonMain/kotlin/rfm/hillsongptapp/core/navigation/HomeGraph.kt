@@ -109,4 +109,18 @@ sealed class KidsNav {
     
     @Serializable
     object Reports : KidsNav()
+    
+    // Staff Navigation Routes
+    @Serializable
+    object StaffDashboard : KidsNav()
+    
+    @Serializable
+    object QRCodeScanner : KidsNav()
+    
+    @Serializable
+    data class CheckInVerification(val token: String) : KidsNav()
+    
+    // Parent QR Check-in Route
+    @Serializable
+    data class QRCodeDisplay(val childId: Long, val serviceId: Long) : KidsNav()
 }

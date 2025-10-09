@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,9 +25,11 @@ import rfm.hillsongptapp.feature.kids.ui.components.ChildCard
 import rfm.hillsongptapp.feature.kids.ui.components.ConnectionStatusBanner
 import rfm.hillsongptapp.feature.kids.ui.components.ConnectionStatusIndicator
 import rfm.hillsongptapp.feature.kids.ui.components.FloatingNotificationOverlay
+import rfm.hillsongptapp.feature.kids.ui.components.ServiceSelectionDialog
 import rfm.hillsongptapp.feature.kids.ui.model.*
 import rfm.hillsongptapp.feature.kids.ui.model.ConnectionStatus
 import rfm.hillsongptapp.feature.kids.ui.model.StatusNotification
+import rfm.hillsongptapp.logging.LoggerHelper
 
 /**
  * Main screen for Kids Management displaying list of registered children with current status
@@ -42,6 +45,8 @@ fun KidsManagementScreen(
         onNavigateToCheckIn: (String) -> Unit = {},
         onNavigateToCheckOut: (String) -> Unit = {},
         onNavigateToChildEdit: (String) -> Unit = {},
+        onNavigateToQRCheckIn: (Long, Long) -> Unit = { _, _ -> },
+        onNavigateToStaffDashboard: () -> Unit = {},
         modifier: Modifier = Modifier,
         viewModel: KidsManagementViewModel = koinViewModel()
 ) {
@@ -53,6 +58,10 @@ fun KidsManagementScreen(
     // Temporary defaults until real-time features are implemented
     val connectionStatus = ConnectionStatus.CONNECTED
     val notifications = emptyList<StatusNotification>()
+    
+    // State for service selection dialog
+    var showServiceSelectionDialog by remember { mutableStateOf(false) }
+    var selectedChildForQR by remember { mutableStateOf<Child?>(null) }
 
     // Show error snackbar
     LaunchedEffect(uiState.error) {
@@ -85,6 +94,16 @@ fun KidsManagementScreen(
                                     imageVector = Icons.Default.List,
                                     contentDescription = "View Services"
                             )
+                        }
+
+                        // Staff Dashboard - only show for staff users
+                        if (uiState.hasStaffPermissions) {
+                            IconButton(onClick = onNavigateToStaffDashboard) {
+                                Icon(
+                                        imageVector = Icons.Default.Settings,
+                                        contentDescription = "Staff Dashboard"
+                                )
+                            }
                         }
 
                         // Staff Reports - only show for staff users
@@ -131,7 +150,14 @@ fun KidsManagementScreen(
                                 onCheckOutClick = { child -> viewModel.showCheckOutDialog(child) },
                                 onEditClick = onNavigateToChildEdit as (Child) -> Unit,
                                 onRegisterClick = onNavigateToRegistration,
-                                onRetryConnection = { /* TODO: Implement retry connection */}
+                                onRetryConnection = { /* TODO: Implement retry connection */},
+                                onQRCheckInClick = { child ->
+                                    selectedChildForQR = child
+                                    showServiceSelectionDialog = true
+                                },
+                                onCancelCheckInRequest = { requestId ->
+                                    viewModel.cancelCheckInRequest(requestId)
+                                }
                         )
                     }
                 }
@@ -165,6 +191,39 @@ fun KidsManagementScreen(
                         uiState.services.find { it.id == uiState.selectedChild!!.currentServiceId },
                 onCheckOut = { childId -> viewModel.checkOutChild(childId) },
                 onDismiss = { viewModel.hideCheckOutDialog() }
+        )
+    }
+
+    // Service selection dialog for QR check-in
+    if (showServiceSelectionDialog && selectedChildForQR != null) {
+        LoggerHelper.logDebug("Showing service selection dialog for child: ${selectedChildForQR!!.name}", "KidsManagementScreen")
+        ServiceSelectionDialog(
+            services = uiState.services,
+            childName = selectedChildForQR!!.name,
+            onServiceSelected = { service ->
+                LoggerHelper.logDebug("=== ENTERED onServiceSelected CALLBACK ===", "KidsManagementScreen")
+                // Convert String IDs to Long for the API call
+                LoggerHelper.logDebug("Raw child ID string: '${selectedChildForQR!!.id}'", "KidsManagementScreen")
+                LoggerHelper.logDebug("Raw service ID string: '${service.id}'", "KidsManagementScreen")
+                val childId = selectedChildForQR!!.id.toLongOrNull() ?: 0L
+                val serviceId = service.id.toLongOrNull() ?: 0L
+                LoggerHelper.logDebug("Converted IDs - childId=$childId, serviceId=$serviceId", "KidsManagementScreen")
+                
+                if (childId == 0L || serviceId == 0L) {
+                    LoggerHelper.logDebug("ERROR: ID conversion failed! childId=$childId, serviceId=$serviceId", "KidsManagementScreen")
+                } else {
+                    LoggerHelper.logDebug("Calling onNavigateToQRCheckIn callback", "KidsManagementScreen")
+                    onNavigateToQRCheckIn(childId, serviceId)
+                }
+                
+                showServiceSelectionDialog = false
+                selectedChildForQR = null
+            },
+            onDismiss = {
+                LoggerHelper.logDebug("Service selection dialog dismissed", "KidsManagementScreen")
+                showServiceSelectionDialog = false
+                selectedChildForQR = null
+            }
         )
     }
 
@@ -239,7 +298,9 @@ private fun ChildrenListContent(
         onCheckOutClick: (Child) -> Unit,
         onEditClick: (Child) -> Unit,
         onRegisterClick: () -> Unit,
-        onRetryConnection: () -> Unit
+        onRetryConnection: () -> Unit,
+        onQRCheckInClick: (Child) -> Unit,
+        onCancelCheckInRequest: (Long) -> Unit
 ) {
     LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -286,13 +347,17 @@ private fun ChildrenListContent(
         // Children list
         items(items = uiState.children, key = { child -> child.id }) { child ->
             val currentService = uiState.services.find { it.id == child.currentServiceId }
+            val checkInRequest = uiState.checkInRequests[child.id]
 
             ChildCard(
                     child = child,
                     currentService = currentService,
+                    checkInRequest = checkInRequest,
                     onCheckInClick = onCheckInClick,
                     onCheckOutClick = onCheckOutClick,
-                    onEditClick = onEditClick
+                    onEditClick = onEditClick,
+                    onQRCheckInClick = onQRCheckInClick,
+                    onCancelCheckInRequest = onCancelCheckInRequest
             )
         }
 
@@ -458,7 +523,9 @@ fun KidsManagementContent(
                                 onCheckOutClick = onShowCheckOutDialog,
                                 onEditClick = { child -> onNavigateToChildEdit(child.id) },
                                 onRegisterClick = onNavigateToRegistration,
-                                onRetryConnection = onRetryConnection
+                                onRetryConnection = onRetryConnection,
+                                onQRCheckInClick = { },
+                                onCancelCheckInRequest = { }
                         )
                     }
                 }

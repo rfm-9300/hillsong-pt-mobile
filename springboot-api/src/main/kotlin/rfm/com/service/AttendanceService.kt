@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service as SpringService
 import org.springframework.transaction.annotation.Transactional
 import rfm.com.dto.*
+import rfm.com.dto.CheckInRequest as CheckInRequestDto
 import rfm.com.entity.*
 import rfm.com.entity.KidsService
 import rfm.com.repository.*
@@ -24,7 +25,7 @@ class AttendanceService(
     /**
      * Check in a user to an event, service, or kids service
      */
-    fun checkIn(userId: Long, request: CheckInRequest): AttendanceResponse {
+    fun checkIn(userId: Long, request: CheckInRequestDto): AttendanceResponse {
         val user = userRepository.findById(userId).getOrNull()
             ?: throw IllegalArgumentException("User not found with ID: $userId")
 
@@ -245,7 +246,7 @@ class AttendanceService(
 
         request.userIds.forEach { userId ->
             try {
-                val checkInRequest = CheckInRequest(
+                val checkInRequest = CheckInRequestDto(
                     attendanceType = request.attendanceType,
                     eventId = request.eventId,
                     serviceId = request.serviceId,

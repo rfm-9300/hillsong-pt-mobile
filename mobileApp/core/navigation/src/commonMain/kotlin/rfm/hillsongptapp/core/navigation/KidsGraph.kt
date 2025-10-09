@@ -18,6 +18,10 @@ fun NavGraphBuilder.kidsGraph(
     kidsCheckOut: @Composable AnimatedContentScope.(childId: String) -> Unit,
     kidsEditChild: @Composable AnimatedContentScope.(childId: String) -> Unit,
     kidsReports: @Composable AnimatedContentScope.() -> Unit,
+    staffDashboard: @Composable AnimatedContentScope.() -> Unit,
+    qrCodeScanner: @Composable AnimatedContentScope.() -> Unit,
+    checkInVerification: @Composable AnimatedContentScope.(token: String) -> Unit,
+    qrCodeDisplay: @Composable AnimatedContentScope.(childId: Long, serviceId: Long) -> Unit,
     rootNavController: NavHostController
 ) {
     navigation<KidsGraph>(startDestination = KidsNav.Management) {
@@ -55,6 +59,24 @@ fun NavGraphBuilder.kidsGraph(
         
         composable<KidsNav.Reports> {
             kidsReports()
+        }
+        
+        composable<KidsNav.StaffDashboard> {
+            staffDashboard()
+        }
+        
+        composable<KidsNav.QRCodeScanner> {
+            qrCodeScanner()
+        }
+        
+        composable<KidsNav.CheckInVerification> { backStackEntry ->
+            val route = backStackEntry.toRoute<KidsNav.CheckInVerification>()
+            checkInVerification(route.token)
+        }
+        
+        composable<KidsNav.QRCodeDisplay> { backStackEntry ->
+            val route = backStackEntry.toRoute<KidsNav.QRCodeDisplay>()
+            qrCodeDisplay(route.childId, route.serviceId)
         }
     }
 }

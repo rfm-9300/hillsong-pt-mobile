@@ -141,7 +141,14 @@ data class KidAttendance(
     
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    val status: AttendanceStatus = AttendanceStatus.CHECKED_IN
+    val status: AttendanceStatus = AttendanceStatus.CHECKED_IN,
+    
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "check_in_request_id")
+    val checkInRequest: CheckInRequest? = null,
+    
+    @Column(name = "approved_by_staff", length = 255)
+    val approvedByStaff: String? = null
 ) {
     val isCheckedOut: Boolean
         get() = checkOutTime != null && status == AttendanceStatus.CHECKED_OUT

@@ -82,22 +82,7 @@ object KidsDeepLinking {
             else -> false
         }
     }
-    
-    /**
-     * Generate deep link for specific kids screen
-     */
-    fun generateDeepLink(route: KidsNav): String {
-        return when (route) {
-            is KidsNav.Management -> "kids://management"
-            is KidsNav.Registration -> "kids://registration"
-            is KidsNav.Services -> "kids://services"
-            is KidsNav.ServicesForChild -> "kids://services?childId=${route.childId}"
-            is KidsNav.CheckIn -> "kids://checkin?childId=${route.childId}"
-            is KidsNav.CheckOut -> "kids://checkout?childId=${route.childId}"
-            is KidsNav.EditChild -> "kids://edit?childId=${route.childId}"
-            is KidsNav.Reports -> "kids://reports"
-        }
-    }
+
     
     /**
      * Extract child ID from deep link URL

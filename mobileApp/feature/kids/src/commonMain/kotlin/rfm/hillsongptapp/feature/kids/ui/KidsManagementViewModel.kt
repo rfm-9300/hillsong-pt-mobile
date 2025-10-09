@@ -12,6 +12,9 @@ import rfm.hillsongptapp.core.data.model.KidsService
 import rfm.hillsongptapp.core.data.repository.AuthRepository
 import rfm.hillsongptapp.core.data.repository.KidsRepository
 import rfm.hillsongptapp.core.data.repository.KidsResult
+import rfm.hillsongptapp.core.network.api.CheckInRequestApiService
+import rfm.hillsongptapp.core.network.ktor.responses.CheckInRequestResponse
+import rfm.hillsongptapp.core.network.result.NetworkResult
 import rfm.hillsongptapp.logging.LoggerHelper
 
 /**
@@ -20,7 +23,8 @@ import rfm.hillsongptapp.logging.LoggerHelper
  */
 class KidsManagementViewModel(
         private val kidsRepository: KidsRepository,
-        private val authRepository: AuthRepository
+        private val authRepository: AuthRepository,
+        private val checkInRequestApiService: CheckInRequestApiService
 ) : ViewModel() {
 
     private val logger = LoggerHelper
@@ -121,6 +125,8 @@ class KidsManagementViewModel(
                                                         Clock.System.now().toEpochMilliseconds()
                                         )
                                 logger.logDebug("UI State updated - children: ${_uiState.value.children.size}, services: ${_uiState.value.services.size}, hasChildren: ${_uiState.value.hasChildren}")
+                                // Load active check-in requests
+                                loadActiveCheckInRequests()
                             }
                             is KidsResult.Error -> {
                                 logger.logError("Failed to load services: ${servicesResult.message}")
@@ -208,6 +214,8 @@ class KidsManagementViewModel(
                                                         Clock.System.now().toEpochMilliseconds()
                                         )
                                 logger.logDebug("Refresh - UI State updated - children: ${_uiState.value.children.size}, services: ${_uiState.value.services.size}, hasChildren: ${_uiState.value.hasChildren}")
+                                // Load active check-in requests
+                                loadActiveCheckInRequests()
                             }
                             is KidsResult.Error -> {
                                 _uiState.value =
@@ -385,6 +393,59 @@ class KidsManagementViewModel(
             diff < 3600_000 -> "${(diff / 60_000)}m ago"
             diff < 86400_000 -> "${(diff / 3600_000)}h ago"
             else -> "${(diff / 86400_000)}d ago"
+        }
+    }
+    
+    /** Load active check-in requests for all children */
+    fun loadActiveCheckInRequests() {
+        viewModelScope.launch {
+            try {
+                when (val result = checkInRequestApiService.getActiveRequests()) {
+                    is NetworkResult.Success -> {
+                        result.data.data?.let { requests ->
+                            // Create a map of childId to check-in request
+                            val requestsMap = requests.associateBy { it.child.id.toString() }
+                            _uiState.value = _uiState.value.copy(checkInRequests = requestsMap)
+                            logger.logDebug("Loaded ${requests.size} active check-in requests")
+                        }
+                    }
+                    is NetworkResult.Error -> {
+                        logger.logError("Failed to load check-in requests: ${result.exception.message}")
+                    }
+                    is NetworkResult.Loading -> {
+                        // Loading state already handled
+                    }
+                }
+            } catch (e: Exception) {
+                logger.logError("Exception loading check-in requests", e)
+            }
+        }
+    }
+    
+    /** Cancel a pending check-in request */
+    fun cancelCheckInRequest(requestId: Long) {
+        viewModelScope.launch {
+            try {
+                when (val result = checkInRequestApiService.cancelRequest(requestId)) {
+                    is NetworkResult.Success -> {
+                        // Refresh check-in requests
+                        loadActiveCheckInRequests()
+                        logger.logDebug("Successfully cancelled check-in request $requestId")
+                    }
+                    is NetworkResult.Error -> {
+                        _uiState.value = _uiState.value.copy(
+                            error = "Failed to cancel request: ${result.exception.message}"
+                        )
+                    }
+                    is NetworkResult.Loading -> {
+                        // Loading state already handled
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = "Failed to cancel request: ${e.message}"
+                )
+            }
         }
     }
 }

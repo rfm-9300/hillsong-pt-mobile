@@ -19,14 +19,19 @@ import rfm.hillsongptapp.feature.kids.ui.KidsManagementScreen
 import rfm.hillsongptapp.feature.kids.ui.registration.ChildRegistrationScreen
 import rfm.hillsongptapp.feature.kids.ui.services.ServicesScreen
 import rfm.hillsongptapp.feature.kids.ui.checkin.CheckInScreen
+import rfm.hillsongptapp.feature.kids.ui.checkin.QRCodeDisplayWrapper
 import rfm.hillsongptapp.feature.kids.ui.checkout.CheckOutScreen
 import rfm.hillsongptapp.feature.kids.ui.edit.ChildEditScreen
 import rfm.hillsongptapp.feature.kids.ui.reports.ReportsScreen
+import rfm.hillsongptapp.feature.kids.ui.staff.StaffDashboardScreen
+import rfm.hillsongptapp.feature.kids.ui.staff.QRCodeScannerScreen
+import rfm.hillsongptapp.feature.kids.ui.staff.CheckInVerificationScreen
 import rfm.hillsongptapp.feature.groups.GroupsScreen
 import rfm.hillsongptapp.feature.giving.GivingScreen
 import rfm.hillsongptapp.feature.feed.FeedScreen
 import rfm.hillsongptapp.feature.events.EventsScreen
 import rfm.hillsongptapp.feature.home.ui.screens.homeScreen
+import rfm.hillsongptapp.logging.LoggerHelper
 
 @Composable
 @Preview
@@ -78,6 +83,13 @@ fun RootNavigation() {
                     },
                     onNavigateToChildEdit = { childId ->
                         rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.EditChild(childId))
+                    },
+                    onNavigateToQRCheckIn = { childId, serviceId ->
+                        LoggerHelper.logDebug("Navigating to QRCodeDisplay with childId=$childId, serviceId=$serviceId", "RootApp")
+                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.QRCodeDisplay(childId, serviceId))
+                    },
+                    onNavigateToStaffDashboard = {
+                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.StaffDashboard)
                     }
                 )
             },
@@ -133,6 +145,45 @@ fun RootNavigation() {
             kidsReports = { 
                 ReportsScreen(
                     onNavigateBack = { rootNavController.popBackStack() }
+                )
+            },
+            staffDashboard = {
+                StaffDashboardScreen(
+                    onNavigateBack = { rootNavController.popBackStack() },
+                    onNavigateToScanner = {
+                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.QRCodeScanner)
+                    }
+                )
+            },
+            qrCodeScanner = {
+                QRCodeScannerScreen(
+                    onNavigateBack = { rootNavController.popBackStack() },
+                    onQRCodeScanned = { token ->
+                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.CheckInVerification(token))
+                    }
+                )
+            },
+            checkInVerification = { token ->
+                CheckInVerificationScreen(
+                    token = token,
+                    onNavigateBack = { rootNavController.popBackStack() }
+                )
+            },
+            qrCodeDisplay = { childId, serviceId ->
+                LoggerHelper.logDebug("QRCodeDisplay composable called with childId=$childId, serviceId=$serviceId", "RootApp")
+                QRCodeDisplayWrapper(
+                    childId = childId,
+                    serviceId = serviceId,
+                    onNavigateBack = { 
+                        LoggerHelper.logDebug("QRCodeDisplay navigating back", "RootApp")
+                        rootNavController.popBackStack() 
+                    },
+                    onGenerateNewCode = { newChildId, newServiceId ->
+                        LoggerHelper.logDebug("Generating new QR code with childId=$newChildId, serviceId=$newServiceId", "RootApp")
+                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.QRCodeDisplay(newChildId, newServiceId)) {
+                            popUpTo(rfm.hillsongptapp.core.navigation.KidsNav.QRCodeDisplay(childId, serviceId)) { inclusive = true }
+                        }
+                    }
                 )
             },
             rootNavController = rootNavController

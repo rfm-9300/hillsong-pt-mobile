@@ -10,6 +10,8 @@ import rfm.com.dto.*
 import rfm.com.entity.*
 import rfm.com.repository.UserRepository
 import rfm.com.repository.UserProfileRepository
+import rfm.com.repository.RoleRepository
+import rfm.com.repository.UserRoleRepository
 import rfm.com.security.jwt.JwtTokenProvider
 import rfm.com.service.EmailService
 import java.security.SecureRandom
@@ -21,6 +23,8 @@ import java.util.*
 class UserService(
     private val userRepository: UserRepository,
     private val userProfileRepository: UserProfileRepository,
+    private val roleRepository: RoleRepository,
+    private val userRoleRepository: UserRoleRepository,
     private val passwordService: PasswordService,
     private val jwtTokenProvider: JwtTokenProvider,
     private val emailService: EmailService,
@@ -555,6 +559,143 @@ class UserService(
             }
         } catch (ex: Exception) {
             logger.error("Failed to cleanup expired reset tokens", ex)
+        }
+    }
+    
+    /**
+     * Grant STAFF role to a user
+     */
+    fun grantStaffRole(userId: Long, grantedByUserId: Long): ApiResponse<String> {
+        return try {
+            logger.debug("Attempting to grant STAFF role to user ID: $userId by user ID: $grantedByUserId")
+            
+            // Check if user exists
+            val user = userRepository.findById(userId)
+                .orElse(null) ?: return ApiResponse(success = false, message = "User not found")
+            
+            // Get STAFF role
+            val staffRole = roleRepository.findByName(RoleNames.STAFF)
+                ?: return ApiResponse(success = false, message = "STAFF role not found in system")
+            
+            // Check if user already has STAFF role
+            if (userRoleRepository.existsByUserIdAndRoleId(userId, staffRole.id!!)) {
+                return ApiResponse(success = false, message = "User already has STAFF role")
+            }
+            
+            // Grant STAFF role
+            val userRole = UserRole(
+                userId = userId,
+                roleId = staffRole.id,
+                grantedBy = grantedByUserId
+            )
+            
+            userRoleRepository.save(userRole)
+            
+            logger.info("STAFF role granted to user ID: $userId by user ID: $grantedByUserId")
+            ApiResponse(success = true, message = "STAFF role granted successfully")
+        } catch (ex: Exception) {
+            logger.error("Failed to grant STAFF role to user ID: $userId", ex)
+            ApiResponse(success = false, message = "Failed to grant STAFF role: ${ex.message}")
+        }
+    }
+    
+    /**
+     * Revoke STAFF role from a user
+     */
+    fun revokeStaffRole(userId: Long): ApiResponse<String> {
+        return try {
+            logger.debug("Attempting to revoke STAFF role from user ID: $userId")
+            
+            // Check if user exists
+            val user = userRepository.findById(userId)
+                .orElse(null) ?: return ApiResponse(success = false, message = "User not found")
+            
+            // Get STAFF role
+            val staffRole = roleRepository.findByName(RoleNames.STAFF)
+                ?: return ApiResponse(success = false, message = "STAFF role not found in system")
+            
+            // Check if user has STAFF role
+            if (!userRoleRepository.existsByUserIdAndRoleId(userId, staffRole.id!!)) {
+                return ApiResponse(success = false, message = "User does not have STAFF role")
+            }
+            
+            // Revoke STAFF role
+            userRoleRepository.deleteByUserIdAndRoleId(userId, staffRole.id)
+            
+            logger.info("STAFF role revoked from user ID: $userId")
+            ApiResponse(success = true, message = "STAFF role revoked successfully")
+        } catch (ex: Exception) {
+            logger.error("Failed to revoke STAFF role from user ID: $userId", ex)
+            ApiResponse(success = false, message = "Failed to revoke STAFF role: ${ex.message}")
+        }
+    }
+    
+    /**
+     * Get all users with STAFF role
+     */
+    @Transactional(readOnly = true)
+    fun getStaffUsers(): ApiResponse<List<UserProfileResponse>> {
+        return try {
+            val staffRole = roleRepository.findByName(RoleNames.STAFF)
+                ?: return ApiResponse(success = false, message = "STAFF role not found in system")
+            
+            val userRoles = userRoleRepository.findByRoleId(staffRole.id!!)
+            val staffUserIds = userRoles.map { it.userId }.toSet()
+            
+            val profiles = userProfileRepository.findAll()
+                .filter { it.user.id in staffUserIds }
+            
+            val profileResponses = profiles.map { profile ->
+                UserProfileResponse(
+                    id = profile.id!!,
+                    userId = profile.user.id!!,
+                    firstName = profile.firstName,
+                    lastName = profile.lastName,
+                    email = profile.email,
+                    phone = profile.phone,
+                    imagePath = profile.imagePath,
+                    isAdmin = profile.isAdmin,
+                    joinedAt = profile.joinedAt,
+                    fullName = profile.fullName
+                )
+            }
+            
+            ApiResponse(success = true, message = "Staff users retrieved successfully", data = profileResponses)
+        } catch (ex: Exception) {
+            logger.error("Failed to get staff users", ex)
+            ApiResponse(success = false, message = "Failed to retrieve staff users")
+        }
+    }
+    
+    /**
+     * Check if user has STAFF role
+     */
+    @Transactional(readOnly = true)
+    fun hasStaffRole(userId: Long): Boolean {
+        return try {
+            val staffRole = roleRepository.findByName(RoleNames.STAFF) ?: return false
+            userRoleRepository.existsByUserIdAndRoleId(userId, staffRole.id!!)
+        } catch (ex: Exception) {
+            logger.error("Failed to check STAFF role for user ID: $userId", ex)
+            false
+        }
+    }
+    
+    /**
+     * Get all roles for a user
+     */
+    @Transactional(readOnly = true)
+    fun getUserRoles(userId: Long): ApiResponse<List<String>> {
+        return try {
+            val user = userRepository.findById(userId)
+                .orElse(null) ?: return ApiResponse(success = false, message = "User not found")
+            
+            val roleNames = user.getRoleNames().toList()
+            
+            ApiResponse(success = true, message = "User roles retrieved successfully", data = roleNames)
+        } catch (ex: Exception) {
+            logger.error("Failed to get roles for user ID: $userId", ex)
+            ApiResponse(success = false, message = "Failed to retrieve user roles")
         }
     }
 }

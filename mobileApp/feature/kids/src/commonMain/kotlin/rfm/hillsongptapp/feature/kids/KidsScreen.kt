@@ -37,6 +37,12 @@ fun KidsScreen(
         },
         onNavigateToChildEdit = { childId ->
             navController.navigate(KidsNav.EditChild(childId))
+        },
+        onNavigateToQRCheckIn = { childId, serviceId ->
+            navController.navigate(KidsNav.QRCodeDisplay(childId, serviceId))
+        },
+        onNavigateToStaffDashboard = {
+            navController.navigate(KidsNav.StaffDashboard)
         }
     )
 }

@@ -16,6 +16,8 @@ typealias PostEntity = Post
 typealias PostCommentEntity = PostComment
 typealias UserTokenEntity = UserToken
 typealias PasswordResetEntity = PasswordReset
+typealias RoleEntity = Role
+typealias UserRoleEntity = UserRole
 
 // Specialized feature entities
 typealias AttendanceEntity = Attendance
@@ -23,6 +25,7 @@ typealias KidEntity = Kid
 typealias KidAttendanceEntity = KidAttendance
 typealias ServiceEntity = Service
 typealias KidsServiceEntity = KidsService
+typealias CheckInRequestEntity = CheckInRequest
 
 /**
  * List of all entity classes for JPA configuration
@@ -39,5 +42,8 @@ val ALL_ENTITIES = listOf(
     Kid::class.java,
     KidAttendance::class.java,
     Service::class.java,
-    KidsService::class.java
+    KidsService::class.java,
+    CheckInRequest::class.java,
+    Role::class.java,
+    UserRole::class.java
 )

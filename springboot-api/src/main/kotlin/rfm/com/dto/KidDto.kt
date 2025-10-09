@@ -128,7 +128,9 @@ data class CheckInStatusResponse(
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     val checkInTime: LocalDateTime? = null,
     
-    val checkedInBy: String? = null
+    val checkedInBy: String? = null,
+    val checkInMethod: CheckInMethod? = null,
+    val approvedByStaff: String? = null
 )
 
 /**
@@ -173,8 +175,21 @@ data class KidsCheckInResponse(
     val notes: String? = null,
     val status: String,
     val isCheckedOut: Boolean,
-    val duration: Long? = null
+    val duration: Long? = null,
+    
+    // QR code check-in information
+    val checkInMethod: CheckInMethod,
+    val checkInRequestId: Long? = null,
+    val approvedByStaff: String? = null
 )
+
+/**
+ * Enum to indicate how the check-in was performed
+ */
+enum class CheckInMethod {
+    DIRECT,      // Direct check-in by parent (deprecated)
+    QR_CODE      // QR code-based check-in with staff verification
+}
 
 /**
  * Response DTO for kids check-out operations

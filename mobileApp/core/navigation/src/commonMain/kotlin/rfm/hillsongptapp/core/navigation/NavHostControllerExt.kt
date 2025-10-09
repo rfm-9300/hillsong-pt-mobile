@@ -79,3 +79,16 @@ fun NavHostController.navigateToKidsEditChild(childId: String) {
 fun NavHostController.navigateToKidsReports() {
     navigate(KidsNav.Reports)
 }
+
+// Staff Navigation Extensions
+fun NavHostController.navigateToStaffDashboard() {
+    navigate(KidsNav.StaffDashboard)
+}
+
+fun NavHostController.navigateToQRCodeScanner() {
+    navigate(KidsNav.QRCodeScanner)
+}
+
+fun NavHostController.navigateToCheckInVerification(token: String) {
+    navigate(KidsNav.CheckInVerification(token))
+}

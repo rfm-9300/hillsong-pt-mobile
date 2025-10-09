@@ -2,6 +2,7 @@ package rfm.hillsongptapp.feature.kids.ui
 
 import rfm.hillsongptapp.core.data.model.Child
 import rfm.hillsongptapp.core.data.model.KidsService
+import rfm.hillsongptapp.core.network.ktor.responses.CheckInRequestResponse
 import rfm.hillsongptapp.feature.kids.ui.model.*
 
 /**
@@ -10,6 +11,7 @@ import rfm.hillsongptapp.feature.kids.ui.model.*
 data class KidsManagementUiState(
     val children: List<Child> = emptyList(),
     val services: List<KidsService> = emptyList(),
+    val checkInRequests: Map<String, CheckInRequestResponse> = emptyMap(), // Map of childId to check-in request
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
     val error: String? = null,

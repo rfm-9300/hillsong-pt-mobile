@@ -7,6 +7,7 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.logging.SIMPLE
+import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.header
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.runBlocking
@@ -14,6 +15,8 @@ import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 import rfm.hillsongptapp.core.network.api.AuthApiService
 import rfm.hillsongptapp.core.network.api.AuthApiServiceImpl
+import rfm.hillsongptapp.core.network.api.CheckInRequestApiService
+import rfm.hillsongptapp.core.network.api.CheckInRequestApiServiceImpl
 import rfm.hillsongptapp.core.network.api.EventsApiService
 import rfm.hillsongptapp.core.network.api.EventsApiServiceImpl
 import rfm.hillsongptapp.core.network.api.GroupsApiService
@@ -31,6 +34,7 @@ import rfm.hillsongptapp.core.network.auth.AuthTokenProvider
 import rfm.hillsongptapp.core.network.auth.NoAuthTokenProvider
 import rfm.hillsongptapp.core.network.ktor.ApiService
 import rfm.hillsongptapp.core.network.provider.httpClientEngine
+import rfm.hillsongptapp.core.network.websocket.CheckInWebSocketClient
 
 val networkModule =
     module {
@@ -61,6 +65,10 @@ val networkModule =
                                 encodeDefaults = false
                             },
                     )
+                }
+                
+                install(WebSockets) {
+                    pingIntervalMillis = 20_000 // 20 seconds
                 }
 
                 // Add auth interceptor using AuthTokenProvider
@@ -133,6 +141,24 @@ val networkModule =
             KidsApiServiceImpl(
                 httpClient = get(),
                 baseUrl = get(qualifier = org.koin.core.qualifier.named("baseUrl"))
+            )
+        }
+        
+        single<CheckInRequestApiService> {
+            CheckInRequestApiServiceImpl(
+                httpClient = get(),
+                baseUrl = get(qualifier = org.koin.core.qualifier.named("baseUrl"))
+            )
+        }
+        
+        // WebSocket Client for real-time check-in updates
+        factory {
+            val authTokenProvider = get<AuthTokenProvider>()
+            val token = runBlocking { authTokenProvider.getAuthToken() } ?: ""
+            CheckInWebSocketClient(
+                httpClient = get(),
+                baseUrl = get(qualifier = org.koin.core.qualifier.named("baseUrl")),
+                authToken = token
             )
         }
         

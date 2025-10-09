@@ -65,8 +65,21 @@ data class User(
     val posts: MutableSet<Post> = mutableSetOf(),
     
     @ManyToMany(mappedBy = "likedByUsers", fetch = FetchType.LAZY)
-    val likedPosts: MutableSet<Post> = mutableSetOf()
+    val likedPosts: MutableSet<Post> = mutableSetOf(),
+    
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
+    val userRoles: MutableSet<UserRole> = mutableSetOf()
 ) {
+    /**
+     * Get all role names for this user
+     */
+    fun getRoleNames(): Set<String> = userRoles.mapNotNull { it.role?.name }.toSet()
+    
+    /**
+     * Check if user has a specific role
+     */
+    fun hasRole(roleName: String): Boolean = getRoleNames().contains(roleName)
+    
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

@@ -103,6 +103,7 @@ kotlin {
             implementation(libs.koin.coroutines)
             implementation(libs.bundles.ktor)
             implementation(libs.bundles.coil)
+            implementation(libs.qrose)
         }
     }
 
@@ -126,7 +127,7 @@ android {
     }
     buildTypes {
         getByName("debug") {
-            buildConfigField("String", "API_BASE_URL", "\"http://192.168.1.165:8080\"")
+            buildConfigField("String", "API_BASE_URL", "\"http://192.168.1.141:8080\"")
             buildConfigField("String", "BUILD_TYPE", "\"debug\"")
             isDebuggable = true
         }

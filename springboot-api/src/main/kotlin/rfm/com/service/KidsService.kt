@@ -184,7 +184,14 @@ class KidsService(
 
     /**
      * Check in a child to a service
+     * 
+     * @deprecated This method is deprecated in favor of the QR code-based check-in system.
+     * Use CheckInRequestService to create check-in requests that require staff verification.
      */
+    @Deprecated(
+        message = "Use QR code-based check-in system via CheckInRequestService",
+        level = DeprecationLevel.WARNING
+    )
     fun checkInChild(parentId: Long, request: KidsCheckInRequest): KidsCheckInResponse {
         val child = kidRepository.findByIdOrNull(request.childId)
             ?: throw IllegalArgumentException("Child not found with ID: ${request.childId}")
@@ -405,7 +412,9 @@ class KidsService(
             serviceName = attendance.kidsService.name,
             serviceId = attendance.kidsService.id,
             checkInTime = attendance.checkInTime,
-            checkedInBy = attendance.checkedInBy
+            checkedInBy = attendance.checkedInBy,
+            checkInMethod = if (attendance.checkInRequest != null) CheckInMethod.QR_CODE else CheckInMethod.DIRECT,
+            approvedByStaff = attendance.approvedByStaff
         )
     }
 
@@ -421,7 +430,10 @@ class KidsService(
             notes = attendance.notes,
             status = attendance.status.name,
             isCheckedOut = attendance.isCheckedOut,
-            duration = attendance.duration
+            duration = attendance.duration,
+            checkInMethod = if (attendance.checkInRequest != null) CheckInMethod.QR_CODE else CheckInMethod.DIRECT,
+            checkInRequestId = attendance.checkInRequest?.id,
+            approvedByStaff = attendance.approvedByStaff
         )
     }
 
