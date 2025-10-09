@@ -331,34 +331,44 @@ class KidsManagementViewModel(
     fun checkOutChild(childId: String) {
         viewModelScope.launch {
             try {
+                LoggerHelper.logDebug("Starting check-out for child $childId", "KidsManagementViewModel")
                 val result =
                         kidsRepository.checkOutChild(
                                 childId = childId,
                                 checkedOutBy = currentParentId
                         )
 
+                LoggerHelper.logDebug("Check-out result: $result", "KidsManagementViewModel")
                 when (result) {
                     is KidsResult.Success -> {
+                        LoggerHelper.logDebug("Check-out successful, refreshing data", "KidsManagementViewModel")
                         // Refresh data to get updated status
                         refreshData()
                         hideCheckOutDialog()
                     }
                     is KidsResult.Error -> {
+                        LoggerHelper.logError("Check-out error: ${result.message}")
                         _uiState.value =
                                 _uiState.value.copy(error = "Check-out failed: ${result.message}")
+                        hideCheckOutDialog()
                     }
                     is KidsResult.NetworkError -> {
+                        LoggerHelper.logError("Network error: ${result.message}")
                         _uiState.value =
                                 _uiState.value.copy(
                                         error = "Network error during check-out: ${result.message}"
                                 )
+                        hideCheckOutDialog()
                     }
                     is KidsResult.Loading -> {
                         // Should not happen in suspend function
+                        LoggerHelper.logDebug("Unexpected Loading state", "KidsManagementViewModel")
                     }
                 }
             } catch (e: Exception) {
+                LoggerHelper.logError("Exception during check-out: ${e.message}", e)
                 _uiState.value = _uiState.value.copy(error = "Check-out failed: ${e.message}")
+                hideCheckOutDialog()
             }
         }
     }

@@ -440,6 +440,8 @@ class KidsService(
     private fun mapToKidsCheckOutResponse(attendance: KidAttendance): KidsCheckOutResponse {
         return KidsCheckOutResponse(
             id = attendance.id!!,
+            childId = attendance.kid.id!!,
+            serviceId = attendance.kidsService.id!!,
             child = mapToChildSummaryResponse(attendance.kid),
             service = mapToKidsServiceResponse(attendance.kidsService),
             checkInTime = attendance.checkInTime,
@@ -447,6 +449,7 @@ class KidsService(
             checkedInBy = attendance.checkedInBy,
             checkedOutBy = attendance.checkedOutBy!!,
             notes = attendance.notes,
+            status = attendance.status.name,
             duration = attendance.duration!!
         )
     }

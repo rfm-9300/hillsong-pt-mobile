@@ -426,76 +426,64 @@ class KidsRepositoryImpl(
         notes: String?
     ): KidsResult<CheckInRecord> {
         return try {
-            // Find the current check-in record
-            val currentRecord = checkInRecordDao.getCurrentCheckInRecordForChild(childId)
-                ?: return KidsResult.Error("Child is not currently checked in")
+            LoggerHelper.logDebug("Starting check-out for child $childId by $checkedOutBy", "KidsRepository")
             
-            val child = childDao.getChildById(childId)
-                ?: return KidsResult.Error("Child not found")
-            
-            val service = kidsServiceDao.getKidsServiceById(currentRecord.serviceId)
-                ?: return KidsResult.Error("Service not found")
-            
-            val currentTime = getCurrentTimestamp()
-            
-            // Update the record with check-out information
-            val updatedRecord = currentRecord.copy(
-                checkOutTime = currentTime,
-                checkedOutBy = checkedOutBy,
-                notes = if (notes != null) "${currentRecord.notes ?: ""}\n$notes".trim() else currentRecord.notes,
-                status = CheckInStatus.CHECKED_OUT
-            )
-            
-            // Perform optimistic local update
-            val updatedChild = child.copy(
-                status = CheckInStatus.CHECKED_OUT,
-                currentServiceId = null,
-                checkInTime = null,
-                checkOutTime = currentTime,
-                updatedAt = currentTime
-            )
-            
-            val updatedService = service.copy(
-                currentCapacity = maxOf(0, service.currentCapacity - 1)
-            )
-            
-            childDao.updateChild(updatedChild)
-            kidsServiceDao.updateKidsService(updatedService)
-            checkInRecordDao.updateCheckInRecord(updatedRecord)
-            
-            // Try to sync with remote
+            // Call API first - don't rely on local DB
             val request = CheckOutRequest(
                 childId = childId,
                 checkedOutBy = checkedOutBy,
                 notes = notes
             )
             
+            LoggerHelper.logDebug("Calling API to check out child", "KidsRepository")
             val remoteResult = kidsApiService.checkOutChild(request)
+            LoggerHelper.logDebug("API result: $remoteResult", "KidsRepository")
             
             when (remoteResult) {
                 is NetworkResult.Success -> {
                     val response = remoteResult.data
                     if (response.success && response.record != null) {
-                        // Update with server response
+                        // Update local DB with server response
                         val recordResponse = response.record!!
                         val serverRecord = recordResponse.toDomain()
                         checkInRecordDao.insertCheckInRecord(serverRecord.toEntity())
                         
-                        // Update child and service from server response if provided
-                        // Backend no longer returns updatedChild in response
-                        // Backend no longer returns updatedService in response
+                        // Update child status in local DB
+                        val child = childDao.getChildById(childId)
+                        if (child != null) {
+                            val updatedChild = child.copy(
+                                status = CheckInStatus.CHECKED_OUT,
+                                currentServiceId = null,
+                                checkInTime = null,
+                                checkOutTime = serverRecord.checkOutTime,
+                                updatedAt = getCurrentTimestamp()
+                            )
+                            childDao.updateChild(updatedChild)
+                        }
                         
+                        // Update service capacity in local DB
+                        serverRecord.serviceId?.let { serviceId ->
+                            val service = kidsServiceDao.getKidsServiceById(serviceId)
+                            if (service != null) {
+                                val updatedService = service.copy(
+                                    currentCapacity = maxOf(0, service.currentCapacity - 1)
+                                )
+                                kidsServiceDao.updateKidsService(updatedService)
+                            }
+                        }
+                        
+                        LoggerHelper.logDebug("Check-out successful", "KidsRepository")
                         KidsResult.Success(serverRecord)
                     } else {
-                        // Server returned error - keep local changes
+                        // Server returned error
                         LoggerHelper.logError("Server check-out failed: ${response.message}")
-                        KidsResult.Success(updatedRecord.toDomain())
+                        KidsResult.Error(response.message ?: "Check-out failed")
                     }
                 }
                 is NetworkResult.Error -> {
-                    // Network error - keep local changes
+                    // Network error
                     LoggerHelper.logError("Network error during check-out: ${remoteResult.exception.message}")
-                    KidsResult.Success(updatedRecord.toDomain())
+                    KidsResult.NetworkError(remoteResult.exception.message ?: "Network error")
                 }
                 is NetworkResult.Loading -> {
                     KidsResult.Loading

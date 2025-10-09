@@ -1,5 +1,6 @@
 package rfm.hillsongptapp.core.network.result
 
+import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.http.HttpStatusCode

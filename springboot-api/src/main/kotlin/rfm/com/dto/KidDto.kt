@@ -196,6 +196,8 @@ enum class CheckInMethod {
  */
 data class KidsCheckOutResponse(
     val id: Long,
+    val childId: Long,  // Flat field for mobile app compatibility
+    val serviceId: Long,  // Flat field for mobile app compatibility
     val child: ChildSummaryResponse,
     val service: KidsServiceResponse,
     
@@ -208,6 +210,7 @@ data class KidsCheckOutResponse(
     val checkedInBy: String,
     val checkedOutBy: String,
     val notes: String? = null,
+    val status: String,  // Flat field for mobile app compatibility
     val duration: Long
 )
 
