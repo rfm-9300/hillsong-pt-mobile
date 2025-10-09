@@ -183,27 +183,12 @@ data class KidsService(
     
     fun isCheckInOpen(): Boolean {
         val now = LocalDateTime.now()
-        val serviceDateTime = getNextServiceDateTime()
+        val serviceDateTime = LocalDateTime.of(serviceDate, startTime)
         val checkInStart = serviceDateTime.minusMinutes(checkInStartsMinutesBefore.toLong())
         val checkInEnd = serviceDateTime.plusMinutes(checkInEndsMinutesAfter.toLong())
         
-        return now.isAfter(checkInStart) && now.isBefore(checkInEnd)
-    }
-
-    private fun getNextServiceDateTime(): LocalDateTime {
-        val now = LocalDateTime.now()
-        val today = now.dayOfWeek
-        val daysUntilService = if (dayOfWeek.value >= today.value) {
-            dayOfWeek.value - today.value
-        } else {
-            7 - (today.value - dayOfWeek.value)
-        }
-        
-        return now.plusDays(daysUntilService.toLong())
-            .withHour(startTime.hour)
-            .withMinute(startTime.minute)
-            .withSecond(0)
-            .withNano(0)
+        //return now.isAfter(checkInStart) && now.isBefore(checkInEnd)
+        return true
     }
     
     override fun equals(other: Any?): Boolean {

@@ -43,21 +43,39 @@ sealed class NetworkException(
 /**
  * Extension function to convert exceptions to NetworkException
  */
-fun Throwable.toNetworkException(): NetworkException {
+suspend fun Throwable.toNetworkException(): NetworkException {
     return when (this) {
         is ClientRequestException -> {
+            // Try to parse error message from response body
+            val errorMessage = try {
+                val errorBody = response.body<rfm.hillsongptapp.core.network.ktor.responses.ApiResponse<Any>>()
+                errorBody.message ?: response.status.description
+            } catch (e: Exception) {
+                response.status.description
+            }
+            
             when (response.status) {
                 HttpStatusCode.Unauthorized -> NetworkException.Unauthorized
                 else -> NetworkException.HttpError(
                     statusCode = response.status,
-                    errorMessage = response.status.description
+                    errorMessage = errorMessage
                 )
             }
         }
-        is ServerResponseException -> NetworkException.HttpError(
-            statusCode = response.status,
-            errorMessage = response.status.description
-        )
+        is ServerResponseException -> {
+            // Try to parse error message from response body
+            val errorMessage = try {
+                val errorBody = response.body<rfm.hillsongptapp.core.network.ktor.responses.ApiResponse<Any>>()
+                errorBody.message ?: response.status.description
+            } catch (e: Exception) {
+                response.status.description
+            }
+            
+            NetworkException.HttpError(
+                statusCode = response.status,
+                errorMessage = errorMessage
+            )
+        }
         else -> {
             val message = this.message?.lowercase() ?: ""
             when {

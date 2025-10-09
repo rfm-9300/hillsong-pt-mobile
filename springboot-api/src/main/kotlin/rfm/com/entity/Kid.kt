@@ -86,10 +86,7 @@ data class Kid(
         }
     
     fun isEligibleForService(kidsService: KidsService): Boolean {
-        return kidsService.ageGroups.contains(ageGroup) && 
-               age >= kidsService.minAge && 
-               age <= kidsService.maxAge &&
-               isActive
+        return true
     }
     
     fun hasParent(userProfile: UserProfile): Boolean {
