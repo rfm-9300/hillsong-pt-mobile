@@ -17,7 +17,6 @@ import rfm.hillsongptapp.feature.ministries.MinistriesScreen
 import rfm.hillsongptapp.feature.kids.KidsScreen
 import rfm.hillsongptapp.feature.kids.ui.KidsManagementScreen
 import rfm.hillsongptapp.feature.kids.ui.registration.ChildRegistrationScreen
-import rfm.hillsongptapp.feature.kids.ui.services.ServicesScreen
 import rfm.hillsongptapp.feature.kids.ui.checkin.QRCodeDisplayWrapper
 import rfm.hillsongptapp.feature.kids.ui.checkout.CheckOutScreen
 import rfm.hillsongptapp.feature.kids.ui.edit.ChildEditScreen
@@ -70,17 +69,6 @@ fun RootNavigation() {
                             popUpTo(rfm.hillsongptapp.core.navigation.KidsNav.Management) { inclusive = true }
                         }
                     }
-                )
-            },
-            kidsServices = { 
-                ServicesScreen(
-                    onNavigateBack = { rootNavController.popBackStack() }
-                )
-            },
-            kidsServicesForChild = { childId -> 
-                ServicesScreen(
-                    onNavigateBack = { rootNavController.popBackStack() },
-                    selectedChildId = childId
                 )
             },
 
@@ -145,7 +133,6 @@ fun RootNavigation() {
                     }
                 )
             },
-            rootNavController = rootNavController
         )
     }
 }

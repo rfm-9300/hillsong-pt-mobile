@@ -1,5 +1,6 @@
 package rfm.hillsongptapp.core.designsystem.theme
 
+import AppTypography
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -20,5 +21,6 @@ fun AppTheme(
     MaterialTheme(
         content = content,
         colorScheme = colorScheme,
+        typography = AppTypography()
     )
 }

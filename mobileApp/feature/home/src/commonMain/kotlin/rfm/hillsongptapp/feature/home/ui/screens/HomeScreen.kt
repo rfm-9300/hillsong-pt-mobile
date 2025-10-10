@@ -50,6 +50,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import rfm.hillsongptapp.core.designsystem.BottomBarDestination
 import rfm.hillsongptapp.core.designsystem.HillsongBottomAppBar
 import rfm.hillsongptapp.core.designsystem.HillsongTopAppBar
+import rfm.hillsongptapp.core.designsystem.theme.AppTheme
 import rfm.hillsongptapp.core.navigation.navigateToSettings
 import rfm.hillsongptapp.core.navigation.navigateToStream
 import rfm.hillsongptapp.core.navigation.navigateToProfile
@@ -389,7 +390,7 @@ fun ScriptureCard() {
 @Preview
 @Composable
 fun HomeScreenPreview() {
-    MaterialTheme {
+    AppTheme {
         Surface {
             HomeContent(
                 paddingValues = PaddingValues(16.dp),

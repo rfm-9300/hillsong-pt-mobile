@@ -8,7 +8,6 @@ import rfm.hillsongptapp.feature.kids.ui.checkout.CheckOutViewModel
 import rfm.hillsongptapp.feature.kids.ui.registration.ChildRegistrationViewModel
 import rfm.hillsongptapp.feature.kids.ui.edit.ChildEditViewModel
 import rfm.hillsongptapp.feature.kids.ui.reports.ReportsViewModel
-import rfm.hillsongptapp.feature.kids.ui.services.ServicesViewModel
 import rfm.hillsongptapp.feature.kids.ui.staff.StaffCheckInViewModel
 import rfm.hillsongptapp.feature.kids.ui.staff.StaffDashboardViewModel
 
@@ -52,12 +51,6 @@ val featureKidsModule = lazyModule {
     
     viewModel<ReportsViewModel> {
         ReportsViewModel(
-            kidsRepository = get()
-        )
-    }
-    
-    viewModel<ServicesViewModel> {
-        ServicesViewModel(
             kidsRepository = get()
         )
     }

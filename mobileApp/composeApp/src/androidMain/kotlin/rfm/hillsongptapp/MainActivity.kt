@@ -18,9 +18,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            DynamicColorApp {
-                enableEdgeToEdge()
+            AppTheme {
                 RootApp()
+                enableEdgeToEdge()
             }
         }
     }

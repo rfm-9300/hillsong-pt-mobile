@@ -22,6 +22,7 @@ import rfm.hillsongptapp.core.navigation.*
 import rfm.hillsongptapp.core.data.model.CheckInStatus
 import rfm.hillsongptapp.core.data.model.Child
 import rfm.hillsongptapp.core.data.model.EmergencyContact
+import rfm.hillsongptapp.core.designsystem.ui.icons.AppIcons
 import rfm.hillsongptapp.feature.kids.ui.components.CheckOutDialog
 import rfm.hillsongptapp.feature.kids.ui.components.ChildCard
 import rfm.hillsongptapp.feature.kids.ui.components.ConnectionStatusBanner
@@ -83,18 +84,12 @@ fun KidsManagementScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = { navController.navigateToKidsServices() }) {
-                            Icon(
-                                    imageVector = Icons.Default.List,
-                                    contentDescription = "View Services"
-                            )
-                        }
 
                         // Staff Dashboard - only show for staff users
                         if (uiState.hasStaffPermissions) {
                             IconButton(onClick = { navController.navigateToStaffDashboard() }) {
                                 Icon(
-                                        imageVector = Icons.Default.Settings,
+                                        imageVector = AppIcons.AdminPanel,
                                         contentDescription = "Staff Dashboard"
                                 )
                             }
@@ -104,7 +99,7 @@ fun KidsManagementScreen(
                         if (uiState.hasStaffPermissions) {
                             IconButton(onClick = { navController.navigateToKidsReports() }) {
                                 Icon(
-                                        imageVector = Icons.Default.Add,
+                                        imageVector = AppIcons.Report,
                                         contentDescription = "Staff Reports"
                                 )
                             }
@@ -347,7 +342,6 @@ private fun ChildrenListContent(
                     child = child,
                     currentService = currentService,
                     checkInRequest = checkInRequest,
-                    onCheckInClick = onCheckInClick,
                     onCheckOutClick = onCheckOutClick,
                     onEditClick = onEditClick,
                     onQRCheckInClick = onQRCheckInClick,
@@ -447,11 +441,7 @@ fun KidsManagementContent(
         connectionStatus: ConnectionStatus,
         notifications: List<Any> = emptyList(), // Simplified for preview
         onNavigateToRegistration: () -> Unit = {},
-        onNavigateToServices: () -> Unit = {},
-        onNavigateToReports: () -> Unit = {},
-        onNavigateToServicesForChild: (String) -> Unit = {},
         onNavigateToCheckIn: (String) -> Unit = {},
-        onNavigateToCheckOut: (String) -> Unit = {},
         onNavigateToChildEdit: (String) -> Unit = {},
         onRefreshData: () -> Unit = {},
         onRetryConnection: () -> Unit = {},
@@ -459,7 +449,6 @@ fun KidsManagementContent(
         onCheckOutChild: (String) -> Unit = {},
         onHideCheckOutDialog: () -> Unit = {},
         onDismissNotification: () -> Unit = {},
-        onClearError: () -> Unit = {},
         modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier.fillMaxSize()) {
@@ -472,16 +461,6 @@ fun KidsManagementContent(
                         }
                     },
                     actions = {
-
-                        // Staff Reports - only show for staff users
-                        if (uiState.hasStaffPermissions) {
-                            IconButton(onClick = onNavigateToReports) {
-                                Icon(
-                                        imageVector = Icons.Default.Add,
-                                        contentDescription = "Staff Reports"
-                                )
-                            }
-                        }
 
                         IconButton(onClick = onRefreshData) {
                             Icon(

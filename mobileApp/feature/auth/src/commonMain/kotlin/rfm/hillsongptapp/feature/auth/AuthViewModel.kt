@@ -16,6 +16,9 @@ class AuthViewModel(
     private val authRepository: AuthRepository,
 ) : ViewModel() {
 
+    private val _uiState = MutableStateFlow(defaultEmptyState())
+    val uiState = _uiState.stateIn(viewModelScope, SharingStarted.Eagerly, _uiState.value)
+
     init {
         LoggerHelper.setTag("AuthViewModel")
         initializeAuthState()
@@ -53,9 +56,6 @@ class AuthViewModel(
             }
         }
     }
-
-    private val _uiState = MutableStateFlow(this.defaultEmptyState())
-    val uiState = _uiState.stateIn(viewModelScope, SharingStarted.Eagerly, _uiState.value)
 
     private fun defaultEmptyState() = LoginUiState.empty()
 

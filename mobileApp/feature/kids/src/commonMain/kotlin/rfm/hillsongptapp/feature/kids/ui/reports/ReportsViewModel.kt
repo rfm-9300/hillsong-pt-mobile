@@ -87,6 +87,68 @@ class ReportsViewModel(
     }
     
     /**
+     * Load today's services specifically
+     */
+    fun loadTodaysServices() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            
+            try {
+                // Set date range to today only
+                val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+                _uiState.value = _uiState.value.copy(
+                    selectedStartDate = today.toString(),
+                    selectedEndDate = today.toString()
+                )
+                
+                // Load available services
+                val servicesResult = kidsRepository.getAvailableServices()
+                when (servicesResult) {
+                    is KidsResult.Success -> {
+                        val services = servicesResult.data
+                        _uiState.value = _uiState.value.copy(
+                            availableServices = services,
+                            selectedServices = services.map { it.id }.toSet(),
+                            isLoading = false
+                        )
+                        
+                        // Load current service reports for today
+                        loadServiceReports()
+                    }
+                    is KidsResult.Error -> {
+                        _uiState.value = _uiState.value.copy(
+                            error = "Failed to load today's services: ${servicesResult.message}",
+                            isLoading = false
+                        )
+                    }
+                    is KidsResult.NetworkError -> {
+                        _uiState.value = _uiState.value.copy(
+                            error = "Network error loading services: ${servicesResult.message}",
+                            isLoading = false
+                        )
+                    }
+                    is KidsResult.Loading -> {
+                        // Should not happen in suspend function
+                    }
+                }
+                
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = e.message ?: "Unknown error occurred",
+                    isLoading = false
+                )
+            }
+        }
+    }
+    
+    /**
+     * Refresh today's data specifically
+     */
+    fun refreshTodaysData() {
+        loadTodaysServices()
+    }
+    
+    /**
      * Refresh all data
      */
     fun refreshData() {
@@ -123,7 +185,7 @@ class ReportsViewModel(
      * Export the current attendance report
      */
     fun exportReport() {
-        val report = _uiState.value.attendanceReport ?: return
+        if (_uiState.value.attendanceReport == null) return
         
         viewModelScope.launch {
             try {
