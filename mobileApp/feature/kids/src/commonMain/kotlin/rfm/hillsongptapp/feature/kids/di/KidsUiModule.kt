@@ -3,7 +3,6 @@ package rfm.hillsongptapp.feature.kids.di
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.lazyModule
 import rfm.hillsongptapp.feature.kids.ui.KidsManagementViewModel
-import rfm.hillsongptapp.feature.kids.ui.checkin.CheckInViewModel
 import rfm.hillsongptapp.feature.kids.ui.checkin.CheckInRequestViewModel
 import rfm.hillsongptapp.feature.kids.ui.checkout.CheckOutViewModel
 import rfm.hillsongptapp.feature.kids.ui.registration.ChildRegistrationViewModel
@@ -28,13 +27,7 @@ val featureKidsModule = lazyModule {
             checkInRequestApiService = get()
         )
     }
-    
-    viewModel<CheckInViewModel> {
-        CheckInViewModel(
-            kidsRepository = get(),
-            authRepository = get()
-        )
-    }
+
     
     viewModel<CheckOutViewModel> {
         CheckOutViewModel(

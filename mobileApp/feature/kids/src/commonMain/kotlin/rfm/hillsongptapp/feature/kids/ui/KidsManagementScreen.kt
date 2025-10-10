@@ -15,8 +15,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
+import rfm.hillsongptapp.core.navigation.*
 import rfm.hillsongptapp.core.data.model.CheckInStatus
 import rfm.hillsongptapp.core.data.model.Child
 import rfm.hillsongptapp.core.data.model.EmergencyContact
@@ -38,15 +40,7 @@ import rfm.hillsongptapp.logging.LoggerHelper
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KidsManagementScreen(
-        onNavigateToRegistration: () -> Unit = {},
-        onNavigateToServices: () -> Unit = {},
-        onNavigateToReports: () -> Unit = {},
-        onNavigateToServicesForChild: (String) -> Unit = {},
-        onNavigateToCheckIn: (String) -> Unit = {},
-        onNavigateToCheckOut: (String) -> Unit = {},
-        onNavigateToChildEdit: (String) -> Unit = {},
-        onNavigateToQRCheckIn: (Long, Long) -> Unit = { _, _ -> },
-        onNavigateToStaffDashboard: () -> Unit = {},
+        navController: NavHostController,
         modifier: Modifier = Modifier,
         viewModel: KidsManagementViewModel = koinViewModel()
 ) {
@@ -89,7 +83,7 @@ fun KidsManagementScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = onNavigateToServices) {
+                        IconButton(onClick = { navController.navigateToKidsServices() }) {
                             Icon(
                                     imageVector = Icons.Default.List,
                                     contentDescription = "View Services"
@@ -98,7 +92,7 @@ fun KidsManagementScreen(
 
                         // Staff Dashboard - only show for staff users
                         if (uiState.hasStaffPermissions) {
-                            IconButton(onClick = onNavigateToStaffDashboard) {
+                            IconButton(onClick = { navController.navigateToStaffDashboard() }) {
                                 Icon(
                                         imageVector = Icons.Default.Settings,
                                         contentDescription = "Staff Dashboard"
@@ -108,7 +102,7 @@ fun KidsManagementScreen(
 
                         // Staff Reports - only show for staff users
                         if (uiState.hasStaffPermissions) {
-                            IconButton(onClick = onNavigateToReports) {
+                            IconButton(onClick = { navController.navigateToKidsReports() }) {
                                 Icon(
                                         imageVector = Icons.Default.Add,
                                         contentDescription = "Staff Reports"
@@ -138,7 +132,7 @@ fun KidsManagementScreen(
                         LoadingContent()
                     }
                     !uiState.hasChildren -> {
-                        EmptyContent(onRegisterClick = onNavigateToRegistration)
+                        EmptyContent(onRegisterClick = { navController.navigateToKidsRegistration() })
                     }
                     else -> {
                         ChildrenListContent(
@@ -146,10 +140,10 @@ fun KidsManagementScreen(
                                 connectionStatus = connectionStatus,
                                 lastUpdatedTime = "Just now", // TODO: Implement last updated time
                                 onRefresh = { viewModel.refreshData() },
-                                onCheckInClick = { child -> onNavigateToCheckIn(child.id) },
+                                onCheckInClick = { child -> navController.navigateToKidsCheckIn(child.id) },
                                 onCheckOutClick = { child -> viewModel.showCheckOutDialog(child) },
-                                onEditClick = onNavigateToChildEdit as (Child) -> Unit,
-                                onRegisterClick = onNavigateToRegistration,
+                                onEditClick = { child -> navController.navigateToKidsEditChild(child.id) },
+                                onRegisterClick = { navController.navigateToKidsRegistration() },
                                 onRetryConnection = { /* TODO: Implement retry connection */},
                                 onQRCheckInClick = { child ->
                                     selectedChildForQR = child
@@ -164,7 +158,7 @@ fun KidsManagementScreen(
 
                 // Floating Action Button for adding new child
                 FloatingActionButton(
-                        onClick = onNavigateToRegistration,
+                        onClick = { navController.navigateToKidsRegistration() },
                         modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
                 ) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Register New Child")
@@ -212,8 +206,8 @@ fun KidsManagementScreen(
                 if (childId == 0L || serviceId == 0L) {
                     LoggerHelper.logDebug("ERROR: ID conversion failed! childId=$childId, serviceId=$serviceId", "KidsManagementScreen")
                 } else {
-                    LoggerHelper.logDebug("Calling onNavigateToQRCheckIn callback", "KidsManagementScreen")
-                    onNavigateToQRCheckIn(childId, serviceId)
+                    LoggerHelper.logDebug("Calling navController.navigateToQRCodeDisplay", "KidsManagementScreen")
+                    navController.navigateToQRCodeDisplay(childId, serviceId)
                 }
                 
                 showServiceSelectionDialog = false
@@ -528,14 +522,6 @@ fun KidsManagementContent(
                                 onCancelCheckInRequest = { }
                         )
                     }
-                }
-
-                // Floating Action Button for adding new child
-                FloatingActionButton(
-                        onClick = onNavigateToRegistration,
-                        modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
-                ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Register New Child")
                 }
             }
         }

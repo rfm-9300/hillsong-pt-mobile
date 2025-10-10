@@ -92,3 +92,7 @@ fun NavHostController.navigateToQRCodeScanner() {
 fun NavHostController.navigateToCheckInVerification(token: String) {
     navigate(KidsNav.CheckInVerification(token))
 }
+
+fun NavHostController.navigateToQRCodeDisplay(childId: Long, serviceId: Long) {
+    navigate(KidsNav.QRCodeDisplay(childId, serviceId))
+}

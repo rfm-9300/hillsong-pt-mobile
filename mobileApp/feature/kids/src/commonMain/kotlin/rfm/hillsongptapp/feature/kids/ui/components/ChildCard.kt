@@ -15,7 +15,9 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import rfm.hillsongptapp.core.data.model.Child
 import rfm.hillsongptapp.core.data.model.CheckInStatus
+import rfm.hillsongptapp.core.data.model.EmergencyContact
 import rfm.hillsongptapp.core.data.model.KidsService
+import rfm.hillsongptapp.core.network.ktor.responses.CheckInRequestResponse
 import rfm.hillsongptapp.feature.kids.ui.theme.KidsColors
 
 
@@ -27,7 +29,7 @@ import rfm.hillsongptapp.feature.kids.ui.theme.KidsColors
 fun ChildCard(
     child: Child,
     currentService: KidsService? = null,
-    checkInRequest: rfm.hillsongptapp.core.network.ktor.responses.CheckInRequestResponse? = null,
+    checkInRequest: CheckInRequestResponse? = null,
     onCheckInClick: (Child) -> Unit,
     onCheckOutClick: (Child) -> Unit,
     onEditClick: (Child) -> Unit,
@@ -138,11 +140,13 @@ fun ChildCard(
                 ) {
                     when (child.status) {
                         CheckInStatus.CHECKED_OUT, CheckInStatus.NOT_IN_SERVICE -> {
-                            Button(
-                                onClick = { onCheckInClick(child) },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text("Check In")
+                            if(onQRCheckInClick != null){
+                                OutlinedButton(
+                                    onClick = { onQRCheckInClick?.invoke(child) },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Check-In")
+                                }
                             }
                         }
                         CheckInStatus.CHECKED_IN -> {
@@ -165,17 +169,7 @@ fun ChildCard(
                         Text("Edit")
                     }
                 }
-                
-                // Secondary action row - QR Check-In
-                if (onQRCheckInClick != null && child.status != CheckInStatus.CHECKED_IN) {
-                    OutlinedButton(
-                        onClick = { onQRCheckInClick(child) },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("QR Check-In")
-                    }
-                }
-                
+
                 // Tertiary action row
                 if (onViewServicesClick != null) {
                     OutlinedButton(
@@ -258,6 +252,84 @@ private fun formatTime(isoTime: String): String {
         "$displayHour:$minute $amPm"
     } catch (e: Exception) {
         isoTime // Fallback to original string
+    }
+}
+
+@Preview
+@Composable
+private fun ChildCardPreview() {
+    MaterialTheme {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Checked out child
+            ChildCard(
+                child = Child(
+                    id = "1",
+                    parentId = "parent-1",
+                    name = "Emma Johnson",
+                    dateOfBirth = "2018-03-15",
+                    medicalInfo = "No known allergies",
+                    dietaryRestrictions = "Vegetarian",
+                    emergencyContact = EmergencyContact(
+                        name = "Sarah Johnson",
+                        phoneNumber = "+1-555-123-4567",
+                        relationship = "Mother"
+                    ),
+                    status = CheckInStatus.CHECKED_OUT,
+                    currentServiceId = null,
+                    checkInTime = null,
+                    checkOutTime = "2024-01-15T11:30:00.000Z",
+                    createdAt = "2024-01-01T00:00:00.000Z",
+                    updatedAt = "2024-01-15T11:30:00.000Z"
+                ),
+                onCheckInClick = {},
+                onCheckOutClick = {},
+                onEditClick = {}
+            )
+            
+            // Checked in child
+            ChildCard(
+                child = Child(
+                    id = "2",
+                    parentId = "parent-2",
+                    name = "Liam Smith",
+                    dateOfBirth = "2016-08-22",
+                    medicalInfo = null,
+                    dietaryRestrictions = null,
+                    emergencyContact = EmergencyContact(
+                        name = "Michael Smith",
+                        phoneNumber = "+1-555-987-6543",
+                        relationship = "Father"
+                    ),
+                    status = CheckInStatus.CHECKED_IN,
+                    currentServiceId = "service-1",
+                    checkInTime = "2024-01-15T09:15:00.000Z",
+                    checkOutTime = null,
+                    createdAt = "2024-01-01T00:00:00.000Z",
+                    updatedAt = "2024-01-15T09:15:00.000Z"
+                ),
+                currentService = KidsService(
+                    id = "service-1",
+                    name = "Kids Church",
+                    description = "Main kids service",
+                    minAge = 5,
+                    maxAge = 12,
+                    startTime = "09:00:00",
+                    endTime = "10:30:00",
+                    location = "Kids Hall A",
+                    maxCapacity = 50,
+                    currentCapacity = 25,
+                    isAcceptingCheckIns = true,
+                    staffMembers = listOf("staff-1", "staff-2"),
+                    createdAt = "2024-01-01T00:00:00.000Z"
+                ),
+                onCheckInClick = {},
+                onCheckOutClick = {},
+                onEditClick = {}
+            )
+        }
     }
 }
 

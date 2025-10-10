@@ -18,7 +18,6 @@ import rfm.hillsongptapp.feature.kids.KidsScreen
 import rfm.hillsongptapp.feature.kids.ui.KidsManagementScreen
 import rfm.hillsongptapp.feature.kids.ui.registration.ChildRegistrationScreen
 import rfm.hillsongptapp.feature.kids.ui.services.ServicesScreen
-import rfm.hillsongptapp.feature.kids.ui.checkin.CheckInScreen
 import rfm.hillsongptapp.feature.kids.ui.checkin.QRCodeDisplayWrapper
 import rfm.hillsongptapp.feature.kids.ui.checkout.CheckOutScreen
 import rfm.hillsongptapp.feature.kids.ui.edit.ChildEditScreen
@@ -58,40 +57,10 @@ fun RootNavigation() {
             feed = { FeedScreen() },
             events = { EventsScreen() },
             homeScreen = { homeScreen(navController = rootNavController) },
-            rootNavController = rootNavController
         )
         kidsGraph(
             kidsManagement = { 
-                KidsManagementScreen(
-                    onNavigateToRegistration = {
-                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.Registration)
-                    },
-                    onNavigateToServices = {
-                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.Services)
-                    },
-                    onNavigateToReports = {
-                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.Reports)
-                    },
-                    onNavigateToServicesForChild = { childId ->
-                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.ServicesForChild(childId))
-                    },
-                    onNavigateToCheckIn = { childId ->
-                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.CheckIn(childId))
-                    },
-                    onNavigateToCheckOut = { childId ->
-                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.CheckOut(childId))
-                    },
-                    onNavigateToChildEdit = { childId ->
-                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.EditChild(childId))
-                    },
-                    onNavigateToQRCheckIn = { childId, serviceId ->
-                        LoggerHelper.logDebug("Navigating to QRCodeDisplay with childId=$childId, serviceId=$serviceId", "RootApp")
-                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.QRCodeDisplay(childId, serviceId))
-                    },
-                    onNavigateToStaffDashboard = {
-                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.StaffDashboard)
-                    }
-                )
+                KidsManagementScreen(navController = rootNavController)
             },
             kidsRegistration = { 
                 ChildRegistrationScreen(
@@ -114,17 +83,7 @@ fun RootNavigation() {
                     selectedChildId = childId
                 )
             },
-            kidsCheckIn = { childId -> 
-                CheckInScreen(
-                    childId = childId,
-                    onNavigateBack = { rootNavController.popBackStack() },
-                    onCheckInSuccess = { 
-                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.Management) {
-                            popUpTo(rfm.hillsongptapp.core.navigation.KidsNav.Management) { inclusive = true }
-                        }
-                    }
-                )
-            },
+
             kidsCheckOut = { childId -> 
                 CheckOutScreen(
                     childId = childId,

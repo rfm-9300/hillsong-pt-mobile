@@ -17,33 +17,7 @@ fun KidsScreen(
     // and use the main navController for navigation
     KidsManagementScreen(
         modifier = modifier,
-        onNavigateToRegistration = {
-            navController.navigate(KidsNav.Registration)
-        },
-        onNavigateToServices = {
-            navController.navigate(KidsNav.Services)
-        },
-        onNavigateToReports = {
-            navController.navigate(KidsNav.Reports)
-        },
-        onNavigateToServicesForChild = { childId ->
-            navController.navigate(KidsNav.ServicesForChild(childId))
-        },
-        onNavigateToCheckIn = { childId ->
-            navController.navigate(KidsNav.CheckIn(childId))
-        },
-        onNavigateToCheckOut = { childId ->
-            navController.navigate(KidsNav.CheckOut(childId))
-        },
-        onNavigateToChildEdit = { childId ->
-            navController.navigate(KidsNav.EditChild(childId))
-        },
-        onNavigateToQRCheckIn = { childId, serviceId ->
-            navController.navigate(KidsNav.QRCodeDisplay(childId, serviceId))
-        },
-        onNavigateToStaffDashboard = {
-            navController.navigate(KidsNav.StaffDashboard)
-        }
+        navController = navController
     )
 }
 

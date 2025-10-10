@@ -20,7 +20,6 @@ fun NavGraphBuilder.homeGraph(
     feed: @Composable AnimatedContentScope.() -> Unit,
     events: @Composable AnimatedContentScope.() -> Unit,
     homeScreen: @Composable AnimatedContentScope.() -> Unit,
-    rootNavController: NavHostController
 ){
     navigation<HomeGraph>(startDestination = HomeNav.HomeScreen) {
         composable<HomeNav.HomeScreen> {
@@ -84,43 +83,3 @@ sealed class HomeNav {
     object EventsScreen : HomeNav()
 }
 
-// Kids Management Navigation Routes
-sealed class KidsNav {
-    @Serializable
-    object Management : KidsNav()
-    
-    @Serializable
-    object Registration : KidsNav()
-    
-    @Serializable
-    object Services : KidsNav()
-    
-    @Serializable
-    data class ServicesForChild(val childId: String) : KidsNav()
-    
-    @Serializable
-    data class CheckIn(val childId: String) : KidsNav()
-    
-    @Serializable
-    data class CheckOut(val childId: String) : KidsNav()
-    
-    @Serializable
-    data class EditChild(val childId: String) : KidsNav()
-    
-    @Serializable
-    object Reports : KidsNav()
-    
-    // Staff Navigation Routes
-    @Serializable
-    object StaffDashboard : KidsNav()
-    
-    @Serializable
-    object QRCodeScanner : KidsNav()
-    
-    @Serializable
-    data class CheckInVerification(val token: String) : KidsNav()
-    
-    // Parent QR Check-in Route
-    @Serializable
-    data class QRCodeDisplay(val childId: Long, val serviceId: Long) : KidsNav()
-}

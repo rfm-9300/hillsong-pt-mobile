@@ -210,6 +210,30 @@ object ApiEndpointsIndex {
     }
 
     /**
+     * QR Code Check-In Request Endpoints
+     * Base Path: /api/kids/checkin-requests
+     */
+    object CheckInRequests {
+        /** POST /api/kids/checkin-requests - Create a new check-in request with QR code */
+        val createCheckInRequest = CheckInRequestController::createCheckInRequest
+        
+        /** GET /api/kids/checkin-requests/token/{token} - Get check-in request details by QR token (STAFF/ADMIN) */
+        val getRequestByToken = CheckInRequestController::getRequestByToken
+        
+        /** POST /api/kids/checkin-requests/token/{token}/approve - Approve check-in request (STAFF/ADMIN) */
+        val approveCheckIn = CheckInRequestController::approveCheckIn
+        
+        /** POST /api/kids/checkin-requests/token/{token}/reject - Reject check-in request (STAFF/ADMIN) */
+        val rejectCheckIn = CheckInRequestController::rejectCheckIn
+        
+        /** DELETE /api/kids/checkin-requests/{requestId} - Cancel pending check-in request */
+        val cancelRequest = CheckInRequestController::cancelRequest
+        
+        /** GET /api/kids/checkin-requests/active - Get all active check-in requests for current user */
+        val getActiveRequests = CheckInRequestController::getActiveRequests
+    }
+
+    /**
      * Post Endpoints
      * Base Path: /api/posts
      */
@@ -366,6 +390,14 @@ object ApiEndpointsIndex {
         val kidsGetCurrentCheckIns = Kids.getCurrentCheckIns
         val kidsGetCheckInHistory = Kids.getCheckInHistory
 
+        // QR Code Check-In Requests
+        val checkInRequestsCreate = CheckInRequests.createCheckInRequest
+        val checkInRequestsGetByToken = CheckInRequests.getRequestByToken
+        val checkInRequestsApprove = CheckInRequests.approveCheckIn
+        val checkInRequestsReject = CheckInRequests.rejectCheckIn
+        val checkInRequestsCancel = CheckInRequests.cancelRequest
+        val checkInRequestsGetActive = CheckInRequests.getActiveRequests
+
         // Posts
         val postsCreatePost = Posts.createPost
         val postsGetAllPosts = Posts.getAllPosts
@@ -400,13 +432,14 @@ object ApiEndpointsIndex {
      * Endpoint Statistics
      */
     object Stats {
-        const val TOTAL_ENDPOINTS = 71
+        const val TOTAL_ENDPOINTS = 77
         const val AUTH_ENDPOINTS = 10
         const val ATTENDANCE_ENDPOINTS = 14
         const val EVENT_ENDPOINTS = 14
         const val FILE_ENDPOINTS = 3
         const val HEALTH_ENDPOINTS = 1
         const val KIDS_ENDPOINTS = 13
+        const val CHECKIN_REQUEST_ENDPOINTS = 6
         const val POST_ENDPOINTS = 12
         const val ADMIN_ENDPOINTS = 2
         const val PROFILE_ENDPOINTS = 9
