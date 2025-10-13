@@ -13,6 +13,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import rfm.hillsongptapp.core.data.model.Child
+import hillsongptapp.feature.kids.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import rfm.hillsongptapp.core.data.model.KidsService
 
 /**
@@ -41,7 +43,7 @@ fun CheckOutDialog(
                 // Warning icon
                 Icon(
                     imageVector = Icons.Default.Warning,
-                    contentDescription = "Warning",
+                    contentDescription = stringResource(Res.string.warning),
                     modifier = Modifier.size(48.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -50,7 +52,7 @@ fun CheckOutDialog(
                 
                 // Title
                 Text(
-                    text = "Check Out ${child.name}?",
+                    text = stringResource(Res.string.check_out_child, child.name),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
@@ -70,7 +72,7 @@ fun CheckOutDialog(
                             modifier = Modifier.padding(16.dp)
                         ) {
                             Text(
-                                text = "Currently in:",
+                                text = stringResource(Res.string.currently_in),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

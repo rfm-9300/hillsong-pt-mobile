@@ -87,43 +87,28 @@ class KidsRepositoryImpl(
     
     override suspend fun registerChild(child: Child): KidsResult<Child> {
         return try {
-            // Generate ID if not provided
-            val childWithId = if (child.id.isBlank()) {
-                child.copy(id = generateId())
-            } else child
-            
-            // Save locally first for offline support
-            val currentTime = getCurrentTimestamp()
-            val childEntity = childWithId.copy(
-                createdAt = currentTime,
-                updatedAt = currentTime
-            ).toEntity()
-            
-            childDao.insertChild(childEntity)
-            
-            // Try to sync with remote
-            val request = childWithId.toRegistrationRequest()
+            // Try to register on remote first
+            val request = child.toRegistrationRequest()
             val remoteResult = kidsApiService.registerChild(request)
             
             when (remoteResult) {
                 is NetworkResult.Success -> {
                     val response = remoteResult.data
                     if (response.success && response.child != null) {
-                        // Update local with server response
+                        // Backend registration successful - save locally with server response
                         val childResponse = response.child!!
                         val serverChild = childResponse.toDomain()
                         childDao.insertChild(serverChild.toEntity())
                         KidsResult.Success(serverChild)
                     } else {
-                        // Server returned error, but we have local copy
-                        LoggerHelper.logError("Server registration failed: ${response.message}")
-                        KidsResult.Success(childWithId)
+                        // Server returned error
+                        KidsResult.Error(response.message ?: "Failed to register child on server")
                     }
                 }
                 is NetworkResult.Error -> {
-                    // Network error, return local copy
+                    // Network error - could implement offline support here if needed
                     LoggerHelper.logError("Network error during registration: ${remoteResult.exception.message}")
-                    KidsResult.Success(childWithId)
+                    KidsResult.NetworkError(remoteResult.exception.message ?: "Network error")
                 }
                 is NetworkResult.Loading -> {
                     KidsResult.Loading
@@ -137,13 +122,7 @@ class KidsRepositoryImpl(
     
     override suspend fun updateChild(child: Child): KidsResult<Child> {
         return try {
-            val currentTime = getCurrentTimestamp()
-            val updatedChild = child.copy(updatedAt = currentTime)
-            
-            // Update locally first
-            childDao.updateChild(updatedChild.toEntity())
-            
-            // Try to sync with remote
+            // Try to update on remote first
             val request = child.toUpdateRequest()
             val remoteResult = kidsApiService.updateChild(child.id, request)
             
@@ -151,16 +130,20 @@ class KidsRepositoryImpl(
                 is NetworkResult.Success -> {
                     val response = remoteResult.data
                     if (response.success && response.child != null) {
+                        // Backend update successful - now update locally with server response
                         val childResponse = response.child!!
                         val serverChild = childResponse.toDomain()
                         childDao.insertChild(serverChild.toEntity())
                         KidsResult.Success(serverChild)
                     } else {
-                        KidsResult.Success(updatedChild)
+                        // Backend returned error
+                        KidsResult.Error(response.message ?: "Failed to update child on server")
                     }
                 }
                 is NetworkResult.Error -> {
-                    KidsResult.Success(updatedChild)
+                    // Network/server error - don't update locally
+                    LoggerHelper.logError("Network error updating child: ${remoteResult.exception.message}")
+                    KidsResult.NetworkError(remoteResult.exception.message ?: "Network error")
                 }
                 is NetworkResult.Loading -> {
                     KidsResult.Loading

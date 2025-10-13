@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="en">English</string>
+    <string name="es">Spanish</string>
+    <string name="kids_management_title">Gerencia de chicos</string>
+    <!-- Child Card -->
+    <string name="child_card_age">Edad: %1$s años</string>
+    <string name="child_card_currently_in">Actualmente en: %1$s</string>
+    <string name="child_card_checked_in_at">Registrado a las: %1$s</string>
+    <string name="child_card_last_checked_out">Última salida: %1$s</string>
+    <string name="child_card_check_in">Registrar Entrada</string>
+    <string name="child_card_check_out">Registrar Salida</string>
+    <string name="child_card_edit">Editar</string>
+    <string name="child_card_view_services">Ver Servicios para %1$s</string>
+    
+    <!-- Status Indicators -->
+    <string name="status_checked_in">Registrado</string>
+    <string name="status_checked_out">Salida Registrada</string>
+    <string name="status_not_in_service">No en Servicio</string>
+    <string name="status_unknown">Desconocido</string>
+    
+    <!-- Check-In Status Widget -->
+    <string name="checkin_status_pending">Solicitud de entrada pendiente</string>
+    <string name="checkin_status_approved">Entrada aprobada</string>
+    <string name="checkin_status_rejected">Entrada rechazada</string>
+    <string name="checkin_status_cancel_request">Cancelar Solicitud</string>
+    <string name="checkin_status_approved_by">Aprobado por: %1$s</string>
+    <string name="checkin_status_rejected_reason">Rechazado: %1$s</string>
+    
+    <!-- Check-In Dialog -->
+    <string name="checkin_dialog_title">Registrar Entrada del Niño</string>
+    <string name="checkin_dialog_select_service">Selecciona un servicio para %1$s:</string>
+    <string name="checkin_dialog_confirm">Confirmar Entrada</string>
+    <string name="checkin_dialog_cancel">Cancelar</string>
+    <string name="checkin_dialog_no_services">No hay servicios disponibles</string>
+    
+    <!-- Check-Out Dialog -->
+    <string name="checkout_dialog_title">Confirmación de Salida</string>
+    <string name="checkout_dialog_message">¿Estás seguro de que quieres registrar la salida de %1$s de %2$s?</string>
+    <string name="checkout_dialog_confirm">Registrar Salida</string>
+    <string name="checkout_dialog_cancel">Cancelar</string>
+    
+    <!-- Service Selection -->
+    <string name="service_selection_title">Seleccionar Servicio</string>
+    <string name="service_selection_capacity">Capacidad: %1$d/%2$d</string>
+    <string name="service_selection_age_range">Edades %1$d-%2$d</string>
+    <string name="service_selection_time">%1$s - %2$s</string>
+    <string name="service_selection_location">Ubicación: %1$s</string>
+    <string name="service_selection_full">Servicio Lleno</string>
+    <string name="service_selection_age_not_eligible">Edad no elegible</string>
+    
+    <!-- Child Registration -->
+    <string name="registration_title">Registrar Nuevo Niño</string>
+    <string name="registration_child_name">Nombre del Niño</string>
+    <string name="registration_date_of_birth">Fecha de Nacimiento</string>
+    <string name="registration_medical_info">Información Médica</string>
+    <string name="registration_dietary_restrictions">Restricciones Dietéticas</string>
+    <string name="registration_emergency_contact">Contacto de Emergencia</string>
+    <string name="registration_contact_name">Nombre del Contacto</string>
+    <string name="registration_contact_phone">Número de Teléfono</string>
+    <string name="registration_contact_relationship">Relación</string>
+    <string name="registration_save">Guardar Niño</string>
+    <string name="registration_cancel">Cancelar</string>
+    
+    <!-- Child Edit -->
+    <string name="edit_title">Editar Información del Niño</string>
+    <string name="edit_save_changes">Guardar Cambios</string>
+    <string name="edit_delete_child">Eliminar Niño</string>
+    <string name="edit_confirm_delete">¿Estás seguro de que quieres eliminar este niño?</string>
+    
+    <!-- Staff Dashboard -->
+    <string name="staff_dashboard_title">Panel de Personal</string>
+    <string name="staff_dashboard_scan_qr">Escanear Código QR</string>
+    <string name="staff_dashboard_manual_checkin">Entrada Manual</string>
+    <string name="staff_dashboard_pending_requests">Solicitudes Pendientes</string>
+    <string name="staff_dashboard_current_attendance">Asistencia Actual</string>
+    
+    <!-- QR Code Scanner -->
+    <string name="qr_scanner_title">Escanear Código QR de Entrada</string>
+    <string name="qr_scanner_instructions">Apunta la cámara al código QR</string>
+    <string name="qr_scanner_invalid_code">Código QR inválido</string>
+    <string name="qr_scanner_processing">Procesando...</string>
+    
+    <!-- Reports -->
+    <string name="reports_title">Reportes</string>
+    <string name="reports_attendance">Reporte de Asistencia</string>
+    <string name="reports_service_summary">Resumen del Servicio</string>
+    <string name="reports_date_range">Rango de Fechas</string>
+    <string name="reports_from_date">Fecha Desde</string>
+    <string name="reports_to_date">Fecha Hasta</string>
+    <string name="reports_generate">Generar Reporte</string>
+    <string name="reports_export">Exportar</string>
+    <string name="reports_total_children">Total de Niños: %1$d</string>
+    <string name="reports_average_attendance">Asistencia Promedio: %1$.1f</string>
+    
+    <!-- Error Messages -->
+    <string name="error_network">Error de red. Por favor verifica tu conexión.</string>
+    <string name="error_server">Error del servidor. Por favor intenta más tarde.</string>
+    <string name="error_validation">Por favor verifica tu información e intenta de nuevo.</string>
+    <string name="error_permission">Permiso denegado. Por favor contacta a un administrador.</string>
+    <string name="error_child_not_found">Niño no encontrado.</string>
+    <string name="error_service_not_found">Servicio no encontrado.</string>
+    <string name="error_service_full">El servicio está a capacidad máxima.</string>
+    <string name="error_age_not_eligible">El niño no es elegible para este servicio.</string>
+    
+    <!-- Success Messages -->
+    <string name="success_child_registered">Niño registrado exitosamente</string>
+    <string name="success_child_updated">Información del niño actualizada</string>
+    <string name="success_child_deleted">Niño eliminado exitosamente</string>
+    <string name="success_checked_in">Entrada del niño registrada exitosamente</string>
+    <string name="success_checked_out">Salida del niño registrada exitosamente</string>
+    <string name="success_request_cancelled">Solicitud de entrada cancelada</string>
+    
+    <!-- General -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancelar</string>
+    <string name="save">Guardar</string>
+    <string name="delete">Eliminar</string>
+    <string name="confirm">Confirmar</string>
+    <string name="retry">Reintentar</string>
+    <string name="loading">Cargando...</string>
+    <string name="no_data">No hay datos disponibles</string>
+    <string name="refresh">Actualizar</string>
+    
+    <!-- Time Formats -->
+    <string name="time_format_12h">%1$d:%2$02d %3$s</string>
+    <string name="am">AM</string>
+    <string name="pm">PM</string>
+    
+    <!-- Kids Management Screen -->
+    <string name="staff_dashboard">Panel de Personal</string>
+    <string name="staff_reports">Reportes del Personal</string>
+    <string name="register_new_child">Registrar Nuevo Niño</string>
+    <string name="loading_children">Cargando niños...</string>
+    <string name="no_children_registered">No Hay Niños Registrados</string>
+    <string name="register_first_child_message">Registra tu primer niño para comenzar con los servicios infantiles</string>
+    <string name="your_children">Tus Niños</string>
+    <string name="add_child">Agregar Niño</string>
+    <string name="total">Total</string>
+    <string name="checked_in">Registrados</string>
+    <string name="available">Disponibles</string>
+    <string name="register_child">Registrar Niño</string>
+    <string name="last_updated">Última actualización: %1$s</string>
+    <string name="just_now">Ahora mismo</string>
+    
+    <!-- Child Registration Screen -->
+    <string name="register_child_title">Registrar Niño</string>
+    <string name="back">Atrás</string>
+    <string name="registering_child">Registrando niño...</string>
+    <string name="child_information">Información del Niño</string>
+    <string name="child_name_required">Nombre del Niño *</string>
+    <string name="date_of_birth_required">Fecha de Nacimiento *</string>
+    <string name="date_placeholder">AAAA-MM-DD</string>
+    <string name="age_display">Edad: %1$s años</string>
+    <string name="select_date">Seleccionar Fecha</string>
+    <string name="medical_information">Información Médica</string>
+    <string name="medical_info_placeholder">Cualquier condición médica, alergias o medicamentos...</string>
+    <string name="dietary_restrictions">Restricciones Dietéticas</string>
+    <string name="dietary_restrictions_placeholder">Cualquier alergia alimentaria o requisito dietético...</string>
+    <string name="emergency_contact">Contacto de Emergencia</string>
+    <string name="contact_name_required">Nombre del Contacto *</string>
+    <string name="phone_number_required">Número de Teléfono *</string>
+    <string name="phone_placeholder">(555) 123-4567</string>
+    <string name="relationship_required">Relación *</string>
+    <string name="relationship_placeholder">Padre, Tutor, Abuelo, etc.</string>
+    <string name="required_fields">Campos Requeridos</string>
+    <string name="required_fields_message">Por favor completa todos los campos requeridos marcados con *</string>
+    <string name="select_date_of_birth">Seleccionar Fecha de Nacimiento</string>
+    <string name="date_format_instruction">Por favor ingresa la fecha en formato AAAA-MM-DD:</string>
+    <string name="date">Fecha</string>
+    
+    <!-- Check-Out Screen -->
+    <string name="unknown_child">Niño Desconocido</string>
+    <string name="current_status">Estado Actual: %1$s</string>
+    <string name="service_name">Servicio: %1$s</string>
+    <string name="checking_out">Registrando Salida...</string>
+    <string name="start_checkout_process">Iniciar Proceso de Salida</string>
+    <string name="checkout_not_available">Salida no disponible en este momento</string>
+    <string name="child_not_found">Niño no encontrado</string>
+    <string name="unknown_status">Desconocido</string>
+    
+    <!-- Child Edit Screen -->
+    <string name="edit_child_title">Editar %1$s</string>
+    <string name="edit_child_generic">Editar Niño</string>
+    <string name="reset_changes">Restablecer Cambios</string>
+    <string name="loading_child_info">Cargando información del niño...</string>
+    <string name="saving_changes">Guardando cambios...</string>
+    <string name="unsaved_changes">Tienes cambios sin guardar</string>
+    <string name="saving">Guardando...</string>
+    <string name="no_changes">Sin Cambios</string>
+    <string name="no_changes_message">Haz cambios en el formulario para habilitar el guardado</string>
+    <string name="edit_date_of_birth">Editar Fecha de Nacimiento</string>
+    <string name="discard_changes_title">¿Descartar Cambios?</string>
+    <string name="discard_changes_message">Tienes cambios sin guardar. ¿Estás seguro de que quieres descartarlos y regresar?</string>
+    <string name="discard">Descartar</string>
+    <string name="keep_editing">Seguir Editando</string>
+    <string name="changes_saved_title">Cambios Guardados</string>
+    <string name="changes_saved_message">La información del niño ha sido actualizada exitosamente.</string>
+    <string name="child_edit_form">Formulario de Edición del Niño</string>
+    
+    <!-- Staff Dashboard Screen -->
+    <string name="scan_qr_code">Escanear Código QR</string>
+    <string name="pending_requests">Solicitudes Pendientes</string>
+    <string name="current_check_ins">Entradas Actuales</string>
+    <string name="no_children_checked_in">Aún no hay niños registrados</string>
+    <string name="checkins_today">Entradas Hoy</string>
+    <string name="requested_by">Solicitado por %1$s</string>
+    <string name="expired">EXPIRADO</string>
+    <string name="expires_in_minutes">Expira en %1$d min</string>
+    <string name="child_id">ID del Niño: %1$s</string>
+    <string name="service_id">ID del Servicio: %1$s</string>
+    <string name="checked_in_at">Registrado a las %1$s</string>
+    <string name="checked_in_by">Por %1$s</string>
+    <string name="dismiss">Descartar</string>
+    
+    <!-- Service Selection Dialog -->
+    <string name="select_service">Seleccionar Servicio</string>
+    <string name="close">Cerrar</string>
+    <string name="select_service_for_child">Selecciona un servicio para generar código QR para %1$s</string>
+    <string name="no_services_available">No hay servicios disponibles</string>
+    <string name="service_time_range">%1$s - %2$s</string>
+    
+    <!-- Check-Out Dialog -->
+    <string name="warning">Advertencia</string>
+    <string name="check_out_child">¿Registrar Salida de %1$s?</string>
+    <string name="currently_in">Actualmente en:</string>
+    <string name="checkout_confirmation_message">¿Estás seguro de que quieres registrar la salida de %1$s? Esto los removerá de su servicio actual.</string>
+    <string name="full_checkout">Salida Completa</string>
+    <string name="quick_checkout">Salida Rápida</string>
+    
+    <!-- QR Code Display Screen -->
+    <string name="checkin_qr_code">Código QR de Entrada</string>
+    <string name="qr_code_description">Código QR para entrada</string>
+    <string name="show_qr_instructions">Muestra este código QR al personal para verificación de entrada</string>
+    <string name="waiting_verification">🔄 Esperando verificación del personal...</string>
+    <string name="done">Listo</string>
+    <string name="go_back">Regresar</string>
+    <string name="try_again">Intentar de Nuevo</string>
+    <string name="pending_verification">⏳ Verificación Pendiente</string>
+    <string name="expires_in">Expira en: %1$dm %2$ds</string>
+    <string name="checked_in_successfully">✓ Entrada Registrada Exitosamente</string>
+    <string name="child_checked_in_message">Tu niño ha sido registrado</string>
+    <string name="request_rejected">✗ Solicitud Rechazada</string>
+    <string name="request_cancelled">Solicitud Cancelada</string>
+    <string name="request_cancelled_message">Esta solicitud de entrada ha sido cancelada</string>
+    <string name="code_expired">⏱ Código Expirado</string>
+    <string name="code_expired_message">Este código QR ha expirado. Genera uno nuevo para registrar entrada.</string>
+    <string name="generate_new_code">Generar Nuevo Código</string>
+</resources>

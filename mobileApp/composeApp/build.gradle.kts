@@ -113,6 +113,10 @@ android {
     namespace = "rfm.hillsongptapp"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
+    androidResources {
+        generateLocaleConfig = true
+    }
+
     defaultConfig {
         applicationId = "rfm.hillsongptapp"
         minSdk = libs.versions.android.minSdk.get().toInt()

@@ -18,6 +18,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
+import hillsongptapp.feature.kids.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import rfm.hillsongptapp.core.data.model.Child
 
 /**
@@ -63,7 +65,7 @@ fun ChildEditScreen(
         TopAppBar(
             title = {
                 Text(
-                    text = "Edit ${uiState.childName}",
+                    text = stringResource(Res.string.edit_child_title, uiState.childName),
                     fontWeight = FontWeight.Bold
                 )
             },
@@ -71,7 +73,7 @@ fun ChildEditScreen(
                 IconButton(onClick = handleBackNavigation) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back"
+                        contentDescription = stringResource(Res.string.back)
                     )
                 }
             },

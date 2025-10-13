@@ -14,6 +14,8 @@ import androidx.compose.ui.unit.dp
 import org.koin.compose.viewmodel.koinViewModel
 import rfm.hillsongptapp.core.network.ktor.responses.CheckInRequestResponse
 import rfm.hillsongptapp.core.network.ktor.responses.CheckInRecordResponse
+import hillsongptapp.feature.kids.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Staff Dashboard Screen
@@ -40,15 +42,15 @@ fun StaffDashboardScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Staff Dashboard") },
+                title = { Text(stringResource(Res.string.staff_dashboard_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(Res.string.back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                        Icon(Icons.Default.Refresh, contentDescription = stringResource(Res.string.refresh))
                     }
                 }
             )
@@ -57,7 +59,7 @@ fun StaffDashboardScreen(
             ExtendedFloatingActionButton(
                 onClick = onNavigateToScanner,
                 icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text("Scan QR Code") }
+                text = { Text(stringResource(Res.string.scan_qr_code)) }
             )
         }
     ) { paddingValues ->

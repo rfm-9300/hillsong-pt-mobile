@@ -17,6 +17,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
+import hillsongptapp.feature.kids.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Screen for registering a new child with form validation
@@ -47,7 +49,7 @@ fun ChildRegistrationScreen(
         TopAppBar(
             title = {
                 Text(
-                    text = "Register Child",
+                    text = stringResource(Res.string.register_child_title),
                     fontWeight = FontWeight.Bold
                 )
             },

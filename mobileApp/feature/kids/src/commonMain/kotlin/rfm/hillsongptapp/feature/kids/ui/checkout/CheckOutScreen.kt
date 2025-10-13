@@ -14,6 +14,8 @@ import org.koin.compose.viewmodel.koinViewModel
 import rfm.hillsongptapp.core.data.model.Child
 import rfm.hillsongptapp.core.data.model.KidsService
 import rfm.hillsongptapp.feature.kids.ui.model.CheckOutResult
+import hillsongptapp.feature.kids.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Check-Out screen for checking out children from services
@@ -82,20 +84,20 @@ private fun CheckOutContent(
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = uiState.child?.name ?: "Unknown Child",
+                    text = uiState.child?.name ?: stringResource(Res.string.unknown_child),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
                 
                 Text(
-                    text = "Current Status: ${uiState.child?.status?.getDisplayName() ?: "Unknown"}",
+                    text = stringResource(Res.string.current_status, uiState.child?.status?.getDisplayName() ?: stringResource(Res.string.unknown_status)),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 
                 uiState.currentService?.let { service ->
                     Text(
-                        text = "Service: ${service.name}",
+                        text = stringResource(Res.string.service_name, service.name),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
@@ -116,12 +118,12 @@ private fun CheckOutContent(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
             }
-            Text(if (uiState.isCheckingOut) "Checking Out..." else "Start Check-Out Process")
+            Text(if (uiState.isCheckingOut) stringResource(Res.string.checking_out) else stringResource(Res.string.start_checkout_process))
         }
         
         if (!uiState.canCheckOut) {
             Text(
-                text = uiState.checkOutError ?: "Check-out not available at this time",
+                text = uiState.checkOutError ?: stringResource(Res.string.checkout_not_available),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.fillMaxWidth(),
@@ -138,7 +140,7 @@ private fun EmptyContent() {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "Child not found",
+            text = stringResource(Res.string.child_not_found),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface
         )

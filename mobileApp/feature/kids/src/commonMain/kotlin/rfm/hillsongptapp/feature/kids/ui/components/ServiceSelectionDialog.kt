@@ -14,6 +14,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import rfm.hillsongptapp.core.data.model.KidsService
 import rfm.hillsongptapp.logging.LoggerHelper
+import hillsongptapp.feature.kids.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Dialog for selecting a service for QR code check-in
@@ -48,14 +50,14 @@ fun ServiceSelectionDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Select Service",
+                        text = stringResource(Res.string.select_service),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Close"
+                            contentDescription = stringResource(Res.string.close)
                         )
                     }
                 }
@@ -63,7 +65,7 @@ fun ServiceSelectionDialog(
                 Spacer(modifier = Modifier.height(8.dp))
                 
                 Text(
-                    text = "Select a service to generate QR code for $childName",
+                    text = stringResource(Res.string.select_service_for_child, childName),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -79,7 +81,7 @@ fun ServiceSelectionDialog(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No services available",
+                            text = stringResource(Res.string.no_services_available),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -135,7 +137,7 @@ private fun ServiceItem(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "${service.startTime} - ${service.endTime}",
+                text = stringResource(Res.string.service_time_range, service.startTime, service.endTime),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
             )

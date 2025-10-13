@@ -16,6 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import hillsongptapp.feature.kids.generated.resources.*
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import rfm.hillsongptapp.core.navigation.*
@@ -73,7 +76,7 @@ fun KidsManagementScreen(
             TopAppBar(
                     title = {
                         Column {
-                            Text(text = "Kids Management", fontWeight = FontWeight.Bold)
+                            Text(text = stringResource(Res.string.kids_management_title), fontWeight = FontWeight.Bold)
                             if (uiState.showConnectionStatus) {
                                 ConnectionStatusIndicator(
                                         connectionStatus = connectionStatus,
@@ -90,7 +93,7 @@ fun KidsManagementScreen(
                             IconButton(onClick = { navController.navigateToStaffDashboard() }) {
                                 Icon(
                                         imageVector = AppIcons.AdminPanel,
-                                        contentDescription = "Staff Dashboard"
+                                        contentDescription = stringResource(Res.string.staff_dashboard)
                                 )
                             }
                         }
@@ -100,7 +103,7 @@ fun KidsManagementScreen(
                             IconButton(onClick = { navController.navigateToKidsReports() }) {
                                 Icon(
                                         imageVector = AppIcons.Report,
-                                        contentDescription = "Staff Reports"
+                                        contentDescription = stringResource(Res.string.staff_reports)
                                 )
                             }
                         }
@@ -108,7 +111,7 @@ fun KidsManagementScreen(
                         IconButton(onClick = { viewModel.refreshData() }) {
                             Icon(
                                     imageVector = Icons.Default.Refresh,
-                                    contentDescription = "Refresh"
+                                    contentDescription = stringResource(Res.string.refresh)
                             )
                         }
                     }
@@ -133,7 +136,7 @@ fun KidsManagementScreen(
                         ChildrenListContent(
                                 uiState = uiState,
                                 connectionStatus = connectionStatus,
-                                lastUpdatedTime = "Just now", // TODO: Implement last updated time
+                                lastUpdatedTime = stringResource(Res.string.just_now), // TODO: Implement last updated time
                                 onRefresh = { viewModel.refreshData() },
                                 onCheckInClick = { child -> navController.navigateToKidsCheckIn(child.id) },
                                 onCheckOutClick = { child -> viewModel.showCheckOutDialog(child) },
@@ -156,7 +159,7 @@ fun KidsManagementScreen(
                         onClick = { navController.navigateToKidsRegistration() },
                         modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Register New Child")
+                    Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(Res.string.register_new_child))
                 }
             }
         }
@@ -232,7 +235,7 @@ private fun LoadingContent() {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             CircularProgressIndicator()
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "Loading children...", style = MaterialTheme.typography.bodyLarge)
+            Text(text = stringResource(Res.string.loading_children), style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
@@ -246,7 +249,7 @@ private fun EmptyContent(onRegisterClick: () -> Unit) {
                 modifier = Modifier.padding(32.dp)
         ) {
             Text(
-                    text = "No Children Registered",
+                    text = stringResource(Res.string.no_children_registered),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
@@ -255,7 +258,7 @@ private fun EmptyContent(onRegisterClick: () -> Unit) {
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                    text = "Register your first child to get started with kids services",
+                    text = stringResource(Res.string.register_first_child_message),
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -270,7 +273,7 @@ private fun EmptyContent(onRegisterClick: () -> Unit) {
                         modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Register Child")
+                Text(stringResource(Res.string.register_child))
             }
         }
     }
@@ -316,7 +319,7 @@ private fun ChildrenListContent(
                     verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                        text = "Your Children",
+                        text = stringResource(Res.string.your_children),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                 )
@@ -328,7 +331,7 @@ private fun ChildrenListContent(
                             modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Add Child")
+                    Text(stringResource(Res.string.add_child))
                 }
             }
         }
@@ -380,11 +383,11 @@ private fun SummaryCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                SummaryItem(label = "Total", value = totalChildren.toString())
+                SummaryItem(label = stringResource(Res.string.total), value = totalChildren.toString())
 
-                SummaryItem(label = "Checked In", value = checkedInCount.toString())
+                SummaryItem(label = stringResource(Res.string.checked_in), value = checkedInCount.toString())
 
-                SummaryItem(label = "Available", value = availableCount.toString())
+                SummaryItem(label = stringResource(Res.string.available), value = availableCount.toString())
             }
 
             // Real-time status row
@@ -396,14 +399,14 @@ private fun SummaryCard(
 
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                            text = "Last updated: $lastUpdatedTime",
+                            text = stringResource(Res.string.last_updated, lastUpdatedTime),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                     )
 
                     if (connectionStatus == ConnectionStatus.ERROR) {
                         TextButton(onClick = onRetryConnection, modifier = Modifier.padding(0.dp)) {
-                            Text(text = "Retry", style = MaterialTheme.typography.labelSmall)
+                            Text(text = stringResource(Res.string.retry), style = MaterialTheme.typography.labelSmall)
                         }
                     }
                 }
@@ -457,7 +460,7 @@ fun KidsManagementContent(
             TopAppBar(
                     title = {
                         Column {
-                            Text(text = "Kids Management", fontWeight = FontWeight.Bold)
+                            Text(text = stringResource(Res.string.kids_management_title), fontWeight = FontWeight.Bold)
                         }
                     },
                     actions = {
@@ -465,7 +468,7 @@ fun KidsManagementContent(
                         IconButton(onClick = onRefreshData) {
                             Icon(
                                     imageVector = Icons.Default.Refresh,
-                                    contentDescription = "Refresh"
+                                    contentDescription = stringResource(Res.string.refresh)
                             )
                         }
                     }
@@ -490,7 +493,7 @@ fun KidsManagementContent(
                         ChildrenListContent(
                                 uiState = uiState,
                                 connectionStatus = connectionStatus,
-                                lastUpdatedTime = "Just now", // Simplified for preview
+                                lastUpdatedTime = stringResource(Res.string.just_now), // Simplified for preview
                                 onRefresh = onRefreshData,
                                 onCheckInClick = { child -> onNavigateToCheckIn(child.id) },
                                 onCheckOutClick = onShowCheckOutDialog,
