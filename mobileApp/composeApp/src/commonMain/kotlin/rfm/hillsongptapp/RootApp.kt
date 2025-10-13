@@ -99,6 +99,9 @@ fun RootNavigation() {
                     onNavigateBack = { rootNavController.popBackStack() },
                     onNavigateToScanner = {
                         rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.QRCodeScanner)
+                    },
+                    onNavigateToCheckInVerification = { token ->
+                        rootNavController.navigate(rfm.hillsongptapp.core.navigation.KidsNav.CheckInVerification(token))
                     }
                 )
             },

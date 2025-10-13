@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import org.koin.compose.viewmodel.koinViewModel
+import rfm.hillsongptapp.core.network.ktor.responses.CheckInApprovalResponse
+import rfm.hillsongptapp.core.network.ktor.responses.CheckInRejectionResponse
 import rfm.hillsongptapp.core.network.ktor.responses.CheckInRequestDetailsResponse
 import kotlin.time.Duration.Companion.seconds
 
@@ -828,11 +830,14 @@ private fun RejectionReasonDialog(
     
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 6.dp,
         title = {
             Text(
                 text = "Reject Check-In",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
         },
         text = {
@@ -840,7 +845,7 @@ private fun RejectionReasonDialog(
                 Text(
                     text = "Please provide a reason for rejecting this check-in request. The parent will be notified.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -892,8 +897,8 @@ private fun RejectionReasonDialog(
  */
 @Composable
 private fun SuccessDialog(
-    approvalResult: rfm.hillsongptapp.core.network.ktor.responses.CheckInApprovalResponse?,
-    rejectionResult: rfm.hillsongptapp.core.network.ktor.responses.CheckInRejectionResponse?,
+    approvalResult: CheckInApprovalResponse?,
+    rejectionResult: CheckInRejectionResponse?,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -901,6 +906,8 @@ private fun SuccessDialog(
     
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 6.dp,
         icon = {
             Icon(
                 imageVector = if (isApproval) Icons.Default.CheckCircle else Icons.Default.Close,
@@ -914,7 +921,8 @@ private fun SuccessDialog(
                 text = if (isApproval) "Check-In Approved" else "Check-In Rejected",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurface
             )
         },
         text = {
@@ -925,7 +933,8 @@ private fun SuccessDialog(
                     Text(
                         text = approvalResult.message,
                         style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     
                     Spacer(modifier = Modifier.height(16.dp))
@@ -948,7 +957,8 @@ private fun SuccessDialog(
                     Text(
                         text = rejectionResult.message,
                         style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     
                     Spacer(modifier = Modifier.height(16.dp))

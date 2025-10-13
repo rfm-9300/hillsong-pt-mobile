@@ -16,6 +16,7 @@ import rfm.hillsongptapp.core.network.ktor.responses.CheckInRequestResponse
 import rfm.hillsongptapp.core.network.ktor.responses.CheckInRecordResponse
 import hillsongptapp.feature.kids.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
+import rfm.hillsongptapp.logging.LoggerHelper
 
 /**
  * Staff Dashboard Screen
@@ -34,6 +35,7 @@ import org.jetbrains.compose.resources.stringResource
 fun StaffDashboardScreen(
     onNavigateBack: () -> Unit,
     onNavigateToScanner: () -> Unit,
+    onNavigateToCheckInVerification: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: StaffDashboardViewModel = koinViewModel()
 ) {
@@ -75,9 +77,25 @@ fun StaffDashboardScreen(
                     )
                 }
                 
-                uiState.error != null && uiState.currentCheckIns.isEmpty() -> {
+                uiState.error != null && !uiState.hasAnyData -> {
+                    // Log the actual error for debugging
+                    LoggerHelper.logDebug("Staff dashboard error: ${uiState.error}", "StaffDashboardScreen")
+                    
+                    // Show user-friendly error message
+                    val userFriendlyError = when {
+                        uiState.error!!.contains("Unknown error", ignoreCase = true) -> 
+                            "Unable to connect to the server. Please check your internet connection and try again."
+                        uiState.error!!.contains("network", ignoreCase = true) -> 
+                            "Network connection issue. Please check your internet and try again."
+                        uiState.error!!.contains("timeout", ignoreCase = true) -> 
+                            "Connection timed out. Please try again."
+                        uiState.error!!.isBlank() -> 
+                            "Something went wrong. Please try again."
+                        else -> uiState.error!!
+                    }
+                    
                     ErrorContent(
-                        error = uiState.error!!,
+                        error = userFriendlyError,
                         onRetry = { viewModel.refresh() },
                         onDismiss = { viewModel.clearError() },
                         modifier = Modifier.align(Alignment.Center)
@@ -88,6 +106,7 @@ fun StaffDashboardScreen(
                     DashboardContent(
                         uiState = uiState,
                         onRefresh = { viewModel.refresh() },
+                        onPendingRequestClick = onNavigateToCheckInVerification,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
@@ -100,6 +119,7 @@ fun StaffDashboardScreen(
 private fun DashboardContent(
     uiState: StaffDashboardUiState,
     onRefresh: () -> Unit,
+    onPendingRequestClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -119,21 +139,24 @@ private fun DashboardContent(
         if (uiState.pendingRequests.isNotEmpty()) {
             item {
                 Text(
-                    text = "Pending Requests",
+                    text = stringResource(Res.string.pending_requests),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
             }
             
             items(uiState.pendingRequests) { request ->
-                PendingRequestCard(request = request)
+                PendingRequestCard(
+                    request = request,
+                    onClick = { onPendingRequestClick(request.token) }
+                )
             }
         }
         
         // Current Check-ins Section
         item {
             Text(
-                text = "Current Check-Ins",
+                text = stringResource(Res.string.current_check_ins),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -151,7 +174,7 @@ private fun DashboardContent(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No children checked in yet",
+                            text = stringResource(Res.string.no_children_checked_in),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -177,7 +200,7 @@ private fun StatisticsSection(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         StatCard(
-            title = "Check-Ins Today",
+            title = stringResource(Res.string.checkins_today),
             value = totalCheckIns.toString(),
             icon = Icons.Default.CheckCircle,
             color = MaterialTheme.colorScheme.primary,
@@ -185,7 +208,7 @@ private fun StatisticsSection(
         )
         
         StatCard(
-            title = "Pending Requests",
+            title = stringResource(Res.string.pending_requests),
             value = pendingRequests.toString(),
             icon = Icons.Default.Notifications,
             color = MaterialTheme.colorScheme.tertiary,
@@ -241,9 +264,11 @@ private fun StatCard(
 @Composable
 private fun PendingRequestCard(
     request: CheckInRequestResponse,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
+        onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.tertiaryContainer
@@ -273,21 +298,21 @@ private fun PendingRequestCard(
                 )
                 
                 Text(
-                    text = "Requested by ${request.requestedBy.fullName}",
+                    text = stringResource(Res.string.requested_by, request.requestedBy.fullName),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 
                 if (request.isExpired) {
                     Text(
-                        text = "EXPIRED",
+                        text = stringResource(Res.string.expired),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.error,
                         fontWeight = FontWeight.Bold
                     )
                 } else {
                     Text(
-                        text = "Expires in ${request.expiresInSeconds / 60} min",
+                        text = stringResource(Res.string.expires_in_minutes, request.expiresInSeconds / 60),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.tertiary
                     )
@@ -324,25 +349,25 @@ private fun CheckInCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "Child ID: ${checkIn.childId}",
+                    text = stringResource(Res.string.child_id, checkIn.childId),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 
                 Text(
-                    text = "Service ID: ${checkIn.serviceId}",
+                    text = stringResource(Res.string.service_id, checkIn.serviceId),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 
                 Text(
-                    text = "Checked in at ${checkIn.checkInTime}",
+                    text = stringResource(Res.string.checked_in_at, checkIn.checkInTime),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 
                 Text(
-                    text = "By ${checkIn.checkedInBy}",
+                    text = stringResource(Res.string.checked_in_by, checkIn.checkedInBy),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -387,11 +412,11 @@ private fun ErrorContent(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             OutlinedButton(onClick = onDismiss) {
-                Text("Dismiss")
+                Text(stringResource(Res.string.dismiss))
             }
             
             Button(onClick = onRetry) {
-                Text("Retry")
+                Text(stringResource(Res.string.retry))
             }
         }
     }

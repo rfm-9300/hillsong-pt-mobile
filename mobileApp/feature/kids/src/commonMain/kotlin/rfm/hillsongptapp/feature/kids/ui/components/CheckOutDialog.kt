@@ -34,7 +34,11 @@ fun CheckOutDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
         ) {
             Column(
                 modifier = Modifier.padding(24.dp),
@@ -55,7 +59,8 @@ fun CheckOutDialog(
                     text = stringResource(Res.string.check_out_child, child.name),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -80,7 +85,8 @@ fun CheckOutDialog(
                             Text(
                                 text = currentService.name,
                                 style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Medium
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             
                             Text(
@@ -92,7 +98,7 @@ fun CheckOutDialog(
                             child.checkInTime?.let { checkInTime ->
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "Checked in at: ${formatTime(checkInTime)}",
+                                    text = stringResource(Res.string.child_card_checked_in_at, formatTime(checkInTime)),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -105,10 +111,10 @@ fun CheckOutDialog(
                 
                 // Confirmation message
                 Text(
-                    text = "Are you sure you want to check out ${child.name}? This will remove them from their current service.",
+                    text = stringResource(Res.string.checkout_confirmation_message, child.name),
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -119,7 +125,7 @@ fun CheckOutDialog(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("Cancel")
+                        Text(stringResource(Res.string.cancel))
                     }
                     
                     Spacer(modifier = Modifier.width(8.dp))
@@ -132,7 +138,7 @@ fun CheckOutDialog(
                                 onNavigateToFullCheckOut(child.id) 
                             }
                         ) {
-                            Text("Full Check-Out")
+                            Text(stringResource(Res.string.full_checkout))
                         }
                         
                         Spacer(modifier = Modifier.width(8.dp))
@@ -144,7 +150,7 @@ fun CheckOutDialog(
                             containerColor = MaterialTheme.colorScheme.secondary
                         )
                     ) {
-                        Text("Quick Check-Out")
+                        Text(stringResource(Res.string.quick_checkout))
                     }
                 }
             }

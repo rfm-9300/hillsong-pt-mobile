@@ -64,9 +64,6 @@ class KidsRepositoryImpl(
     
     override suspend fun getChildrenForParent(parentId: String): KidsResult<List<Child>> {
         return try {
-            // First, get from local database
-            val localChildren = childDao.getChildrenByParentId(parentId).map { it.toDomain() }
-            
             // Try to sync with remote if possible
             syncChildrenFromRemote(parentId)
             
