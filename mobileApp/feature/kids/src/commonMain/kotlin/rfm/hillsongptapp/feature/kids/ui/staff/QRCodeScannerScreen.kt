@@ -14,7 +14,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.koin.compose.viewmodel.koinViewModel
-import rfm.hillsongptapp.feature.kids.util.CameraPermissionHandler
 import rfm.hillsongptapp.feature.kids.util.PermissionState
 
 /**

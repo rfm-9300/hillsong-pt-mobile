@@ -61,6 +61,20 @@ fun KidsManagementScreen(
     var showServiceSelectionDialog by remember { mutableStateOf(false) }
     var selectedChildForQR by remember { mutableStateOf<Child?>(null) }
 
+
+    val shouldRefresh by navController.currentBackStackEntry
+        ?.savedStateHandle
+        ?.getStateFlow("refresh_key", false)
+        ?.collectAsState() ?: remember { mutableStateOf(false) }
+
+    LaunchedEffect(shouldRefresh) {
+        if (shouldRefresh) {
+            viewModel.loadInitialData()
+            // Clear the flag
+            navController.currentBackStackEntry?.savedStateHandle?.set("refresh_key", false)
+        }
+    }
+
     // Show error snackbar
     LaunchedEffect(uiState.error) {
         uiState.error?.let {

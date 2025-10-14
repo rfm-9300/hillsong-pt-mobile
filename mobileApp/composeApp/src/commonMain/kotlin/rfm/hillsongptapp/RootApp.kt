@@ -126,6 +126,8 @@ fun RootNavigation() {
                     serviceId = serviceId,
                     onNavigateBack = { 
                         LoggerHelper.logDebug("QRCodeDisplay navigating back", "RootApp")
+                        // Set flag to trigger refresh in KidsManagementScreen
+                        rootNavController.previousBackStackEntry?.savedStateHandle?.set("refresh_key", true)
                         rootNavController.popBackStack() 
                     },
                     onGenerateNewCode = { newChildId, newServiceId ->

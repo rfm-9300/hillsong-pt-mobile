@@ -45,6 +45,11 @@ fun QRCodeDisplayScreen(
     // Disconnect from WebSocket when screen is disposed
     DisposableEffect(Unit) { onDispose { viewModel.disconnectWebSocket() } }
 
+    // Handle system back button
+    BackHandler {
+        onNavigateBack()
+    }
+
     // Update countdown every second
     LaunchedEffect(checkInRequest.id) {
         while (secondsRemaining > 0 && !isExpired) {

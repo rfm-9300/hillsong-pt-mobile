@@ -73,6 +73,7 @@ com-google-devtools-ksp-gradle-plugin = { module = "com.google.devtools.ksp:com.
 popcorn_guineapig = { group = "io.github.codandotv", name = "popcornguineapig", version.ref = "popcorn_guineapig" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
 qrose = { group = "io.github.alexzhirkevich", name = "qrose", version.ref = "qrose" }
+backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler" }
 
 
 
