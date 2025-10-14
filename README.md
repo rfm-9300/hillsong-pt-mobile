@@ -502,16 +502,6 @@ This is a portfolio project demonstrating full-stack development capabilities. F
 
 This project is part of a professional portfolio.
 
----
-
-## 👨‍💻 Developer
-
-**Your Name**
-
-- Portfolio: [your-portfolio.com](https://your-portfolio.com)
-- LinkedIn: [linkedin.com/in/yourprofile](https://linkedin.com/in/yourprofile)
-- GitHub: [github.com/yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
 
 ---
 
