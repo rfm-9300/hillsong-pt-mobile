@@ -364,7 +364,10 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 
 ## 📚 API Documentation
 
-The API provides comprehensive endpoints for all platform features. See [API_ENDPOINTS_INDEX.md](springboot-api/API_ENDPOINTS_INDEX.md) for complete documentation.
+The API provides comprehensive endpoints for all platform features. 
+
+- **[API Endpoints Index](documentation/API_ENDPOINTS_INDEX.md)** - Complete list of all API endpoints
+- **[API Models Guide](documentation/API_MODELS_GUIDE.md)** - Comprehensive reference for all request/response models
 
 ### Core Endpoints
 

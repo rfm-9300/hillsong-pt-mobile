@@ -34,8 +34,6 @@ kotlin {
             implementation(projects.core.data)
             implementation(projects.core.network)
             implementation(projects.core.navigation)
-            implementation("org.jetbrains.compose.ui:ui-backhandler")
-
 
             implementation(compose.runtime)
             implementation(compose.foundation)

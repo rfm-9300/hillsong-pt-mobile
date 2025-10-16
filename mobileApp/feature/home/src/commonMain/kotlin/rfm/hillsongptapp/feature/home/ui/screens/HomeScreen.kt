@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -26,6 +29,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -34,6 +38,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,12 +65,14 @@ import rfm.hillsongptapp.core.navigation.navigateToGroups
 import rfm.hillsongptapp.core.navigation.navigateToGiving
 import rfm.hillsongptapp.core.navigation.navigateToFeed
 import rfm.hillsongptapp.core.navigation.navigateToEvents
+import rfm.hillsongptapp.core.network.api.Event
 
 @Composable
 fun homeScreen(
     navController: NavHostController,
     viewModel: HomeViewModel = koinViewModel(),
 ) {
+    val uiState by viewModel.uiState.collectAsState()
     var currentRoute by remember { mutableStateOf(BottomBarDestination.Home.route) }
     var showMenu by remember { mutableStateOf(false) }
 
@@ -114,6 +121,8 @@ fun homeScreen(
     ) { paddingValues ->
         HomeContent(
             paddingValues = paddingValues,
+            upcomingEvents = uiState.upcomingEvents,
+            isLoadingEvents = uiState.isLoadingEvents,
             onStream = { navController.navigateToStream() },
             onSettings = { navController.navigateToSettings() },
             onProfile = { navController.navigateToProfile() },
@@ -130,6 +139,8 @@ fun homeScreen(
 @Composable
 fun HomeContent(
     paddingValues: PaddingValues,
+    upcomingEvents: List<Event> = emptyList(),
+    isLoadingEvents: Boolean = false,
     onStream: () -> Unit = {},
     onSettings: () -> Unit = {},
     onProfile: () -> Unit = {},
@@ -150,6 +161,19 @@ fun HomeContent(
     ) {
         WelcomeSection()
         UpcomingServiceCard()
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Upcoming Events",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+        UpcomingEventsCarousel(
+            events = upcomingEvents,
+            isLoading = isLoadingEvents,
+            onEventClick = { onEvents() }
+        )
+        
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "Explore Modules",
@@ -357,6 +381,127 @@ fun ActionCard(
 }
 
 @Composable
+fun UpcomingEventsCarousel(
+    events: List<Event>,
+    isLoading: Boolean,
+    onEventClick: () -> Unit
+) {
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    } else if (events.isEmpty()) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No upcoming events",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    } else {
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp)
+        ) {
+            items(events) { event ->
+                EventCard(event = event, onClick = onEventClick)
+            }
+        }
+    }
+}
+
+@Composable
+fun EventCard(
+    event: Event,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .width(280.dp)
+            .height(180.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(16.dp),
+        onClick = onClick
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+            )
+            
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.6f)
+                            )
+                        )
+                    )
+            )
+            
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Bottom
+            ) {
+                Text(
+                    text = event.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    maxLines = 2
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = event.location,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White.copy(alpha = 0.9f)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.DateRange,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "${event.currentAttendees}/${event.maxAttendees ?: "∞"} attending",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun ScriptureCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -394,6 +539,8 @@ fun HomeScreenPreview() {
         Surface {
             HomeContent(
                 paddingValues = PaddingValues(16.dp),
+                upcomingEvents = emptyList(),
+                isLoadingEvents = false,
                 onStream = {},
                 onSettings = {},
                 onProfile = {},
