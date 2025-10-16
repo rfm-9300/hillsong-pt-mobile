@@ -10,16 +10,23 @@ import rfm.hillsongptapp.core.data.repository.AuthRepository
 import rfm.hillsongptapp.core.network.api.Encounter
 import rfm.hillsongptapp.core.network.api.EncountersApiService
 import rfm.hillsongptapp.core.network.result.NetworkResult
+import rfm.hillsongptapp.logging.LoggerHelper
+
+data class EncounterWithImageUrl(
+    val encounter: Encounter,
+    val imageUrl: String?
+)
 
 data class HomeUiState(
-    val upcomingEncounters: List<Encounter> = emptyList(),
+    val upcomingEncounters: List<EncounterWithImageUrl> = emptyList(),
     val isLoadingEncounters: Boolean = false,
     val encountersError: String? = null
 )
 
 class HomeViewModel(
     private val authRepository: AuthRepository,
-    private val encountersApiService: EncountersApiService
+    private val encountersApiService: EncountersApiService,
+    private val baseUrl: String
 ): ViewModel() {
     
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -31,16 +38,36 @@ class HomeViewModel(
 
     private fun loadUpcomingEncounters() {
         viewModelScope.launch {
+            rfm.hillsongptapp.logging.LoggerHelper.logDebug("Loading upcoming encounters", "HomeViewModel")
+            rfm.hillsongptapp.logging.LoggerHelper.logDebug("Base URL: $baseUrl", "HomeViewModel")
+            
             _uiState.value = _uiState.value.copy(isLoadingEncounters = true, encountersError = null)
             
             when (val result = encountersApiService.getUpcomingEncounters()) {
                 is NetworkResult.Success -> {
+                    rfm.hillsongptapp.logging.LoggerHelper.logDebug("Received ${result.data.size} encounters", "HomeViewModel")
+                    
+                    val encountersWithUrls = result.data.take(5).map { encounter ->
+                        val imageUrl = encounter.imagePath?.let { "$baseUrl/api/files/$it" }
+                        rfm.hillsongptapp.logging.LoggerHelper.logDebug(
+                            "Encounter: ${encounter.title}, imagePath: ${encounter.imagePath}, constructed URL: $imageUrl",
+                            "HomeViewModel"
+                        )
+                        EncounterWithImageUrl(
+                            encounter = encounter,
+                            imageUrl = imageUrl
+                        )
+                    }
+                    
+                    LoggerHelper.logDebug("Mapped ${encountersWithUrls.size} encounters with URLs", "HomeViewModel")
+                    
                     _uiState.value = _uiState.value.copy(
-                        upcomingEncounters = result.data.take(5), // Show max 5 encounters
+                        upcomingEncounters = encountersWithUrls,
                         isLoadingEncounters = false
                     )
                 }
                 is NetworkResult.Error -> {
+                    LoggerHelper.logDebug("Error loading encounters: ${result.exception.message}", "HomeViewModel")
                     _uiState.value = _uiState.value.copy(
                         isLoadingEncounters = false,
                         encountersError = result.exception.message

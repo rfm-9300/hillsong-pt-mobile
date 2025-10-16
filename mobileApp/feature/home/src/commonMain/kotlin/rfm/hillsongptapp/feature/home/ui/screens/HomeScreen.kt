@@ -66,6 +66,7 @@ import rfm.hillsongptapp.core.navigation.navigateToGiving
 import rfm.hillsongptapp.core.navigation.navigateToFeed
 import rfm.hillsongptapp.core.navigation.navigateToEvents
 import rfm.hillsongptapp.core.network.api.Encounter
+import rfm.hillsongptapp.feature.home.ui.screens.EncounterWithImageUrl
 
 @Composable
 fun homeScreen(
@@ -139,7 +140,7 @@ fun homeScreen(
 @Composable
 fun HomeContent(
     paddingValues: PaddingValues,
-    upcomingEncounters: List<Encounter> = emptyList(),
+    upcomingEncounters: List<EncounterWithImageUrl> = emptyList(),
     isLoadingEncounters: Boolean = false,
     onStream: () -> Unit = {},
     onSettings: () -> Unit = {},
@@ -382,7 +383,7 @@ fun ActionCard(
 
 @Composable
 fun UpcomingEncountersCarousel(
-    encounters: List<Encounter>,
+    encounters: List<EncounterWithImageUrl>,
     isLoading: Boolean,
     onEncounterClick: () -> Unit
 ) {
@@ -420,8 +421,12 @@ fun UpcomingEncountersCarousel(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(horizontal = 4.dp)
         ) {
-            items(encounters) { encounter ->
-                EncounterCard(encounter = encounter, onClick = onEncounterClick)
+            items(encounters) { encounterWithUrl ->
+                EncounterCard(
+                    encounter = encounterWithUrl.encounter,
+                    imageUrl = encounterWithUrl.imageUrl,
+                    onClick = onEncounterClick
+                )
             }
         }
     }
@@ -430,8 +435,15 @@ fun UpcomingEncountersCarousel(
 @Composable
 fun EncounterCard(
     encounter: Encounter,
+    imageUrl: String?,
     onClick: () -> Unit
 ) {
+    // Log for debugging
+    rfm.hillsongptapp.logging.LoggerHelper.logDebug(
+        "EncounterCard - Title: ${encounter.title}, ImageURL: $imageUrl",
+        "EncounterCard"
+    )
+    
     Card(
         modifier = Modifier
             .width(280.dp)
@@ -441,11 +453,41 @@ fun EncounterCard(
         onClick = onClick
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-            )
+            // Display image if available, otherwise show gradient background
+            if (imageUrl != null) {
+                rfm.hillsongptapp.logging.LoggerHelper.logDebug(
+                    "Loading image from URL: $imageUrl",
+                    "EncounterCard"
+                )
+                rfm.hillsongptapp.util.media.AsyncImage(
+                    imageUrl = imageUrl,
+                    contentDescription = encounter.title,
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                    onFailure = {
+                        rfm.hillsongptapp.logging.LoggerHelper.logDebug(
+                            "Image failed to load: $imageUrl",
+                            "EncounterCard"
+                        )
+                        // Fallback to gradient background if image fails to load
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.primaryContainer)
+                        )
+                    }
+                )
+            } else {
+                rfm.hillsongptapp.logging.LoggerHelper.logDebug(
+                    "No image URL provided, showing gradient",
+                    "EncounterCard"
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                )
+            }
             
             Box(
                 modifier = Modifier

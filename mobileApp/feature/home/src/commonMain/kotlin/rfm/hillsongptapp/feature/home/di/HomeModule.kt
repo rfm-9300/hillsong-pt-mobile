@@ -5,6 +5,10 @@ import rfm.hillsongptapp.feature.home.ui.screens.HomeViewModel
 
 val featureHomeModule = lazyModule {
     viewModel<HomeViewModel>{
-        HomeViewModel(get(), get())
+        HomeViewModel(
+            authRepository = get(),
+            encountersApiService = get(),
+            baseUrl = get(qualifier = org.koin.core.qualifier.named("baseUrl"))
+        )
     }
 }

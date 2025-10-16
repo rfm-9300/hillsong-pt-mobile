@@ -42,6 +42,9 @@ kotlin{
             implementation(projects.core.designsystem)
 
             implementation(projects.core.data)
+            
+            implementation(projects.util.media)
+            implementation(projects.util.logging)
 
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
