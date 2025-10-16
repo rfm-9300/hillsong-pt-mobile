@@ -1,0 +1,146 @@
+### Attendance Endpoints Testing
+### Base URL: http://localhost:8080
+
+### Variables
+@baseUrl = http://localhost:8080
+@userToken = Bearer YOUR_USER_JWT_TOKEN_HERE
+@adminToken = Bearer YOUR_ADMIN_JWT_TOKEN_HERE
+
+### 1. Check In to Event
+POST {{baseUrl}}/api/attendance/check-in
+Authorization: {{userToken}}
+Content-Type: application/json
+
+{
+  "attendanceType": "EVENT",
+  "eventId": 1,
+  "notes": "Excited to attend this event",
+  "checkedInBy": "Self"
+}
+
+### 2. Check In to Service
+POST {{baseUrl}}/api/attendance/check-in
+Authorization: {{userToken}}
+Content-Type: application/json
+
+{
+  "attendanceType": "SERVICE",
+  "serviceId": 1,
+  "notes": "Regular Sunday service attendance"
+}
+
+### 3. Check In to Kids Service
+POST {{baseUrl}}/api/attendance/check-in
+Authorization: {{userToken}}
+Content-Type: application/json
+
+{
+  "attendanceType": "KIDS_SERVICE",
+  "kidsServiceId": 1,
+  "notes": "Volunteering at kids service"
+}
+
+### 4. Check Out from Attendance
+POST {{baseUrl}}/api/attendance/check-out
+Authorization: {{userToken}}
+Content-Type: application/json
+
+{
+  "attendanceId": 1,
+  "notes": "Great service today",
+  "checkedOutBy": "Self"
+}
+
+### 5. Get My Attendance Records
+GET {{baseUrl}}/api/attendance/my-attendance
+Authorization: {{userToken}}
+
+### 6. Get My Attendance with Pagination and Sorting
+GET {{baseUrl}}/api/attendance/my-attendance?page=0&size=20&sortBy=checkInTime&sortDir=desc
+Authorization: {{userToken}}
+
+### 7. Get User Attendance (Admin Only)
+GET {{baseUrl}}/api/attendance/user/1
+Authorization: {{adminToken}}
+
+### 8. Get User Attendance with Pagination (Admin Only)
+GET {{baseUrl}}/api/attendance/user/1?page=0&size=10&sortBy=checkInTime&sortDir=asc
+Authorization: {{adminToken}}
+
+### 9. Get Event Attendance
+GET {{baseUrl}}/api/attendance/event/1
+Authorization: {{userToken}}
+
+### 10. Get Service Attendance
+GET {{baseUrl}}/api/attendance/service/1
+Authorization: {{userToken}}
+
+### 11. Get Kids Service Attendance
+GET {{baseUrl}}/api/attendance/kids-service/1
+Authorization: {{userToken}}
+
+### 12. Get Currently Checked-In Users
+GET {{baseUrl}}/api/attendance/currently-checked-in
+Authorization: {{userToken}}
+
+### 13. Get Attendance Statistics
+POST {{baseUrl}}/api/attendance/stats
+Authorization: {{userToken}}
+Content-Type: application/json
+
+{
+  "startDate": "2025-01-01T00:00:00",
+  "endDate": "2025-01-31T23:59:59",
+  "attendanceType": "SERVICE"
+}
+
+### 14. Get Attendance Statistics for All Types
+POST {{baseUrl}}/api/attendance/stats
+Authorization: {{userToken}}
+Content-Type: application/json
+
+{
+  "startDate": "2025-01-01T00:00:00",
+  "endDate": "2025-01-31T23:59:59"
+}
+
+### 15. Get Most Frequent Attendees (Admin Only)
+GET {{baseUrl}}/api/attendance/frequent-attendees
+Authorization: {{adminToken}}
+
+### 16. Get Most Frequent Attendees with Pagination (Admin Only)
+GET {{baseUrl}}/api/attendance/frequent-attendees?page=0&size=10
+Authorization: {{adminToken}}
+
+### 17. Bulk Check-In Users (Admin Only)
+POST {{baseUrl}}/api/attendance/bulk-check-in
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+  "userIds": [1, 2, 3, 4, 5],
+  "attendanceType": "SERVICE",
+  "serviceId": 1,
+  "notes": "Bulk check-in for Sunday service",
+  "checkedInBy": "Admin"
+}
+
+### 18. Update Attendance Status (Admin Only)
+PUT {{baseUrl}}/api/attendance/1/status?status=CHECKED_OUT&notes=Manually checked out by admin
+Authorization: {{adminToken}}
+
+### 19. Get Attendance by Type
+GET {{baseUrl}}/api/attendance/by-type/SERVICE
+Authorization: {{userToken}}
+
+### 20. Get Attendance by Status
+GET {{baseUrl}}/api/attendance/by-status/CHECKED_IN
+Authorization: {{userToken}}
+
+### 21. Get Attendance by Event Type
+GET {{baseUrl}}/api/attendance/by-type/EVENT
+Authorization: {{userToken}}
+
+### 22. Get Attendance by Kids Service Type
+GET {{baseUrl}}/api/attendance/by-type/KIDS_SERVICE
+Authorization: {{userToken}}

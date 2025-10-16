@@ -94,6 +94,13 @@ class FileStorageService(
     }
     
     /**
+     * Store an encounter image
+     */
+    fun storeEncounterImage(file: MultipartFile): String {
+        return storeFile(file, "encounters")
+    }
+    
+    /**
      * Delete a file
      */
     fun deleteFile(filePath: String): Boolean {

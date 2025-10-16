@@ -17,6 +17,8 @@ import rfm.hillsongptapp.core.network.api.AuthApiService
 import rfm.hillsongptapp.core.network.api.AuthApiServiceImpl
 import rfm.hillsongptapp.core.network.api.CheckInRequestApiService
 import rfm.hillsongptapp.core.network.api.CheckInRequestApiServiceImpl
+import rfm.hillsongptapp.core.network.api.EncountersApiService
+import rfm.hillsongptapp.core.network.api.EncountersApiServiceImpl
 import rfm.hillsongptapp.core.network.api.EventsApiService
 import rfm.hillsongptapp.core.network.api.EventsApiServiceImpl
 import rfm.hillsongptapp.core.network.api.GroupsApiService
@@ -118,6 +120,13 @@ val networkModule =
         
         single<EventsApiService> {
             EventsApiServiceImpl(
+                httpClient = get(),
+                baseUrl = get(qualifier = org.koin.core.qualifier.named("baseUrl"))
+            )
+        }
+        
+        single<EncountersApiService> {
+            EncountersApiServiceImpl(
                 httpClient = get(),
                 baseUrl = get(qualifier = org.koin.core.qualifier.named("baseUrl"))
             )

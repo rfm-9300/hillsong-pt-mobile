@@ -1,0 +1,18 @@
+### Admin Endpoints Testing
+### Base URL: http://localhost:8080
+
+### Variables
+@baseUrl = http://localhost:8080
+@adminToken = Bearer admin-secret-token-12345
+
+### 1. Get Admin Token (for reference - no auth required)
+GET {{baseUrl}}/api/admin/token
+
+### 2. Trigger Sunday Services Creation Job (with valid admin token)
+POST {{baseUrl}}/api/admin/create-sunday-services
+Authorization: {{adminToken}}
+
+
+
+
+GET http://localhost:8080/api/admin/token

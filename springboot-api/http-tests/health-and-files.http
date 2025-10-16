@@ -1,0 +1,33 @@
+### Health and File Endpoints Testing
+### Base URL: http://localhost:8080
+
+### Variables
+@baseUrl = http://localhost:8080
+
+### Health Endpoints
+
+### 1. Application Health Check
+GET {{baseUrl}}/api/health
+
+### File Endpoints
+
+### 2. Serve File from Subdirectory
+GET {{baseUrl}}/api/files/profiles/user-123-profile.jpg
+
+### 3. Serve File from Root Directory
+GET {{baseUrl}}/api/files/default-avatar.png
+
+### 4. Get File Information
+GET {{baseUrl}}/api/files/profiles/user-123-profile.jpg/info
+
+### 5. Serve Event Header Image
+GET {{baseUrl}}/api/files/events/event-1-header.jpg
+
+### 6. Serve Post Image
+GET {{baseUrl}}/api/files/posts/post-5-image.png
+
+### 7. Get File Info for Non-existent File (should return 404)
+GET {{baseUrl}}/api/files/nonexistent/file.jpg/info
+
+### 8. Serve Non-existent File (should return 404)
+GET {{baseUrl}}/api/files/nonexistent-file.jpg

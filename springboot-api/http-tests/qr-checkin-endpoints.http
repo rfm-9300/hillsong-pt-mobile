@@ -1,0 +1,185 @@
+### QR Code Check-In System Testing
+### Base URL: http://localhost:8080
+### This file tests the complete QR code-based check-in flow
+###
+### 🔑 MASTER TOKEN: Use "Bearer MASTER_TEST_TOKEN_CHANGE_ME" to bypass ALL authentication
+###    - Works for ANY endpoint
+###    - Has ALL roles (USER, ADMIN, STAFF)
+###    - Perfect for testing without managing JWT tokens
+###    - Set via MASTER_TEST_TOKEN environment variable (defaults to MASTER_TEST_TOKEN_CHANGE_ME)
+
+### Variables
+@baseUrl = http://localhost:8080
+@masterToken = Bearer MASTER_TEST_TOKEN_CHANGE_ME
+@parentToken = Bearer YOUR_PARENT_JWT_TOKEN_HERE
+@staffToken = Bearer YOUR_STAFF_JWT_TOKEN_HERE
+@adminToken = Bearer admin-secret-token-12345
+@qrToken = JnePWntf28RBeiC6Gj6sb27Wd9YB17m0DrHPBzE2oXNy6eNlHBFiuOfDBAvSFsVj
+
+### ============================================
+### MASTER TOKEN TEST
+### ============================================
+
+### 0. Test Master Token (Works for ANY endpoint with ALL roles)
+# This bypasses all authentication - perfect for testing!
+GET {{baseUrl}}/api/kids/checkin-requests/active
+Authorization: Bearer MASTER_TEST_TOKEN_CHANGE_ME
+
+### ============================================
+### PARENT FLOW - Creating Check-In Requests
+### ============================================
+
+### 1. Create Check-In Request (Parent)
+# Parent creates a QR code check-in request for their child
+POST {{baseUrl}}/api/kids/checkin-requests
+Authorization: {{parentToken}}
+Content-Type: application/json
+
+{
+  "childId": 4,
+  "serviceId": 8,
+  "notes": "Please check for allergies"
+}
+
+### 2. Get Active Check-In Requests (Parent)
+# Parent views all their pending check-in requests
+GET {{baseUrl}}/api/kids/checkin-requests/active
+Authorization: {{parentToken}}
+
+### 3. Cancel Check-In Request (Parent)
+# Parent cancels a pending check-in request
+DELETE {{baseUrl}}/api/kids/checkin-requests/1
+Authorization: {{parentToken}}
+
+### ============================================
+### STAFF FLOW - Scanning and Verifying QR Codes
+### ============================================
+
+### 4. Get Check-In Request by Token (Staff Scans QR Code)
+# Staff scans the QR code and retrieves the check-in request details
+# This shows child info, medical alerts, allergies, special needs, etc.
+# Using master token for easy testing!
+GET {{baseUrl}}/api/kids/checkin-requests/token/{{qrToken}}
+Authorization: Bearer MASTER_TEST_TOKEN_CHANGE_ME
+
+### 5. Approve Check-In Request (Staff)
+# Staff approves the check-in after verifying the child
+# This creates an attendance record and notifies the parent
+# Using master token for easy testing!
+POST {{baseUrl}}/api/kids/checkin-requests/token/{{qrToken}}/approve
+Authorization: Bearer MASTER_TEST_TOKEN_CHANGE_ME
+Content-Type: application/json
+
+{
+  "notes": "Child checked in successfully. All medical information reviewed."
+}
+
+### 6. Reject Check-In Request (Staff)
+# Staff rejects the check-in with a reason
+# This notifies the parent with the rejection reason
+POST {{baseUrl}}/api/kids/checkin-requests/token/{{qrToken}}/reject
+Authorization: {{staffToken}}
+Content-Type: application/json
+
+{
+  "reason": "Child appears unwell. Please take them to see a doctor."
+}
+
+### ============================================
+### COMPLETE FLOW TEST - Parent to Staff
+### ============================================
+
+### 7. STEP 1: Parent Creates Request
+POST {{baseUrl}}/api/kids/checkin-requests
+Authorization: {{parentToken}}
+Content-Type: application/json
+
+{
+  "childId": 4,
+  "serviceId": 8
+}
+
+### 8. STEP 2: Staff Scans QR Code (Use token from Step 1 response)
+GET {{baseUrl}}/api/kids/checkin-requests/token/{{qrToken}}
+Authorization: {{staffToken}}
+
+### 9. STEP 3: Staff Approves Check-In
+POST {{baseUrl}}/api/kids/checkin-requests/token/{{qrToken}}/approve
+Authorization: {{staffToken}}
+Content-Type: application/json
+
+{
+  "notes": "Verified identity and medical information"
+}
+
+### ============================================
+### ERROR SCENARIOS
+### ============================================
+
+### 10. Try to Create Request for Child You Don't Own (Should Fail)
+POST {{baseUrl}}/api/kids/checkin-requests
+Authorization: {{parentToken}}
+Content-Type: application/json
+
+{
+  "childId": 999,
+  "serviceId": 8
+}
+
+### 11. Try to Scan Expired Token (Should Return 410 Gone)
+GET {{baseUrl}}/api/kids/checkin-requests/token/EXPIRED_TOKEN_HERE
+Authorization: {{staffToken}}
+
+### 12. Try to Scan Invalid Token (Should Return 404)
+GET {{baseUrl}}/api/kids/checkin-requests/token/INVALID_TOKEN
+Authorization: {{staffToken}}
+
+### 13. Try to Approve Without Staff Role (Should Fail)
+POST {{baseUrl}}/api/kids/checkin-requests/token/{{qrToken}}/approve
+Authorization: {{parentToken}}
+Content-Type: application/json
+
+{
+  "notes": "Trying to approve without staff role"
+}
+
+### 14. Try to Create Request for Service Not Accepting Check-Ins
+POST {{baseUrl}}/api/kids/checkin-requests
+Authorization: {{parentToken}}
+Content-Type: application/json
+
+{
+  "childId": 4,
+  "serviceId": 1
+}
+
+### ============================================
+### ADMIN OPERATIONS
+### ============================================
+
+### 15. Get All Check-In Requests (Admin)
+# Admin can view all check-in requests across all users
+GET {{baseUrl}}/api/kids/checkin-requests/active
+Authorization: {{adminToken}}
+
+### ============================================
+### NOTES
+### ============================================
+# 
+# QR Code Flow:
+# 1. Parent creates check-in request → Gets token
+# 2. Parent displays QR code with token
+# 3. Staff scans QR code → Extracts token
+# 4. Staff calls GET /token/{token} → Views child details
+# 5. Staff approves or rejects → Parent gets real-time notification
+#
+# Token Expiration:
+# - Tokens expire after 15 minutes by default
+# - Expired tokens return 410 Gone status
+# - Parents can generate new tokens if expired
+#
+# Security:
+# - Parents can only create requests for their own children
+# - Only STAFF and ADMIN roles can scan and approve
+# - Tokens are single-use (invalidated after approval)
+#

@@ -65,7 +65,7 @@ import rfm.hillsongptapp.core.navigation.navigateToGroups
 import rfm.hillsongptapp.core.navigation.navigateToGiving
 import rfm.hillsongptapp.core.navigation.navigateToFeed
 import rfm.hillsongptapp.core.navigation.navigateToEvents
-import rfm.hillsongptapp.core.network.api.Event
+import rfm.hillsongptapp.core.network.api.Encounter
 
 @Composable
 fun homeScreen(
@@ -121,8 +121,8 @@ fun homeScreen(
     ) { paddingValues ->
         HomeContent(
             paddingValues = paddingValues,
-            upcomingEvents = uiState.upcomingEvents,
-            isLoadingEvents = uiState.isLoadingEvents,
+            upcomingEncounters = uiState.upcomingEncounters,
+            isLoadingEncounters = uiState.isLoadingEncounters,
             onStream = { navController.navigateToStream() },
             onSettings = { navController.navigateToSettings() },
             onProfile = { navController.navigateToProfile() },
@@ -139,8 +139,8 @@ fun homeScreen(
 @Composable
 fun HomeContent(
     paddingValues: PaddingValues,
-    upcomingEvents: List<Event> = emptyList(),
-    isLoadingEvents: Boolean = false,
+    upcomingEncounters: List<Encounter> = emptyList(),
+    isLoadingEncounters: Boolean = false,
     onStream: () -> Unit = {},
     onSettings: () -> Unit = {},
     onProfile: () -> Unit = {},
@@ -164,14 +164,14 @@ fun HomeContent(
         
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Upcoming Events",
+            text = "Upcoming Encounters",
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
-        UpcomingEventsCarousel(
-            events = upcomingEvents,
-            isLoading = isLoadingEvents,
-            onEventClick = { onEvents() }
+        UpcomingEncountersCarousel(
+            encounters = upcomingEncounters,
+            isLoading = isLoadingEncounters,
+            onEncounterClick = { onEvents() }
         )
         
         Spacer(modifier = Modifier.height(8.dp))
@@ -381,10 +381,10 @@ fun ActionCard(
 }
 
 @Composable
-fun UpcomingEventsCarousel(
-    events: List<Event>,
+fun UpcomingEncountersCarousel(
+    encounters: List<Encounter>,
     isLoading: Boolean,
-    onEventClick: () -> Unit
+    onEncounterClick: () -> Unit
 ) {
     if (isLoading) {
         Box(
@@ -395,7 +395,7 @@ fun UpcomingEventsCarousel(
         ) {
             CircularProgressIndicator()
         }
-    } else if (events.isEmpty()) {
+    } else if (encounters.isEmpty()) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -409,7 +409,7 @@ fun UpcomingEventsCarousel(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No upcoming events",
+                    text = "No upcoming encounters",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -420,16 +420,16 @@ fun UpcomingEventsCarousel(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(horizontal = 4.dp)
         ) {
-            items(events) { event ->
-                EventCard(event = event, onClick = onEventClick)
+            items(encounters) { encounter ->
+                EncounterCard(encounter = encounter, onClick = onEncounterClick)
             }
         }
     }
 }
 
 @Composable
-fun EventCard(
-    event: Event,
+fun EncounterCard(
+    encounter: Encounter,
     onClick: () -> Unit
 ) {
     Card(
@@ -467,7 +467,7 @@ fun EventCard(
                 verticalArrangement = Arrangement.Bottom
             ) {
                 Text(
-                    text = event.title,
+                    text = encounter.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -475,7 +475,7 @@ fun EventCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = event.location,
+                    text = encounter.location,
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.9f)
                 )
@@ -491,7 +491,7 @@ fun EventCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "${event.currentAttendees}/${event.maxAttendees ?: "∞"} attending",
+                        text = "Organized by ${encounter.organizerName}",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.White
                     )
@@ -539,8 +539,8 @@ fun HomeScreenPreview() {
         Surface {
             HomeContent(
                 paddingValues = PaddingValues(16.dp),
-                upcomingEvents = emptyList(),
-                isLoadingEvents = false,
+                upcomingEncounters = emptyList(),
+                isLoadingEncounters = false,
                 onStream = {},
                 onSettings = {},
                 onProfile = {},

@@ -1,0 +1,140 @@
+### Events Endpoints Testing
+### Base URL: http://localhost:8080
+
+### Variables
+@baseUrl = http://localhost:8080
+@userToken = Bearer YOUR_USER_JWT_TOKEN_HERE
+
+### 1. Get All Events
+GET {{baseUrl}}/api/events
+Authorization: {{userToken}}
+
+### 2. Get All Events with Pagination and Sorting
+GET {{baseUrl}}/api/events?page=0&size=10&sortBy=date&sortDir=asc
+Authorization: {{userToken}}
+
+### 3. Get Upcoming Events
+GET {{baseUrl}}/api/events/upcoming
+Authorization: {{userToken}}
+
+### 4. Get Event by ID
+GET {{baseUrl}}/api/events/1
+Authorization: {{userToken}}
+
+### 5. Get Event by ID with Attendees
+GET {{baseUrl}}/api/events/1?includeAttendees=true
+Authorization: {{userToken}}
+
+### 6. Create New Event (with form data - multipart)
+POST {{baseUrl}}/api/events
+Authorization: {{userToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="event"
+Content-Type: application/json
+
+{
+  "title": "Community Outreach Event",
+  "description": "Join us for a community service event to help local families",
+  "date": "2025-02-15T10:00:00",
+  "endDate": "2025-02-15T16:00:00",
+  "location": "Community Center",
+  "maxAttendees": 50,
+  "requiresApproval": false,
+  "isPublic": true,
+  "tags": ["community", "service", "outreach"]
+}
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 7. Create New Event (JSON only - no image)
+POST {{baseUrl}}/api/events
+Authorization: {{userToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="event"
+Content-Type: application/json
+
+{
+  "title": "Bible Study Group",
+  "description": "Weekly Bible study and discussion group",
+  "date": "2025-01-20T19:00:00",
+  "endDate": "2025-01-20T21:00:00",
+  "location": "Fellowship Hall",
+  "maxAttendees": 20,
+  "requiresApproval": false,
+  "isPublic": true,
+  "tags": ["bible-study", "fellowship"]
+}
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 8. Update Event
+PUT {{baseUrl}}/api/events/1
+Authorization: {{userToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="event"
+Content-Type: application/json
+
+{
+  "title": "Updated Community Outreach Event",
+  "description": "Updated description for the community service event",
+  "date": "2025-02-15T09:00:00",
+  "endDate": "2025-02-15T17:00:00",
+  "location": "Updated Community Center",
+  "maxAttendees": 60,
+  "requiresApproval": false,
+  "isPublic": true,
+  "tags": ["community", "service", "outreach", "updated"]
+}
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 9. Delete Event
+DELETE {{baseUrl}}/api/events/1
+Authorization: {{userToken}}
+
+### 10. Join Event
+POST {{baseUrl}}/api/events/1/join
+Authorization: {{userToken}}
+
+### 11. Leave Event
+POST {{baseUrl}}/api/events/1/leave
+Authorization: {{userToken}}
+
+### 12. Approve User for Event (Organizer Only)
+POST {{baseUrl}}/api/events/1/approve/2
+Authorization: {{userToken}}
+
+### 13. Get User's Event Status
+GET {{baseUrl}}/api/events/1/status
+Authorization: {{userToken}}
+
+### 14. Get My Events (Events I Organized)
+GET {{baseUrl}}/api/events/my-events
+Authorization: {{userToken}}
+
+### 15. Get My Events with Pagination
+GET {{baseUrl}}/api/events/my-events?page=0&size=5&sortBy=date&sortDir=desc
+Authorization: {{userToken}}
+
+### 16. Get Events I'm Attending
+GET {{baseUrl}}/api/events/attending
+Authorization: {{userToken}}
+
+### 17. Get Events I'm on Waiting List For
+GET {{baseUrl}}/api/events/waiting-list
+Authorization: {{userToken}}
+
+### 18. Search Events
+GET {{baseUrl}}/api/events/search?query=community
+Authorization: {{userToken}}
+
+### 19. Search Events by Location
+GET {{baseUrl}}/api/events/search?query=hall
+Authorization: {{userToken}}
+
+### 20. Search Events by Title
+GET {{baseUrl}}/api/events/search?query=bible
+Authorization: {{userToken}}

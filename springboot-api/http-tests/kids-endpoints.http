@@ -1,0 +1,137 @@
+### Kids Management Endpoints Testing
+### Base URL: http://localhost:8080
+
+### Variables
+@baseUrl = http://localhost:8080
+@userToken = Bearer YOUR_USER_JWT_TOKEN_HERE
+
+### 1. Get All Kids Services
+GET {{baseUrl}}/api/kids/services
+Authorization: {{userToken}}
+
+### 2. Get Kids Services with Filters
+GET {{baseUrl}}/api/kids/services?minAge=3&maxAge=10&acceptingCheckIns=true&location=Room
+Authorization: {{userToken}}
+
+### 3. Get Specific Kids Service
+GET {{baseUrl}}/api/kids/services/1
+Authorization: {{userToken}}
+
+### 4. Get Available Services for Age
+GET {{baseUrl}}/api/kids/services/available?age=5
+Authorization: {{userToken}}
+
+### 5. Register a New Child
+POST {{baseUrl}}/api/kids/children
+Authorization: {{userToken}}
+Content-Type: application/json
+
+{
+  "firstName": "Emma",
+  "lastName": "Smith",
+  "dateOfBirth": "2018-05-15",
+  "gender": "FEMALE",
+  "emergencyContactName": "Jane Smith",
+  "emergencyContactPhone": "+1234567890",
+  "medicalNotes": "No known medical conditions",
+  "allergies": "None",
+  "specialNeeds": null,
+  "pickupAuthorization": "Parents and grandparents only"
+}
+
+### 6. Get All Children for Current User
+GET {{baseUrl}}/api/kids/children
+Authorization: {{userToken}}
+
+### 7. Get Children with Pagination
+GET {{baseUrl}}/api/kids/children?page=0&pageSize=10
+Authorization: {{userToken}}
+
+### 8. Get Children by Parent ID (admin or same parent only)
+GET {{baseUrl}}/api/kids/children/parent/1
+Authorization: {{userToken}}
+
+### 9. Get Specific Child
+GET {{baseUrl}}/api/kids/children/1
+Authorization: {{userToken}}
+
+### 10. Update Child Information
+PUT {{baseUrl}}/api/kids/children/1
+Authorization: {{userToken}}
+Content-Type: application/json
+
+{
+  "firstName": "Emma",
+  "lastName": "Smith",
+  "dateOfBirth": "2018-05-15",
+  "gender": "FEMALE",
+  "emergencyContactName": "Jane Smith",
+  "emergencyContactPhone": "+1234567890",
+  "medicalNotes": "Updated medical notes",
+  "allergies": "Peanuts",
+  "specialNeeds": null,
+  "pickupAuthorization": "Parents and grandparents only",
+  "isActive": true
+}
+
+### 11. Delete Child (soft delete)
+DELETE {{baseUrl}}/api/kids/children/1
+Authorization: {{userToken}}
+
+### 12. Check In Child to Service (DEPRECATED)
+### NOTE: This endpoint is deprecated. Use the QR code-based check-in system instead:
+### 1. Create check-in request: POST /api/kids/checkin-requests
+### 2. Display QR code to parent
+### 3. Staff scans QR code and approves: POST /api/kids/checkin-requests/token/{token}/approve
+### This endpoint is maintained for backward compatibility only.
+POST {{baseUrl}}/api/kids/checkin
+Authorization: {{userToken}}
+Content-Type: application/json
+
+{
+  "childId": 1,
+  "serviceId": 1,
+  "notes": "Child is excited for today's activities"
+}
+
+### 13. Check Out Child from Service
+POST {{baseUrl}}/api/kids/checkout
+Authorization: {{userToken}}
+Content-Type: application/json
+
+{
+  "childId": 1,
+  "notes": "Child had a great time today"
+}
+
+### 14. Get Current Check-ins (All Services)
+GET {{baseUrl}}/api/kids/checkins/current
+Authorization: {{userToken}}
+
+### 15. Get Current Check-ins for Specific Service
+GET {{baseUrl}}/api/kids/checkins/current?serviceId=1
+Authorization: {{userToken}}
+
+### 16. Get Check-in History (All Children)
+### Response now includes:
+### - checkInMethod: "DIRECT" or "QR_CODE" to indicate how check-in was performed
+### - checkInRequestId: ID of the check-in request (if QR code method)
+### - approvedByStaff: Name of staff member who approved (if QR code method)
+GET {{baseUrl}}/api/kids/checkins/history
+Authorization: {{userToken}}
+
+### 17. Get Check-in History with Pagination
+GET {{baseUrl}}/api/kids/checkins/history?page=0&pageSize=20
+Authorization: {{userToken}}
+
+### 18. Get Check-in History for Specific Child
+GET {{baseUrl}}/api/kids/checkins/history?childId=1
+Authorization: {{userToken}}
+
+### 19. Get Check-in History for Specific Service
+GET {{baseUrl}}/api/kids/checkins/history?serviceId=1
+Authorization: {{userToken}}
+
+### 20. Get Check-in History for Specific Child and Service
+GET {{baseUrl}}/api/kids/checkins/history?childId=1&serviceId=1
+Authorization: {{userToken}}

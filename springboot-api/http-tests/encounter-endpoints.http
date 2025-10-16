@@ -1,0 +1,88 @@
+### Encounter Endpoints Testing
+### Base URL
+@baseUrl = http://localhost:8080
+@token = YOUR_JWT_TOKEN_HERE
+
+### 1. Get all encounters (with pagination)
+GET {{baseUrl}}/api/encounters?page=0&size=20&sortBy=date&sortDir=asc
+Authorization: Bearer {{token}}
+
+### 2. Get upcoming encounters
+GET {{baseUrl}}/api/encounters/upcoming
+Authorization: Bearer {{token}}
+
+### 3. Get encounter by ID
+GET {{baseUrl}}/api/encounters/1
+Authorization: Bearer {{token}}
+
+### 4. Create a new encounter (with JSON data only)
+POST {{baseUrl}}/api/encounters
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="encounter"
+Content-Type: application/json
+
+{
+  "title": "Community Prayer Meeting",
+  "description": "Join us for a special prayer meeting to seek God's guidance and blessings for our community.",
+  "date": "2025-11-20T18:00:00",
+  "location": "Prayer Room"
+}
+--boundary--
+
+### 5. Create a new encounter (with image)
+POST {{baseUrl}}/api/encounters
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="encounter"
+Content-Type: application/json
+
+{
+  "title": "Bible Study Session",
+  "description": "Weekly Bible study focusing on the Book of Romans. All are welcome!",
+  "date": "2025-11-25T19:00:00",
+  "location": "Fellowship Hall"
+}
+--boundary
+Content-Disposition: form-data; name="image"; filename="encounter.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/your/image.jpg
+--boundary--
+
+### 6. Update an encounter
+PUT {{baseUrl}}/api/encounters/1
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="encounter"
+Content-Type: application/json
+
+{
+  "title": "Updated Community Prayer Meeting",
+  "description": "Updated description for the prayer meeting.",
+  "date": "2025-11-21T18:00:00",
+  "location": "Main Sanctuary"
+}
+--boundary--
+
+### 7. Delete an encounter
+DELETE {{baseUrl}}/api/encounters/1
+Authorization: Bearer {{token}}
+
+### 8. Get my encounters (encounters organized by current user)
+GET {{baseUrl}}/api/encounters/my-encounters?page=0&size=20&sortBy=date&sortDir=desc
+Authorization: Bearer {{token}}
+
+### 9. Search encounters by title or location
+GET {{baseUrl}}/api/encounters/search?query=prayer
+Authorization: Bearer {{token}}
+
+### 10. Search encounters by location
+GET {{baseUrl}}/api/encounters/search?query=hall
+Authorization: Bearer {{token}}

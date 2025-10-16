@@ -1,0 +1,88 @@
+### Authentication Endpoints Testing
+### Base URL: http://localhost:8080
+
+### Variables
+@baseUrl = http://localhost:8080
+
+### 1. User Signup
+POST {{baseUrl}}/api/auth/signup
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "password": "SecurePassword123!",
+  "phone": "+1234567890"
+}
+
+### 2. User Login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "password": "SecurePassword123!"
+}
+
+### 3. Admin Login (use existing admin credentials)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "admin123"
+}
+
+### 4. Email Verification (POST)
+POST {{baseUrl}}/api/auth/verify
+Content-Type: application/json
+
+{
+  "token": "verification-token-here"
+}
+
+### 5. Email Verification (GET - for email links)
+GET {{baseUrl}}/api/auth/verify?token=verification-token-here
+
+### 6. Forgot Password Request
+POST {{baseUrl}}/api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com"
+}
+
+### 7. Reset Password
+POST {{baseUrl}}/api/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "reset-token-here",
+  "newPassword": "NewSecurePassword123!"
+}
+
+### 8. Google OAuth Login
+POST {{baseUrl}}/api/auth/google-login
+Content-Type: application/json
+
+{
+  "accessToken": "google-access-token-here",
+  "idToken": "google-id-token-here"
+}
+
+### 9. Facebook OAuth Login
+POST {{baseUrl}}/api/auth/facebook-login
+Content-Type: application/json
+
+{
+  "accessToken": "facebook-access-token-here"
+}
+
+### 10. Refresh Token (placeholder)
+POST {{baseUrl}}/api/auth/refresh
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 11. Logout (placeholder)
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer YOUR_JWT_TOKEN_HERE

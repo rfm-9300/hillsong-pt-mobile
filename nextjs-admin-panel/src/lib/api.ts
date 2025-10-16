@@ -42,6 +42,16 @@ export const ENDPOINTS = {
     EVENT_WAITING_LIST: '/events/waiting-list',
     EVENT_SEARCH: '/events/search',
 
+    // Encounters - /api/encounters/*
+    ENCOUNTERS: '/encounters',
+    ENCOUNTER_BY_ID: (id: string) => `/encounters/${id}`,
+    ENCOUNTER_CREATE: '/encounters',
+    ENCOUNTER_UPDATE: (id: string) => `/encounters/${id}`,
+    ENCOUNTER_DELETE: (id: string) => `/encounters/${id}`,
+    ENCOUNTER_UPCOMING: '/encounters/upcoming',
+    ENCOUNTER_MY_ENCOUNTERS: '/encounters/my-encounters',
+    ENCOUNTER_SEARCH: '/encounters/search',
+
     // Profile/Users - /api/profile/*
     PROFILE: '/profile',
     PROFILE_BY_ID: (userId: string) => `/profile/${userId}`,

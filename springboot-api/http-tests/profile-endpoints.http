@@ -1,0 +1,76 @@
+### Profile Endpoints Testing
+### Base URL: http://localhost:8080
+
+### Variables
+@baseUrl = http://localhost:8080
+@userToken = Bearer YOUR_USER_JWT_TOKEN_HERE
+@adminToken = Bearer YOUR_ADMIN_JWT_TOKEN_HERE
+
+### 1. Get Current User Profile
+GET {{baseUrl}}/api/profile
+Authorization: {{userToken}}
+
+### 2. Get User Profile by ID
+GET {{baseUrl}}/api/profile/1
+Authorization: {{userToken}}
+
+### 3. Update Current User Profile
+PUT {{baseUrl}}/api/profile
+Authorization: {{userToken}}
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "phone": "+1234567890"
+}
+
+### 4. Upload Profile Image
+POST {{baseUrl}}/api/profile/image
+Authorization: {{userToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="image"; filename="profile.jpg"
+Content-Type: image/jpeg
+
+< ./test-files/profile-image.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 5. Get All User Profiles (Admin Only)
+GET {{baseUrl}}/api/profile/all
+Authorization: {{adminToken}}
+
+### 6. Search User Profiles (Admin Only)
+GET {{baseUrl}}/api/profile/search?searchTerm=john
+Authorization: {{adminToken}}
+
+### 7. Search User Profiles by Email (Admin Only)
+GET {{baseUrl}}/api/profile/search?searchTerm=@example.com
+Authorization: {{adminToken}}
+
+### 8. Get Admin Profiles (Admin Only)
+GET {{baseUrl}}/api/profile/admins
+Authorization: {{adminToken}}
+
+### 9. Update User Admin Status - Grant Admin (Admin Only)
+PUT {{baseUrl}}/api/profile/2/admin-status
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+  "isAdmin": true
+}
+
+### 10. Update User Admin Status - Revoke Admin (Admin Only)
+PUT {{baseUrl}}/api/profile/2/admin-status
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+  "isAdmin": false
+}
+
+### 11. Delete User Account (Admin Only)
+DELETE {{baseUrl}}/api/profile/2
+Authorization: {{adminToken}}

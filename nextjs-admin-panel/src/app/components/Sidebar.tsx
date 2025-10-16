@@ -29,6 +29,11 @@ const navItems: NavItem[] = [
     icon: '🎉',
   },
   {
+    label: 'Encounters',
+    href: '/admin/encounters',
+    icon: '🤝',
+  },
+  {
     label: 'Users',
     href: '/admin/users',
     icon: '👥',

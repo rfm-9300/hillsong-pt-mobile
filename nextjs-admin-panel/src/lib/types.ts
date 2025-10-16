@@ -29,6 +29,18 @@ export interface Event {
   imageUrl?: string; // Keep for backward compatibility
 }
 
+export interface Encounter {
+  id: number;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  organizerName: string;
+  organizerId: number;
+  imagePath?: string;
+  createdAt: string;
+}
+
 export interface User {
   id: string;
   email: string;

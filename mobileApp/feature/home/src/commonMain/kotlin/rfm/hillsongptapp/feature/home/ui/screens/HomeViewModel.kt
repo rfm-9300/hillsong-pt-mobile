@@ -7,47 +7,47 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import rfm.hillsongptapp.core.data.repository.AuthRepository
-import rfm.hillsongptapp.core.network.api.Event
-import rfm.hillsongptapp.core.network.api.EventsApiService
+import rfm.hillsongptapp.core.network.api.Encounter
+import rfm.hillsongptapp.core.network.api.EncountersApiService
 import rfm.hillsongptapp.core.network.result.NetworkResult
 
 data class HomeUiState(
-    val upcomingEvents: List<Event> = emptyList(),
-    val isLoadingEvents: Boolean = false,
-    val eventsError: String? = null
+    val upcomingEncounters: List<Encounter> = emptyList(),
+    val isLoadingEncounters: Boolean = false,
+    val encountersError: String? = null
 )
 
 class HomeViewModel(
     private val authRepository: AuthRepository,
-    private val eventsApiService: EventsApiService
+    private val encountersApiService: EncountersApiService
 ): ViewModel() {
     
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
     
     init {
-        loadUpcomingEvents()
+        loadUpcomingEncounters()
     }
 
-    private fun loadUpcomingEvents() {
+    private fun loadUpcomingEncounters() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoadingEvents = true, eventsError = null)
+            _uiState.value = _uiState.value.copy(isLoadingEncounters = true, encountersError = null)
             
-            when (val result = eventsApiService.getUpcomingEvents()) {
+            when (val result = encountersApiService.getUpcomingEncounters()) {
                 is NetworkResult.Success -> {
                     _uiState.value = _uiState.value.copy(
-                        upcomingEvents = result.data.take(5), // Show max 5 events
-                        isLoadingEvents = false
+                        upcomingEncounters = result.data.take(5), // Show max 5 encounters
+                        isLoadingEncounters = false
                     )
                 }
                 is NetworkResult.Error -> {
                     _uiState.value = _uiState.value.copy(
-                        isLoadingEvents = false,
-                        eventsError = result.exception.message
+                        isLoadingEncounters = false,
+                        encountersError = result.exception.message
                     )
                 }
                 is NetworkResult.Loading -> {
-                    _uiState.value = _uiState.value.copy(isLoadingEvents = true)
+                    _uiState.value = _uiState.value.copy(isLoadingEncounters = true)
                 }
             }
         }

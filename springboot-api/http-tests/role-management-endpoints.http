@@ -1,0 +1,96 @@
+### Role Management Endpoints
+### These endpoints allow administrators to manage user roles, specifically granting and revoking STAFF permissions
+
+### Variables
+@baseUrl = http://localhost:8080
+@adminToken = YOUR_ADMIN_JWT_TOKEN_HERE
+@userId = 1
+
+### 1. Grant STAFF role to a user
+### POST /api/admin/users/{userId}/roles/staff
+### Requires ADMIN role
+POST {{baseUrl}}/api/admin/users/{{userId}}/roles/staff
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+###
+
+### 2. Revoke STAFF role from a user
+### DELETE /api/admin/users/{userId}/roles/staff
+### Requires ADMIN role
+DELETE {{baseUrl}}/api/admin/users/{{userId}}/roles/staff
+Authorization: Bearer {{adminToken}}
+
+###
+
+### 3. Get all users with STAFF role
+### GET /api/admin/users/staff
+### Requires ADMIN role
+GET {{baseUrl}}/api/admin/users/staff
+Authorization: Bearer {{adminToken}}
+
+###
+
+### 4. Get all roles for a specific user
+### GET /api/admin/users/{userId}/roles
+### Requires ADMIN role
+GET {{baseUrl}}/api/admin/users/{{userId}}/roles
+Authorization: Bearer {{adminToken}}
+
+###
+
+### Example Response for Grant STAFF Role (Success)
+# {
+#   "success": true,
+#   "message": "STAFF role granted successfully",
+#   "data": null
+# }
+
+### Example Response for Grant STAFF Role (Already Has Role)
+# {
+#   "success": false,
+#   "message": "User already has STAFF role",
+#   "data": null
+# }
+
+### Example Response for Revoke STAFF Role (Success)
+# {
+#   "success": true,
+#   "message": "STAFF role revoked successfully",
+#   "data": null
+# }
+
+### Example Response for Get Staff Users
+# {
+#   "success": true,
+#   "message": "Staff users retrieved successfully",
+#   "data": [
+#     {
+#       "id": 1,
+#       "userId": 1,
+#       "firstName": "John",
+#       "lastName": "Doe",
+#       "email": "john.doe@example.com",
+#       "phone": "+1234567890",
+#       "imagePath": "/images/profile.jpg",
+#       "isAdmin": false,
+#       "joinedAt": "2024-01-01T10:00:00",
+#       "fullName": "John Doe"
+#     }
+#   ]
+# }
+
+### Example Response for Get User Roles
+# {
+#   "success": true,
+#   "message": "User roles retrieved successfully",
+#   "data": ["USER", "STAFF"]
+# }
+
+### Notes:
+# - All endpoints require ADMIN role authentication
+# - The STAFF role allows users to scan QR codes and verify check-in requests
+# - Users can have multiple roles (USER, ADMIN, STAFF)
+# - The USER role is automatically granted to all users
+# - The ADMIN role is managed through the is_admin flag in user_profile table (legacy)
+# - The STAFF role is managed through the new role system
