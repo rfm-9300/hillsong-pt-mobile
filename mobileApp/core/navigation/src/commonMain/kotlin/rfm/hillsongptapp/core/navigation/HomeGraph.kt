@@ -6,6 +6,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 
 
@@ -20,6 +21,7 @@ fun NavGraphBuilder.homeGraph(
     feed: @Composable AnimatedContentScope.() -> Unit,
     events: @Composable AnimatedContentScope.() -> Unit,
     homeScreen: @Composable AnimatedContentScope.() -> Unit,
+    youtubeVideoScreen: @Composable AnimatedContentScope.(videoId: Long, videoUrl: String) -> Unit,
 ){
     navigation<HomeGraph>(startDestination = HomeNav.HomeScreen) {
         composable<HomeNav.HomeScreen> {
@@ -52,6 +54,10 @@ fun NavGraphBuilder.homeGraph(
         composable<HomeNav.EventsScreen> {
             events()
         }
+        composable<HomeNav.YouTubeVideoScreen> { backStackEntry ->
+            val args = backStackEntry.toRoute<HomeNav.YouTubeVideoScreen>()
+            youtubeVideoScreen(args.videoId, args.videoUrl)
+        }
         // Add other composable destinations here
     }
 }
@@ -81,5 +87,7 @@ sealed class HomeNav {
     object FeedScreen : HomeNav()
     @Serializable
     object EventsScreen : HomeNav()
+    @Serializable
+    data class YouTubeVideoScreen(val videoId: Long, val videoUrl: String) : HomeNav()
 }
 

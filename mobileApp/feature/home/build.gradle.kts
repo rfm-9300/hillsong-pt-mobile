@@ -45,6 +45,7 @@ kotlin{
             
             implementation(projects.util.media)
             implementation(projects.util.logging)
+            implementation(projects.util.platform)
 
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)

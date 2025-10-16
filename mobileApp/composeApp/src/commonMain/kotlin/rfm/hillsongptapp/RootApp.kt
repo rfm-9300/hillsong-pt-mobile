@@ -56,6 +56,13 @@ fun RootNavigation() {
             feed = { FeedScreen() },
             events = { EventsScreen() },
             homeScreen = { homeScreen(navController = rootNavController) },
+            youtubeVideoScreen = { videoId, videoUrl ->
+                rfm.hillsongptapp.feature.home.ui.screens.YouTubeVideoScreen(
+                    videoId = videoId,
+                    videoUrl = videoUrl,
+                    navController = rootNavController
+                )
+            }
         )
         kidsGraph(
             kidsManagement = { 

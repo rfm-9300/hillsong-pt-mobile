@@ -1,0 +1,50 @@
+### Get all active YouTube videos (Public)
+GET {{baseUrl}}/api/youtube-videos/active
+Content-Type: application/json
+
+### Get all YouTube videos (Admin only)
+GET {{baseUrl}}/api/youtube-videos
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+### Get a specific YouTube video by ID
+GET {{baseUrl}}/api/youtube-videos/1
+Content-Type: application/json
+
+### Create a new YouTube video (Admin only)
+POST {{baseUrl}}/api/youtube-videos
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "title": "New Church Video",
+  "description": "A wonderful video about our church activities",
+  "videoUrl": "https://www.youtube.com/watch?v=example123",
+  "thumbnailUrl": "https://img.youtube.com/vi/example123/maxresdefault.jpg",
+  "displayOrder": 4,
+  "active": true
+}
+
+### Update a YouTube video (Admin only)
+PUT {{baseUrl}}/api/youtube-videos/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "title": "Updated Video Title",
+  "description": "Updated description",
+  "videoUrl": "https://www.youtube.com/watch?v=updated123",
+  "thumbnailUrl": "https://img.youtube.com/vi/updated123/maxresdefault.jpg",
+  "displayOrder": 1,
+  "active": true
+}
+
+### Toggle active status (Admin only)
+PATCH {{baseUrl}}/api/youtube-videos/1/toggle-active
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+### Delete a YouTube video (Admin only)
+DELETE {{baseUrl}}/api/youtube-videos/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json

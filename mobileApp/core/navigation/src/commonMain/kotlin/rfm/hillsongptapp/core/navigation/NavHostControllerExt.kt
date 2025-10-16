@@ -47,6 +47,10 @@ fun NavHostController.navigateToEvents() {
     navigate(HomeNav.EventsScreen)
 }
 
+fun NavHostController.navigateToYouTubeVideo(videoId: Long, videoUrl: String) {
+    navigate(HomeNav.YouTubeVideoScreen(videoId, videoUrl))
+}
+
 // Kids Management Navigation Extensions
 fun NavHostController.navigateToKidsManagement() {
     navigate(KidsNav.Management)

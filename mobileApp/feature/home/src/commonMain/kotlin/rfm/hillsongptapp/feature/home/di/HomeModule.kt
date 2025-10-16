@@ -8,6 +8,7 @@ val featureHomeModule = lazyModule {
         HomeViewModel(
             authRepository = get(),
             encountersApiService = get(),
+            youtubeVideosApiService = get(),
             baseUrl = get(qualifier = org.koin.core.qualifier.named("baseUrl"))
         )
     }

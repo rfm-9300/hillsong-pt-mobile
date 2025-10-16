@@ -32,6 +32,8 @@ import rfm.hillsongptapp.core.network.api.PrayerApiService
 import rfm.hillsongptapp.core.network.api.PrayerApiServiceImpl
 import rfm.hillsongptapp.core.network.api.ProfileApiService
 import rfm.hillsongptapp.core.network.api.ProfileApiServiceImpl
+import rfm.hillsongptapp.core.network.api.YouTubeVideosApiService
+import rfm.hillsongptapp.core.network.api.YouTubeVideosApiServiceImpl
 import rfm.hillsongptapp.core.network.auth.AuthTokenProvider
 import rfm.hillsongptapp.core.network.auth.NoAuthTokenProvider
 import rfm.hillsongptapp.core.network.ktor.ApiService
@@ -155,6 +157,13 @@ val networkModule =
         
         single<CheckInRequestApiService> {
             CheckInRequestApiServiceImpl(
+                httpClient = get(),
+                baseUrl = get(qualifier = org.koin.core.qualifier.named("baseUrl"))
+            )
+        }
+        
+        single<YouTubeVideosApiService> {
+            YouTubeVideosApiServiceImpl(
                 httpClient = get(),
                 baseUrl = get(qualifier = org.koin.core.qualifier.named("baseUrl"))
             )

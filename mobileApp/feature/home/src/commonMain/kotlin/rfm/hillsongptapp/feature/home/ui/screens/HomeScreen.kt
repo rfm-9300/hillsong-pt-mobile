@@ -65,6 +65,7 @@ import rfm.hillsongptapp.core.navigation.navigateToGroups
 import rfm.hillsongptapp.core.navigation.navigateToGiving
 import rfm.hillsongptapp.core.navigation.navigateToFeed
 import rfm.hillsongptapp.core.navigation.navigateToEvents
+import rfm.hillsongptapp.core.navigation.navigateToYouTubeVideo
 import rfm.hillsongptapp.core.network.api.Encounter
 import rfm.hillsongptapp.feature.home.ui.screens.EncounterWithImageUrl
 
@@ -124,6 +125,11 @@ fun homeScreen(
             paddingValues = paddingValues,
             upcomingEncounters = uiState.upcomingEncounters,
             isLoadingEncounters = uiState.isLoadingEncounters,
+            youtubeVideos = uiState.youtubeVideos,
+            isLoadingVideos = uiState.isLoadingVideos,
+            onVideoClick = { video ->
+                navController.navigateToYouTubeVideo(video.id, video.videoUrl)
+            },
             onStream = { navController.navigateToStream() },
             onSettings = { navController.navigateToSettings() },
             onProfile = { navController.navigateToProfile() },
@@ -142,6 +148,9 @@ fun HomeContent(
     paddingValues: PaddingValues,
     upcomingEncounters: List<EncounterWithImageUrl> = emptyList(),
     isLoadingEncounters: Boolean = false,
+    youtubeVideos: List<rfm.hillsongptapp.core.network.api.YouTubeVideo> = emptyList(),
+    isLoadingVideos: Boolean = false,
+    onVideoClick: (rfm.hillsongptapp.core.network.api.YouTubeVideo) -> Unit = {},
     onStream: () -> Unit = {},
     onSettings: () -> Unit = {},
     onProfile: () -> Unit = {},
@@ -162,6 +171,18 @@ fun HomeContent(
     ) {
         WelcomeSection()
         UpcomingServiceCard()
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Watch Our Videos",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+        YouTubeVideosCarousel(
+            videos = youtubeVideos,
+            isLoading = isLoadingVideos,
+            onVideoClick = onVideoClick
+        )
         
         Spacer(modifier = Modifier.height(16.dp))
         Text(
@@ -544,6 +565,118 @@ fun EncounterCard(
 }
 
 @Composable
+fun YouTubeVideosCarousel(
+    videos: List<rfm.hillsongptapp.core.network.api.YouTubeVideo>,
+    isLoading: Boolean,
+    onVideoClick: (rfm.hillsongptapp.core.network.api.YouTubeVideo) -> Unit = {}
+) {
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    } else if (videos.isEmpty()) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No videos available",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    } else {
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp)
+        ) {
+            items(videos) { video ->
+                YouTubeVideoCard(
+                    video = video,
+                    onClick = { onVideoClick(video) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun YouTubeVideoCard(
+    video: rfm.hillsongptapp.core.network.api.YouTubeVideo,
+    onClick: () -> Unit = {}
+) {
+    Card(
+        modifier = Modifier
+            .width(280.dp)
+            .height(200.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(16.dp),
+        onClick = onClick
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Thumbnail
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(140.dp)
+            ) {
+                rfm.hillsongptapp.util.media.AsyncImage(
+                    imageUrl = video.thumbnailUrl,
+                    contentDescription = video.title,
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                    onFailure = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                        )
+                    }
+                )
+            }
+            
+            // Video info
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp)
+            ) {
+                Text(
+                    text = video.title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                video.description?.let { desc ->
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = desc,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun ScriptureCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -583,6 +716,9 @@ fun HomeScreenPreview() {
                 paddingValues = PaddingValues(16.dp),
                 upcomingEncounters = emptyList(),
                 isLoadingEncounters = false,
+                youtubeVideos = emptyList(),
+                isLoadingVideos = false,
+                onVideoClick = {},
                 onStream = {},
                 onSettings = {},
                 onProfile = {},

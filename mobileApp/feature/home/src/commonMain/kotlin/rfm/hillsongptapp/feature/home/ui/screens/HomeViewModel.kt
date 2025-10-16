@@ -9,6 +9,8 @@ import kotlinx.coroutines.launch
 import rfm.hillsongptapp.core.data.repository.AuthRepository
 import rfm.hillsongptapp.core.network.api.Encounter
 import rfm.hillsongptapp.core.network.api.EncountersApiService
+import rfm.hillsongptapp.core.network.api.YouTubeVideo
+import rfm.hillsongptapp.core.network.api.YouTubeVideosApiService
 import rfm.hillsongptapp.core.network.result.NetworkResult
 import rfm.hillsongptapp.logging.LoggerHelper
 
@@ -20,12 +22,16 @@ data class EncounterWithImageUrl(
 data class HomeUiState(
     val upcomingEncounters: List<EncounterWithImageUrl> = emptyList(),
     val isLoadingEncounters: Boolean = false,
-    val encountersError: String? = null
+    val encountersError: String? = null,
+    val youtubeVideos: List<YouTubeVideo> = emptyList(),
+    val isLoadingVideos: Boolean = false,
+    val videosError: String? = null
 )
 
 class HomeViewModel(
     private val authRepository: AuthRepository,
     private val encountersApiService: EncountersApiService,
+    private val youtubeVideosApiService: YouTubeVideosApiService,
     private val baseUrl: String
 ): ViewModel() {
     
@@ -34,6 +40,7 @@ class HomeViewModel(
     
     init {
         loadUpcomingEncounters()
+        loadYouTubeVideos()
     }
 
     private fun loadUpcomingEncounters() {
@@ -75,6 +82,35 @@ class HomeViewModel(
                 }
                 is NetworkResult.Loading -> {
                     _uiState.value = _uiState.value.copy(isLoadingEncounters = true)
+                }
+            }
+        }
+    }
+    
+    private fun loadYouTubeVideos() {
+        viewModelScope.launch {
+            LoggerHelper.logDebug("Loading YouTube videos", "HomeViewModel")
+            
+            _uiState.value = _uiState.value.copy(isLoadingVideos = true, videosError = null)
+            
+            when (val result = youtubeVideosApiService.getActiveVideos()) {
+                is NetworkResult.Success -> {
+                    LoggerHelper.logDebug("Received ${result.data.size} YouTube videos", "HomeViewModel")
+                    
+                    _uiState.value = _uiState.value.copy(
+                        youtubeVideos = result.data,
+                        isLoadingVideos = false
+                    )
+                }
+                is NetworkResult.Error -> {
+                    LoggerHelper.logDebug("Error loading YouTube videos: ${result.exception.message}", "HomeViewModel")
+                    _uiState.value = _uiState.value.copy(
+                        isLoadingVideos = false,
+                        videosError = result.exception.message
+                    )
+                }
+                is NetworkResult.Loading -> {
+                    _uiState.value = _uiState.value.copy(isLoadingVideos = true)
                 }
             }
         }
