@@ -29,6 +29,7 @@ import rfm.hillsongptapp.feature.giving.GivingScreen
 import rfm.hillsongptapp.feature.feed.FeedScreen
 import rfm.hillsongptapp.feature.events.EventsScreen
 import rfm.hillsongptapp.feature.home.ui.screens.homeScreen
+import rfm.hillsongptapp.feature.videoplayer.ui.VideoPlayerScreen
 import rfm.hillsongptapp.logging.LoggerHelper
 
 @Composable
@@ -57,7 +58,7 @@ fun RootNavigation() {
             events = { EventsScreen() },
             homeScreen = { homeScreen(navController = rootNavController) },
             youtubeVideoScreen = { videoId, videoUrl ->
-                rfm.hillsongptapp.feature.home.ui.screens.YouTubeVideoScreen(
+                VideoPlayerScreen(
                     videoId = videoId,
                     videoUrl = videoUrl,
                     navController = rootNavController

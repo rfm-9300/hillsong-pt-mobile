@@ -1,4 +1,4 @@
-package rfm.hillsongptapp.feature.home.ui.screens
+package rfm.hillsongptapp.feature.videoplayer.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -14,7 +14,7 @@ import androidx.navigation.NavHostController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun YouTubeVideoScreen(
+fun VideoPlayerScreen(
     videoId: Long,
     videoUrl: String,
     navController: NavHostController

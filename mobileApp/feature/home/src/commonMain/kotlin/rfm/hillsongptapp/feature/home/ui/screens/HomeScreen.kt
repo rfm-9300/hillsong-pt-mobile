@@ -45,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -249,10 +250,13 @@ fun WelcomeSection() {
 
 @Composable
 fun UpcomingServiceCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        shape = RoundedCornerShape(16.dp)
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp)),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 2.dp
     ) {
         Box(modifier = Modifier.height(180.dp)) {
             // This would typically be an actual image loaded from a resource or URL
@@ -373,10 +377,11 @@ fun ActionCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
-    Card(
-        modifier = modifier,
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+    Surface(
+        modifier = modifier.clip(RoundedCornerShape(12.dp)),
         shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        tonalElevation = 1.dp,
         onClick = onClick
     ) {
         Column(
@@ -418,10 +423,13 @@ fun UpcomingEncountersCarousel(
             CircularProgressIndicator()
         }
     } else if (encounters.isEmpty()) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            shape = RoundedCornerShape(12.dp)
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp)),
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            tonalElevation = 1.dp
         ) {
             Box(
                 modifier = Modifier
@@ -465,12 +473,14 @@ fun EncounterCard(
         "EncounterCard"
     )
     
-    Card(
+    Surface(
         modifier = Modifier
             .width(280.dp)
-            .height(180.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            .height(180.dp)
+            .clip(RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 2.dp,
         onClick = onClick
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -580,10 +590,13 @@ fun YouTubeVideosCarousel(
             CircularProgressIndicator()
         }
     } else if (videos.isEmpty()) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            shape = RoundedCornerShape(12.dp)
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp)),
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            tonalElevation = 1.dp
         ) {
             Box(
                 modifier = Modifier
@@ -619,12 +632,14 @@ fun YouTubeVideoCard(
     video: rfm.hillsongptapp.core.network.api.YouTubeVideo,
     onClick: () -> Unit = {}
 ) {
-    Card(
+    Surface(
         modifier = Modifier
             .width(280.dp)
-            .height(200.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            .height(200.dp)
+            .clip(RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 2.dp,
         onClick = onClick
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -678,13 +693,13 @@ fun YouTubeVideoCard(
 
 @Composable
 fun ScriptureCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
+        color = MaterialTheme.colorScheme.primaryContainer,
+        tonalElevation = 1.dp
     ) {
         Column(
             modifier = Modifier

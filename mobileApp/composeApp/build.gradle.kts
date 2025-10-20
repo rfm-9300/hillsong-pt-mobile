@@ -72,7 +72,6 @@ kotlin {
 
             implementation(projects.feature.home)
             implementation(projects.feature.auth)
-            implementation(projects.feature.home)
             implementation(projects.feature.profile)
             implementation(projects.feature.stream)
             implementation(projects.feature.ministries)
@@ -82,6 +81,7 @@ kotlin {
             implementation(projects.feature.feed)
             implementation(projects.feature.giving)
             implementation(projects.feature.groups)
+            implementation(projects.feature.videoPlayer)
 
             implementation(compose.runtime)
             implementation(compose.foundation)

@@ -52,6 +52,7 @@ include(":feature:profile")
 include(":feature:events")
 include(":feature:kids")
 include(":feature:prayer")
+include(":feature:videoPlayer")
 
 
 include(":util:logging")

@@ -44,9 +44,11 @@
             <option value="$PROJECT_DIR$/feature/profile" />
             <option value="$PROJECT_DIR$/feature/settings" />
             <option value="$PROJECT_DIR$/feature/stream" />
+            <option value="$PROJECT_DIR$/feature/videoPlayer" />
             <option value="$PROJECT_DIR$/util" />
             <option value="$PROJECT_DIR$/util/logging" />
             <option value="$PROJECT_DIR$/util/media" />
+            <option value="$PROJECT_DIR$/util/platform" />
           </set>
         </option>
       </GradleProjectSettings>
