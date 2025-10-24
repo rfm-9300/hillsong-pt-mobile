@@ -1,6 +1,6 @@
 package rfm.hillsongptapp.feature.home.ui.screens
 
-import androidx.compose.foundation.Image
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,8 +27,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -51,6 +49,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import hillsongptapp.feature.home.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import rfm.hillsongptapp.core.designsystem.BottomBarDestination
@@ -68,7 +68,6 @@ import rfm.hillsongptapp.core.navigation.navigateToFeed
 import rfm.hillsongptapp.core.navigation.navigateToEvents
 import rfm.hillsongptapp.core.navigation.navigateToYouTubeVideo
 import rfm.hillsongptapp.core.network.api.Encounter
-import rfm.hillsongptapp.feature.home.ui.screens.EncounterWithImageUrl
 
 @Composable
 fun homeScreen(
@@ -82,7 +81,7 @@ fun homeScreen(
     Scaffold(
         topBar = {
             HillsongTopAppBar(
-                title = "Hillsong Portugal",
+                title = stringResource(Res.string.app_name),
                 onMenuClick = { showMenu = true }
             )
             
@@ -91,21 +90,21 @@ fun homeScreen(
                 onDismissRequest = { showMenu = false }
             ) {
                 DropdownMenuItem(
-                    text = { Text("Settings") },
+                    text = { Text(stringResource(Res.string.menu_settings)) },
                     onClick = {
                         showMenu = false
                         navController.navigateToSettings()
                     }
                 )
                 DropdownMenuItem(
-                    text = { Text("About Us") },
+                    text = { Text(stringResource(Res.string.menu_about_us)) },
                     onClick = { 
                         showMenu = false
                         // Handle about us click
                     }
                 )
                 DropdownMenuItem(
-                    text = { Text("Contact") },
+                    text = { Text(stringResource(Res.string.menu_contact)) },
                     onClick = { 
                         showMenu = false
                         // Handle contact click
@@ -175,7 +174,7 @@ fun HomeContent(
         
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Watch Our Videos",
+            text = stringResource(Res.string.watch_our_videos),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
@@ -187,7 +186,7 @@ fun HomeContent(
         
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Upcoming Encounters",
+            text = stringResource(Res.string.upcoming_encounters),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
@@ -199,7 +198,7 @@ fun HomeContent(
         
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Explore Modules",
+            text = stringResource(Res.string.explore_modules),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
@@ -216,7 +215,7 @@ fun HomeContent(
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Daily Scripture",
+            text = stringResource(Res.string.daily_scripture),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
@@ -231,17 +230,17 @@ fun WelcomeSection() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Welcome to",
+            text = stringResource(Res.string.welcome_to),
             style = MaterialTheme.typography.titleMedium
         )
         Text(
-            text = "Hillsong Portugal",
+            text = stringResource(Res.string.app_name),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "We're a church that believes in Jesus and loves God and people",
+            text = stringResource(Res.string.welcome_message),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -296,12 +295,12 @@ fun UpcomingServiceCard() {
                 verticalArrangement = Arrangement.Bottom
             ) {
                 Text(
-                    text = "Next Sunday Service",
+                    text = stringResource(Res.string.next_sunday_service),
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.White
                 )
                 Text(
-                    text = "Join us this Sunday at 10:00 AM",
+                    text = stringResource(Res.string.join_us_sunday),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -318,7 +317,7 @@ fun UpcomingServiceCard() {
                     )
                     Spacer(modifier = Modifier.padding(horizontal = 4.dp))
                     Text(
-                        text = "Sunday, 10:00 AM • Centro Cultural de Belém",
+                        text = stringResource(Res.string.service_time_location),
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White
                     )
@@ -341,15 +340,15 @@ fun ModuleActionCards(
     onEvents: () -> Unit = {}
 ) {
     val modules = listOf(
-        Triple("Stream", Icons.Default.Settings, onStream),
-        Triple("Settings", Icons.Default.Settings, onSettings),
-        Triple("Profile", Icons.Default.AccountCircle, onProfile),
-        Triple("Ministries", Icons.Default.AccountCircle, onMinistries),
-        Triple("Kids", Icons.Default.Person, onKids),
-        Triple("Groups", Icons.Default.Person, onGroups),
-        Triple("Giving", Icons.Default.Clear, onGiving),
-        Triple("Feed", Icons.Default.Create, onFeed),
-        Triple("Events", Icons.Default.ShoppingCart, onEvents),
+        Triple(stringResource(Res.string.module_stream), Icons.Default.Settings, onStream),
+        Triple(stringResource(Res.string.module_settings), Icons.Default.Settings, onSettings),
+        Triple(stringResource(Res.string.module_profile), Icons.Default.AccountCircle, onProfile),
+        Triple(stringResource(Res.string.module_ministries), Icons.Default.AccountCircle, onMinistries),
+        Triple(stringResource(Res.string.module_kids), Icons.Default.Person, onKids),
+        Triple(stringResource(Res.string.module_groups), Icons.Default.Person, onGroups),
+        Triple(stringResource(Res.string.module_giving), Icons.Default.Clear, onGiving),
+        Triple(stringResource(Res.string.module_feed), Icons.Default.Create, onFeed),
+        Triple(stringResource(Res.string.module_events), Icons.Default.ShoppingCart, onEvents),
     )
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         for (row in modules.chunked(3)) {
@@ -439,7 +438,7 @@ fun UpcomingEncountersCarousel(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No upcoming encounters",
+                    text = stringResource(Res.string.no_upcoming_encounters),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -564,7 +563,7 @@ fun EncounterCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Organized by ${encounter.organizerName}",
+                        text = stringResource(Res.string.organized_by, encounter.organizerName),
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.White
                     )
@@ -606,7 +605,7 @@ fun YouTubeVideosCarousel(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No videos available",
+                    text = stringResource(Res.string.no_videos_available),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -707,13 +706,13 @@ fun ScriptureCard() {
                 .padding(20.dp)
         ) {
             Text(
-                text = "For I know the plans I have for you, declares the LORD, plans to prosper you and not to harm you, plans to give you hope and a future.",
+                text = stringResource(Res.string.scripture_verse),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Jeremiah 29:11",
+                text = stringResource(Res.string.scripture_reference),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary

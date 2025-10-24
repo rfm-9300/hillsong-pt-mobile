@@ -45,6 +45,9 @@ class SecurityConfig(
                     .requestMatchers("/api/health").permitAll()
                     .requestMatchers("/actuator/**").permitAll()
                     .requestMatchers("/error").permitAll()
+                    // Public home screen endpoints
+                    .requestMatchers("/api/youtube-videos/active").permitAll()
+                    .requestMatchers("/api/encounters/upcoming").permitAll()
                     // Admin endpoints (handled by custom token authentication)
                     .requestMatchers("/api/admin/**").permitAll()
                     // All other endpoints require authentication

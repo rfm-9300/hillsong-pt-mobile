@@ -23,7 +23,6 @@ import rfm.com.util.getCurrentUserId
  */
 @RestController
 @RequestMapping("/api/encounters")
-@PreAuthorize("hasRole('USER')")
 class EncounterController(
     private val encounterService: EncounterService
 ) {

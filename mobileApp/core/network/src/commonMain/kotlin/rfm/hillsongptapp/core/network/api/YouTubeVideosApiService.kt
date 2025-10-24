@@ -41,7 +41,7 @@ class YouTubeVideosApiServiceImpl(
             when (result) {
                 is NetworkResult.Success -> {
                     result.data.data?.let { NetworkResult.Success(it) }
-                        ?: NetworkResult.Error(Exception("No data in response") as NetworkException)
+                        ?: NetworkResult.Error(NetworkException.UnknownError("No data in response"))
                 }
                 is NetworkResult.Error -> result
                 is NetworkResult.Loading -> result

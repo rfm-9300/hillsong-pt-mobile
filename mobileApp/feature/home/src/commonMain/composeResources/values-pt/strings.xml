@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Top Bar -->
+    <string name="app_name">Hillsong Portugal</string>
+    
+    <!-- Menu Items -->
+    <string name="menu_settings">Definições</string>
+    <string name="menu_about_us">Sobre Nós</string>
+    <string name="menu_contact">Contacto</string>
+    
+    <!-- Welcome Section -->
+    <string name="welcome_to">Bem-vindo à</string>
+    <string name="welcome_message">Somos uma igreja que acredita em Jesus e ama a Deus e as pessoas</string>
+    
+    <!-- Upcoming Service Card -->
+    <string name="next_sunday_service">Próximo Culto de Domingo</string>
+    <string name="join_us_sunday">Junte-se a nós este domingo às 10:00</string>
+    <string name="service_time_location">Domingo, 10:00 • Centro Cultural de Belém</string>
+    
+    <!-- Section Titles -->
+    <string name="watch_our_videos">Assista aos Nossos Vídeos</string>
+    <string name="upcoming_encounters">Próximos Encontros</string>
+    <string name="explore_modules">Explorar Módulos</string>
+    <string name="daily_scripture">Escritura Diária</string>
+    
+    <!-- Module Names -->
+    <string name="module_stream">Transmissão</string>
+    <string name="module_settings">Definições</string>
+    <string name="module_profile">Perfil</string>
+    <string name="module_ministries">Ministérios</string>
+    <string name="module_kids">Crianças</string>
+    <string name="module_groups">Grupos</string>
+    <string name="module_giving">Ofertas</string>
+    <string name="module_feed">Feed</string>
+    <string name="module_events">Eventos</string>
+    
+    <!-- Empty States -->
+    <string name="no_upcoming_encounters">Sem encontros próximos</string>
+    <string name="no_videos_available">Sem vídeos disponíveis</string>
+    
+    <!-- Encounter Card -->
+    <string name="organized_by">Organizado por %1$s</string>
+    
+    <!-- Scripture Card -->
+    <string name="scripture_verse">Porque eu sei os planos que tenho para vocês, diz o SENHOR, planos de fazê-los prosperar e não de causar dano, planos de dar-lhes esperança e um futuro.</string>
+    <string name="scripture_reference">Jeremias 29:11</string>
+    
+    <!-- Loading States -->
+    <string name="loading">A carregar...</string>
+    
+    <!-- General -->
+    <string name="back">Voltar</string>
+</resources>

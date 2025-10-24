@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Top Bar -->
+    <string name="app_name">Hillsong Portugal</string>
+    
+    <!-- Menu Items -->
+    <string name="menu_settings">Settings</string>
+    <string name="menu_about_us">About Us</string>
+    <string name="menu_contact">Contact</string>
+    
+    <!-- Welcome Section -->
+    <string name="welcome_to">Welcome to</string>
+    <string name="welcome_message">We\'re a church that believes in Jesus and loves God and people</string>
+    
+    <!-- Upcoming Service Card -->
+    <string name="next_sunday_service">Next Sunday Service</string>
+    <string name="join_us_sunday">Join us this Sunday at 10:00 AM</string>
+    <string name="service_time_location">Sunday, 10:00 AM • Centro Cultural de Belém</string>
+    
+    <!-- Section Titles -->
+    <string name="watch_our_videos">Watch Our Videos</string>
+    <string name="upcoming_encounters">Upcoming Encounters</string>
+    <string name="explore_modules">Explore Modules</string>
+    <string name="daily_scripture">Daily Scripture</string>
+    
+    <!-- Module Names -->
+    <string name="module_stream">Stream</string>
+    <string name="module_settings">Settings</string>
+    <string name="module_profile">Profile</string>
+    <string name="module_ministries">Ministries</string>
+    <string name="module_kids">Kids</string>
+    <string name="module_groups">Groups</string>
+    <string name="module_giving">Giving</string>
+    <string name="module_feed">Feed</string>
+    <string name="module_events">Events</string>
+    
+    <!-- Empty States -->
+    <string name="no_upcoming_encounters">No upcoming encounters</string>
+    <string name="no_videos_available">No videos available</string>
+    
+    <!-- Encounter Card -->
+    <string name="organized_by">Organized by %1$s</string>
+    
+    <!-- Scripture Card -->
+    <string name="scripture_verse">For I know the plans I have for you, declares the LORD, plans to prosper you and not to harm you, plans to give you hope and a future.</string>
+    <string name="scripture_reference">Jeremiah 29:11</string>
+    
+    <!-- Loading States -->
+    <string name="loading">Loading...</string>
+    
+    <!-- General -->
+    <string name="back">Back</string>
+</resources>

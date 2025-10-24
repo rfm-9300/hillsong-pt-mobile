@@ -53,7 +53,7 @@ include(":feature:events")
 include(":feature:kids")
 include(":feature:prayer")
 include(":feature:videoPlayer")
-
+include(":feature:amadeus")
 
 include(":util:logging")
 include(":util:media")
