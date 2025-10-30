@@ -10,3 +10,8 @@ internal val Project.libs: VersionCatalog
         return project.extensions.getByType<VersionCatalogsExtension>()
             .named("libs")
     }
+
+internal fun Project.getVersionCatalog(): VersionCatalog {
+    return project.extensions.getByType<VersionCatalogsExtension>()
+        .named("libs")
+}

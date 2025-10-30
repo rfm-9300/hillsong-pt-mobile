@@ -1,21 +1,8 @@
-
 plugins {
-    id("kmp-library-plugin")
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
+    id("kmp-library-compose-plugin")
 }
-kotlin{
 
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "feature.amadeus"
-            isStatic = true
-        }
-    }
+kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.kermit)
@@ -32,7 +19,6 @@ kotlin{
             implementation(libs.ktor.client.darwin)
         }
     }
-
 }
 
 android {

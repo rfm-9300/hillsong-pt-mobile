@@ -1,9 +1,11 @@
 package ext
 
 import config.ConfigurationKeys
+import org.gradle.api.Project
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 internal fun KotlinMultiplatformExtension.configurePlatformTargets(
+    project: Project,
     isIosEnabled: Boolean,
 ) {
     if (isIosEnabled) {
@@ -13,7 +15,7 @@ internal fun KotlinMultiplatformExtension.configurePlatformTargets(
             iosSimulatorArm64(),
         ).forEach { iosTarget ->
             iosTarget.binaries.framework {
-                baseName = ConfigurationKeys.APP_NAME
+                baseName = project.name.replace("-", ".")
                 isStatic = true
             }
         }

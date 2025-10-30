@@ -15,5 +15,5 @@ dependencies {
     implementation(libs.gradle)
     implementation(libs.com.google.devtools.ksp.gradle.plugin)
     implementation(libs.popcorn.guineapig)
-
+    implementation(libs.compose.gradlePlugin)
 }
