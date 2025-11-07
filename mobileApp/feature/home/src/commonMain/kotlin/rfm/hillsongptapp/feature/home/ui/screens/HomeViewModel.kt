@@ -2,6 +2,7 @@ package rfm.hillsongptapp.feature.home.ui.screens
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,7 +26,8 @@ data class HomeUiState(
     val encountersError: String? = null,
     val youtubeVideos: List<YouTubeVideo> = emptyList(),
     val isLoadingVideos: Boolean = false,
-    val videosError: String? = null
+    val videosError: String? = null,
+    val isRefreshing: Boolean = false
 )
 
 class HomeViewModel(
@@ -90,13 +92,13 @@ class HomeViewModel(
     private fun loadYouTubeVideos() {
         viewModelScope.launch {
             LoggerHelper.logDebug("Loading YouTube videos", "HomeViewModel")
-            
+
             _uiState.value = _uiState.value.copy(isLoadingVideos = true, videosError = null)
-            
+
             when (val result = youtubeVideosApiService.getActiveVideos()) {
                 is NetworkResult.Success -> {
                     LoggerHelper.logDebug("Received ${result.data.size} YouTube videos", "HomeViewModel")
-                    
+
                     _uiState.value = _uiState.value.copy(
                         youtubeVideos = result.data,
                         isLoadingVideos = false
@@ -113,6 +115,23 @@ class HomeViewModel(
                     _uiState.value = _uiState.value.copy(isLoadingVideos = true)
                 }
             }
+        }
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            LoggerHelper.logDebug("Refreshing home screen data", "HomeViewModel")
+            _uiState.value = _uiState.value.copy(isRefreshing = true)
+
+            // Launch both API calls concurrently
+            val encountersDeferred = async { loadUpcomingEncounters() }
+            val videosDeferred = async { loadYouTubeVideos() }
+
+            // Wait for both to complete
+            encountersDeferred.await()
+            videosDeferred.await()
+
+            _uiState.value = _uiState.value.copy(isRefreshing = false)
         }
     }
 }

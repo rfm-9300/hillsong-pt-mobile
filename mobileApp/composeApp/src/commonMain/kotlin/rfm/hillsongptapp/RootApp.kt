@@ -50,7 +50,7 @@ fun RootNavigation() {
         homeGraph(
             stream = { StreamScreen() },
             settings = { SettingsScreen() },
-            profile = { ProfileScreen() },
+            profile = { ProfileScreen(navController = rootNavController) },
             ministries = { MinistriesScreen() },
             kids = { KidsScreen(navController = rootNavController) },
             groups = { GroupsScreen() },

@@ -18,8 +18,9 @@
     <string name="service_time_location">Sunday, 10:00 AM • Centro Cultural de Belém</string>
     
     <!-- Section Titles -->
-    <string name="watch_our_videos">Watch Our Videos</string>
+    <string name="watch_our_videos">Latest Messages</string>
     <string name="upcoming_encounters">Upcoming Encounters</string>
+    <string name="find_connection_group">Find a Connection Group</string>
     <string name="explore_modules">Explore Modules</string>
     <string name="daily_scripture">Daily Scripture</string>
     
@@ -40,6 +41,11 @@
     
     <!-- Encounter Card -->
     <string name="organized_by">Organized by %1$s</string>
+
+    <!-- Connection Group Section -->
+    <string name="connection_group_title">Connect. Grow. Belong.</string>
+    <string name="connection_group_description">Life is better together. Join a small group and experience authentic community where you can grow in faith and build meaningful relationships.</string>
+    <string name="connection_group_cta">Explore Groups</string>
     
     <!-- Scripture Card -->
     <string name="scripture_verse">For I know the plans I have for you, declares the LORD, plans to prosper you and not to harm you, plans to give you hope and a future.</string>

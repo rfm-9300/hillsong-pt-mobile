@@ -20,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.AccountCircle
@@ -27,14 +28,25 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -48,13 +60,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.CircleShape
 import androidx.navigation.NavHostController
 import hillsongptapp.feature.home.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
-import rfm.hillsongptapp.core.designsystem.BottomBarDestination
-import rfm.hillsongptapp.core.designsystem.HillsongBottomAppBar
 import rfm.hillsongptapp.core.designsystem.HillsongTopAppBar
 import rfm.hillsongptapp.core.designsystem.theme.AppTheme
 import rfm.hillsongptapp.core.navigation.navigateToSettings
@@ -69,56 +80,261 @@ import rfm.hillsongptapp.core.navigation.navigateToEvents
 import rfm.hillsongptapp.core.navigation.navigateToYouTubeVideo
 import rfm.hillsongptapp.core.network.api.Encounter
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun homeScreen(
     navController: NavHostController,
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var currentRoute by remember { mutableStateOf(BottomBarDestination.Home.route) }
     var showMenu by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             HillsongTopAppBar(
                 title = stringResource(Res.string.app_name),
-                onMenuClick = { showMenu = true }
+                onMenuClick = { showMenu = true },
+                actions = {
+                    // TODO: Change icon based on authentication state
+                    // When implementing:
+                    // 1. Add AuthRepository to HomeViewModel
+                    // 2. Collect authState in viewModel: authRepository.getAuthStateFlow()
+                    // 3. Expose isAuthenticated in UI state
+                    // 4. Use Person icon for unauthenticated, AccountCircle for authenticated
+                    IconButton(onClick = { navController.navigateToProfile() }) {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle, // Change to Person when unauthenticated
+                            contentDescription = "Profile",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                }
             )
             
             DropdownMenu(
                 expanded = showMenu,
-                onDismissRequest = { showMenu = false }
+                onDismissRequest = { showMenu = false },
+                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
             ) {
+                // Main modules section
                 DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.menu_settings)) },
+                    text = {
+                        Text(
+                            stringResource(Res.string.module_stream),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    onClick = {
+                        showMenu = false
+                        navController.navigateToStream()
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(Res.string.module_profile),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.AccountCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    onClick = {
+                        showMenu = false
+                        navController.navigateToProfile()
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(Res.string.module_ministries),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Favorite,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    onClick = {
+                        showMenu = false
+                        navController.navigateToMinistries()
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(Res.string.module_kids),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Face,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    onClick = {
+                        showMenu = false
+                        navController.navigateToKids()
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(Res.string.module_groups),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    onClick = {
+                        showMenu = false
+                        navController.navigateToGroups()
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(Res.string.module_giving),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Favorite,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    onClick = {
+                        showMenu = false
+                        navController.navigateToGiving()
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(Res.string.module_feed),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Create,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    onClick = {
+                        showMenu = false
+                        navController.navigateToFeed()
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(Res.string.module_events),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.DateRange,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    onClick = {
+                        showMenu = false
+                        navController.navigateToEvents()
+                    }
+                )
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+
+                // Settings section
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(Res.string.menu_settings),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                    },
                     onClick = {
                         showMenu = false
                         navController.navigateToSettings()
                     }
                 )
                 DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.menu_about_us)) },
-                    onClick = { 
+                    text = {
+                        Text(
+                            stringResource(Res.string.menu_about_us),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                    },
+                    onClick = {
                         showMenu = false
                         // Handle about us click
                     }
                 )
                 DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.menu_contact)) },
-                    onClick = { 
+                    text = {
+                        Text(
+                            stringResource(Res.string.menu_contact),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Email,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                    },
+                    onClick = {
                         showMenu = false
                         // Handle contact click
                     }
                 )
             }
-        },
-        bottomBar = {
-            HillsongBottomAppBar(
-                currentRoute = currentRoute,
-                onItemClick = { route ->
-                    currentRoute = route
-                }
-            )
         }
     ) { paddingValues ->
         HomeContent(
@@ -127,22 +343,18 @@ fun homeScreen(
             isLoadingEncounters = uiState.isLoadingEncounters,
             youtubeVideos = uiState.youtubeVideos,
             isLoadingVideos = uiState.isLoadingVideos,
+            isRefreshing = uiState.isRefreshing,
+            onRefresh = { viewModel.refresh() },
             onVideoClick = { video ->
                 navController.navigateToYouTubeVideo(video.id, video.videoUrl)
             },
-            onStream = { navController.navigateToStream() },
-            onSettings = { navController.navigateToSettings() },
-            onProfile = { navController.navigateToProfile() },
-            onMinistries = { navController.navigateToMinistries() },
-            onKids = { navController.navigateToKids() },
             onGroups = { navController.navigateToGroups() },
-            onGiving = { navController.navigateToGiving() },
-            onFeed = { navController.navigateToFeed() },
             onEvents = { navController.navigateToEvents() }
         )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeContent(
     paddingValues: PaddingValues,
@@ -150,76 +362,70 @@ fun HomeContent(
     isLoadingEncounters: Boolean = false,
     youtubeVideos: List<rfm.hillsongptapp.core.network.api.YouTubeVideo> = emptyList(),
     isLoadingVideos: Boolean = false,
+    isRefreshing: Boolean = false,
+    onRefresh: () -> Unit = {},
     onVideoClick: (rfm.hillsongptapp.core.network.api.YouTubeVideo) -> Unit = {},
-    onStream: () -> Unit = {},
-    onSettings: () -> Unit = {},
-    onProfile: () -> Unit = {},
-    onMinistries: () -> Unit = {},
-    onKids: () -> Unit = {},
     onGroups: () -> Unit = {},
-    onGiving: () -> Unit = {},
-    onFeed: () -> Unit = {},
     onEvents: () -> Unit = {}
 ) {
-    Column(
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        WelcomeSection()
-        UpcomingServiceCard()
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = stringResource(Res.string.watch_our_videos),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
-        YouTubeVideosCarousel(
-            videos = youtubeVideos,
-            isLoading = isLoadingVideos,
-            onVideoClick = onVideoClick
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = stringResource(Res.string.upcoming_encounters),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
-        UpcomingEncountersCarousel(
-            encounters = upcomingEncounters,
-            isLoading = isLoadingEncounters,
-            onEncounterClick = { onEvents() }
-        )
-        
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = stringResource(Res.string.explore_modules),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
-        ModuleActionCards(
-            onStream = onStream,
-            onSettings = onSettings,
-            onProfile = onProfile,
-            onMinistries = onMinistries,
-            onKids = onKids,
-            onGroups = onGroups,
-            onGiving = onGiving,
-            onFeed = onFeed,
-            onEvents = onEvents
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = stringResource(Res.string.daily_scripture),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
-        ScriptureCard()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            WelcomeSection()
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(Res.string.watch_our_videos),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+            YouTubeVideosCarousel(
+                videos = youtubeVideos,
+                isLoading = isLoadingVideos,
+                onVideoClick = onVideoClick
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(Res.string.upcoming_encounters),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+            UpcomingEncountersCarousel(
+                encounters = upcomingEncounters,
+                isLoading = isLoadingEncounters,
+                onEncounterClick = { onEvents() }
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = stringResource(Res.string.find_connection_group),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+            ConnectionGroupCard(
+                onClick = onGroups
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = stringResource(Res.string.daily_scripture),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+            ScriptureCard()
+        }
     }
 }
 
@@ -239,133 +445,7 @@ fun WelcomeSection() {
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = stringResource(Res.string.welcome_message),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
 
-@Composable
-fun UpcomingServiceCard() {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp)),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp
-    ) {
-        Box(modifier = Modifier.height(180.dp)) {
-            // This would typically be an actual image loaded from a resource or URL
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.primary)
-            ) {
-                // If you have an actual image resource:
-                // Image(
-                //     painter = painterResource("drawable/service_image.png"),
-                //     contentDescription = "Sunday Service",
-                //     contentScale = ContentScale.Crop,
-                //     modifier = Modifier.fillMaxSize()
-                // )
-            }
-            
-            // Gradient overlay to ensure text readability
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.Black.copy(alpha = 0.7f)
-                            )
-                        )
-                    )
-            )
-            
-            // Content overlay
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Bottom
-            ) {
-                Text(
-                    text = stringResource(Res.string.next_sunday_service),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.White
-                )
-                Text(
-                    text = stringResource(Res.string.join_us_sunday),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.DateRange,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.padding(horizontal = 4.dp))
-                    Text(
-                        text = stringResource(Res.string.service_time_location),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ModuleActionCards(
-    onStream: () -> Unit = {},
-    onSettings: () -> Unit = {},
-    onProfile: () -> Unit = {},
-    onMinistries: () -> Unit = {},
-    onKids: () -> Unit = {},
-    onGroups: () -> Unit = {},
-    onGiving: () -> Unit = {},
-    onFeed: () -> Unit = {},
-    onEvents: () -> Unit = {}
-) {
-    val modules = listOf(
-        Triple(stringResource(Res.string.module_stream), Icons.Default.Settings, onStream),
-        Triple(stringResource(Res.string.module_settings), Icons.Default.Settings, onSettings),
-        Triple(stringResource(Res.string.module_profile), Icons.Default.AccountCircle, onProfile),
-        Triple(stringResource(Res.string.module_ministries), Icons.Default.AccountCircle, onMinistries),
-        Triple(stringResource(Res.string.module_kids), Icons.Default.Person, onKids),
-        Triple(stringResource(Res.string.module_groups), Icons.Default.Person, onGroups),
-        Triple(stringResource(Res.string.module_giving), Icons.Default.Clear, onGiving),
-        Triple(stringResource(Res.string.module_feed), Icons.Default.Create, onFeed),
-        Triple(stringResource(Res.string.module_events), Icons.Default.ShoppingCart, onEvents),
-    )
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        for (row in modules.chunked(3)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                for ((title, icon, onClick) in row) {
-                    ActionCard(
-                        icon = icon,
-                        title = title,
-                        modifier = Modifier.weight(1f),
-                        onClick = onClick
-                    )
-                }
-                repeat(3 - row.size) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-            }
-        }
     }
 }
 
@@ -691,6 +771,134 @@ fun YouTubeVideoCard(
 }
 
 @Composable
+fun ConnectionGroupCard(
+    onClick: () -> Unit = {}
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp)),
+        shape = RoundedCornerShape(20.dp),
+        tonalElevation = 4.dp,
+        onClick = onClick
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(240.dp)
+        ) {
+            // Beautiful gradient background with decorative pattern
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.95f),
+                                MaterialTheme.colorScheme.primary
+                            )
+                        )
+                    )
+            ) {
+                // Decorative circles for visual interest
+                Box(
+                    modifier = Modifier
+                        .size(150.dp)
+                        .align(Alignment.TopEnd)
+                        .background(
+                            color = Color.White.copy(alpha = 0.1f),
+                            shape = CircleShape
+                        )
+                )
+
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .align(Alignment.BottomStart)
+                        .background(
+                            color = Color.White.copy(alpha = 0.08f),
+                            shape = CircleShape
+                        )
+                )
+            }
+
+            // Content
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Icon with circle background
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .background(
+                            color = Color.White.copy(alpha = 0.2f),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        modifier = Modifier.size(28.dp),
+                        tint = Color.White
+                    )
+                }
+
+                // Text content
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(Res.string.connection_group_title),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = stringResource(Res.string.connection_group_description),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.95f),
+                        maxLines = 3
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Call to action button
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.White.copy(alpha = 0.25f))
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.connection_group_cta),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun ScriptureCard() {
     Surface(
         modifier = Modifier
@@ -732,15 +940,10 @@ fun HomeScreenPreview() {
                 isLoadingEncounters = false,
                 youtubeVideos = emptyList(),
                 isLoadingVideos = false,
+                isRefreshing = false,
+                onRefresh = {},
                 onVideoClick = {},
-                onStream = {},
-                onSettings = {},
-                onProfile = {},
-                onMinistries = {},
-                onKids = {},
                 onGroups = {},
-                onGiving = {},
-                onFeed = {},
                 onEvents = {}
             )
         }

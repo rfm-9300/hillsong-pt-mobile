@@ -23,6 +23,18 @@ class JwtAuthenticationFilter(
     // Master token for testing - bypasses all authentication
     // WARNING: Only use in development/testing environments!
     private val masterToken = System.getenv("MASTER_TEST_TOKEN") ?: "MASTER_TEST_TOKEN_CHANGE_ME"
+    
+    // Public endpoints that should skip JWT processing
+    private val publicEndpoints = listOf(
+        "/api/auth/",
+        "/api/files/",
+        "/api/health",
+        "/actuator/",
+        "/error",
+        "/api/youtube-videos/active",
+        "/api/encounters/upcoming",
+        "/api/admin/"
+    )
 
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -30,7 +42,15 @@ class JwtAuthenticationFilter(
         filterChain: FilterChain
     ) {
         try {
-            logger.info("🔍 JWT Filter executing for: ${request.method} ${request.requestURI}")
+            val requestURI = request.requestURI
+            logger.info("🔍 JWT Filter executing for: ${request.method} $requestURI")
+            
+            // Skip JWT processing for public endpoints
+            if (isPublicEndpoint(requestURI)) {
+                logger.info("🚫 Skipping JWT processing for public endpoint: $requestURI")
+                filterChain.doFilter(request, response)
+                return
+            }
             
             val jwt = getJwtFromRequest(request)
             
@@ -93,6 +113,15 @@ class JwtAuthenticationFilter(
         }
         
         filterChain.doFilter(request, response)
+    }
+
+    /**
+     * Check if the request URI is a public endpoint that should skip JWT processing
+     */
+    private fun isPublicEndpoint(requestURI: String): Boolean {
+        return publicEndpoints.any { endpoint ->
+            requestURI.startsWith(endpoint) || requestURI == endpoint.trimEnd('/')
+        }
     }
 
     /**

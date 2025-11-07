@@ -1,6 +1,9 @@
 package rfm.hillsongptapp.core.navigation
 
 import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -33,7 +36,32 @@ fun NavGraphBuilder.homeGraph(
         composable<HomeNav.SettingsScreen> {
             settings()
         }
-        composable<HomeNav.ProfileScreen> {
+        composable<HomeNav.ProfileScreen>(
+            enterTransition = {
+                slideInVertically(
+                    animationSpec = tween(300),
+                    initialOffsetY = { fullHeight -> fullHeight }
+                )
+            },
+            exitTransition = {
+                slideOutVertically(
+                    animationSpec = tween(300),
+                    targetOffsetY = { fullHeight -> fullHeight }
+                )
+            },
+            popEnterTransition = {
+                slideInVertically(
+                    animationSpec = tween(300),
+                    initialOffsetY = { fullHeight -> fullHeight }
+                )
+            },
+            popExitTransition = {
+                slideOutVertically(
+                    animationSpec = tween(300),
+                    targetOffsetY = { fullHeight -> fullHeight }
+                )
+            }
+        ) {
             profile()
         }
         composable<HomeNav.MinistriesScreen> {

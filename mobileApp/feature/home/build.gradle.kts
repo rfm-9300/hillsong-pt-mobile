@@ -11,6 +11,8 @@ kotlin {
             implementation(projects.core.designsystem)
             implementation(projects.core.data)
 
+            implementation(projects.feature.profile)
+
             implementation(projects.util.media)
             implementation(projects.util.logging)
             implementation(projects.util.platform)

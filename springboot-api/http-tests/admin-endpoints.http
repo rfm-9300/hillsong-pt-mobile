@@ -14,5 +14,3 @@ Authorization: {{adminToken}}
 
 
 
-
-GET http://localhost:8080/api/admin/token

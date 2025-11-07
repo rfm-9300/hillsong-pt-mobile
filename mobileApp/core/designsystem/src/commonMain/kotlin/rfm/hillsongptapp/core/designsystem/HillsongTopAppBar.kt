@@ -1,6 +1,7 @@
 package rfm.hillsongptapp.core.designsystem
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -16,24 +17,37 @@ import androidx.compose.ui.text.style.TextAlign
 @Composable
 fun HillsongTopAppBar(
     title: String,
-    onMenuClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showBackButton: Boolean = false,
+    onBackClick: () -> Unit = {},
+    onMenuClick: () -> Unit = {},
+    actions: @Composable () -> Unit = {}
 ) {
     TopAppBar(
-        title = { 
+        title = {
             Text(
                 text = title,
                 textAlign = TextAlign.Center
-            ) 
+            )
         },
         navigationIcon = {
-            IconButton(onClick = onMenuClick) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = "Open Menu"
-                )
+            if (showBackButton) {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+            } else {
+                IconButton(onClick = onMenuClick) {
+                    Icon(
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = "Open Menu"
+                    )
+                }
             }
         },
+        actions = { actions() },
         modifier = modifier
     )
 }
