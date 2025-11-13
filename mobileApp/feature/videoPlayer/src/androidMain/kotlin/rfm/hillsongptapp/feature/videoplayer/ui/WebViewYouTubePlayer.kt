@@ -172,7 +172,7 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerReady(event) {
     console.log('✅ YouTube Player Ready - Loading video: $videoId');
-    player.loadVideoById('$videoId', 0);
+    ${if (autoplay) "player.loadVideoById('$videoId', 0);" else "player.cueVideoById('$videoId', 0);"}
 }
 
 function onStateChange(event) {
