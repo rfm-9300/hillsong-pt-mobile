@@ -111,8 +111,8 @@ fun WebViewYouTubePlayer(
 }
 
 /**
- * Creates YouTube Player HTML using direct iframe embed
- * This is simpler and more reliable than the iframe API
+ * Creates YouTube Player HTML using the YouTube iframe API
+ * Based on io.github.ilyapavlovskii implementation - creates player first, then loads video
  */
 private fun createYouTubePlayerHTML(
     videoId: String,
@@ -121,38 +121,67 @@ private fun createYouTubePlayerHTML(
     return """
 <!DOCTYPE html>
 <html>
+<style type="text/css">
+    html, body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: #000000;
+        overflow: hidden;
+        position: fixed;
+    }
+</style>
+
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <style type="text/css">
-        * {
-            margin: 0;
-            padding: 0;
-            border: 0;
-        }
-        html, body {
-            height: 100%;
-            width: 100%;
-            background-color: #000000;
-            overflow: hidden;
-            position: fixed;
-        }
-        iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-    </style>
+    <script defer src="https://www.youtube.com/iframe_api"></script>
 </head>
+
 <body>
-    <iframe
-        src="https://www.youtube-nocookie.com/embed/$videoId?autoplay=${if (autoplay) 1 else 0}&controls=1&rel=0&playsinline=1&fs=1&modestbranding=1&enablejsapi=1"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen>
-    </iframe>
+    <div id="player"></div>
 </body>
+
+<script type="text/javascript">
+var player;
+
+function onYouTubeIframeAPIReady() {
+    console.log('YouTube IFrame API Ready');
+
+    player = new YT.Player('player', {
+        height: '100%',
+        width: '100%',
+        videoId: '',
+        playerVars: {
+            'autoplay': ${if (autoplay) 1 else 0},
+            'controls': 1,
+            'rel': 0,
+            'playsinline': 1,
+            'fs': 1,
+            'modestbranding': 1,
+            'enablejsapi': 1
+        },
+        events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onStateChange,
+            'onError': onPlayerError
+        }
+    });
+}
+
+function onPlayerReady(event) {
+    console.log('✅ YouTube Player Ready - Loading video: $videoId');
+    player.loadVideoById('$videoId', 0);
+}
+
+function onStateChange(event) {
+    console.log('Player State Changed: ' + event.data);
+}
+
+function onPlayerError(event) {
+    console.log('❌ YouTube Player Error: ' + event.data);
+}
+</script>
 </html>
     """.trimIndent()
 }
