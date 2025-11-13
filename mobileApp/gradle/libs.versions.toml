@@ -25,6 +25,9 @@ uiTooling = "1.8.2"
 popcorn_guineapig = "3.1.2"
 googleid = "1.1.1"
 qrose = "1.0.1"
+media3 = "1.5.0"
+youtubePlayer = "12.1.1"
+youtubePlayerKmp = "2024.02.25"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
@@ -76,6 +79,17 @@ popcorn_guineapig = { group = "io.github.codandotv", name = "popcornguineapig", 
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
 qrose = { group = "io.github.alexzhirkevich", name = "qrose", version.ref = "qrose" }
 backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler" }
+
+# Media3 (ExoPlayer) for video playback
+androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
+androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
+androidx-media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3" }
+
+# YouTube Player for Android
+youtube-player = { group = "com.pierfrancescosoffritti.androidyoutubeplayer", name = "core", version.ref = "youtubePlayer" }
+
+# YouTube Player KMP (Kotlin Multiplatform)
+youtube-player-kmp = { group = "io.github.ilyapavlovskii", name = "youtubeplayer-compose", version.ref = "youtubePlayerKmp" }
 
 
 

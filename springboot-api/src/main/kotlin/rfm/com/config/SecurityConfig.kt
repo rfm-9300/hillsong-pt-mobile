@@ -46,7 +46,7 @@ class SecurityConfig(
                     .requestMatchers("/actuator/**").permitAll()
                     .requestMatchers("/error").permitAll()
                     // Public home screen endpoints
-                    .requestMatchers("/api/youtube-videos/active").permitAll()
+                    .requestMatchers("/api/youtube-videos/**").permitAll()
                     .requestMatchers("/api/encounters/upcoming").permitAll()
                     // Admin endpoints (handled by custom token authentication)
                     .requestMatchers("/api/admin/**").permitAll()

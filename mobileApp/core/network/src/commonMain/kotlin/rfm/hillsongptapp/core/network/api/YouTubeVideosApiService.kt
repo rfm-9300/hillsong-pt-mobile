@@ -26,6 +26,7 @@ data class YouTubeVideo(
  */
 interface YouTubeVideosApiService {
     suspend fun getActiveVideos(): NetworkResult<List<YouTubeVideo>>
+    suspend fun getVideoById(id: Long): NetworkResult<YouTubeVideo>
 }
 
 /**
@@ -38,6 +39,19 @@ class YouTubeVideosApiServiceImpl(
     
     override suspend fun getActiveVideos(): NetworkResult<List<YouTubeVideo>> {
         return safeGet<ApiResponse<List<YouTubeVideo>>>("api/youtube-videos/active").let { result ->
+            when (result) {
+                is NetworkResult.Success -> {
+                    result.data.data?.let { NetworkResult.Success(it) }
+                        ?: NetworkResult.Error(NetworkException.UnknownError("No data in response"))
+                }
+                is NetworkResult.Error -> result
+                is NetworkResult.Loading -> result
+            }
+        }
+    }
+
+    override suspend fun getVideoById(id: Long): NetworkResult<YouTubeVideo> {
+        return safeGet<ApiResponse<YouTubeVideo>>("api/youtube-videos/$id").let { result ->
             when (result) {
                 is NetworkResult.Success -> {
                     result.data.data?.let { NetworkResult.Success(it) }

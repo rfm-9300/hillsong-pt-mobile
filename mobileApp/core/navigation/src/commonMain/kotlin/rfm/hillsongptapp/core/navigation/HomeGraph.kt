@@ -25,6 +25,7 @@ fun NavGraphBuilder.homeGraph(
     events: @Composable AnimatedContentScope.() -> Unit,
     homeScreen: @Composable AnimatedContentScope.() -> Unit,
     youtubeVideoScreen: @Composable AnimatedContentScope.(videoId: Long, videoUrl: String) -> Unit,
+    youtubePlayerFullScreen: @Composable AnimatedContentScope.(videoId: String) -> Unit,
 ){
     navigation<HomeGraph>(startDestination = HomeNav.HomeScreen) {
         composable<HomeNav.HomeScreen> {
@@ -86,6 +87,10 @@ fun NavGraphBuilder.homeGraph(
             val args = backStackEntry.toRoute<HomeNav.YouTubeVideoScreen>()
             youtubeVideoScreen(args.videoId, args.videoUrl)
         }
+        composable<HomeNav.YouTubePlayerFullScreen> { backStackEntry ->
+            val args = backStackEntry.toRoute<HomeNav.YouTubePlayerFullScreen>()
+            youtubePlayerFullScreen(args.videoId)
+        }
         // Add other composable destinations here
     }
 }
@@ -117,5 +122,7 @@ sealed class HomeNav {
     object EventsScreen : HomeNav()
     @Serializable
     data class YouTubeVideoScreen(val videoId: Long, val videoUrl: String) : HomeNav()
+    @Serializable
+    data class YouTubePlayerFullScreen(val videoId: String) : HomeNav()
 }
 

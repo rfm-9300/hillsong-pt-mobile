@@ -64,6 +64,12 @@ fun RootNavigation() {
                     videoUrl = videoUrl,
                     navController = rootNavController
                 )
+            },
+            youtubePlayerFullScreen = { videoId ->
+                rfm.hillsongptapp.feature.videoplayer.ui.YouTubePlayerScreen(
+                    videoId = videoId,
+                    onBack = { rootNavController.navigateUp() }
+                )
             }
         )
         kidsGraph(

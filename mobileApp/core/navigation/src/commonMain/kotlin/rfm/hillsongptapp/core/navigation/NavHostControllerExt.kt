@@ -51,6 +51,10 @@ fun NavHostController.navigateToYouTubeVideo(videoId: Long, videoUrl: String) {
     navigate(HomeNav.YouTubeVideoScreen(videoId, videoUrl))
 }
 
+fun NavHostController.navigateToYouTubePlayerFullScreen(videoId: String) {
+    navigate(HomeNav.YouTubePlayerFullScreen(videoId))
+}
+
 // Kids Management Navigation Extensions
 fun NavHostController.navigateToKidsManagement() {
     navigate(KidsNav.Management)
