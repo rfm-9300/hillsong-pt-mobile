@@ -86,9 +86,9 @@ fun WebViewYouTubePlayer(
                 val html = createYouTubePlayerHTML(videoId, autoplay)
                 LoggerHelper.logDebug("Loading HTML for video: $videoId", "WebViewYouTubePlayer")
 
-                // Use base URL to allow loading external scripts
+                // Use base URL to allow loading external scripts - must match origin parameter
                 loadDataWithBaseURL(
-                    "https://www.youtube.com",
+                    "https://www.youtube-nocookie.com",
                     html,
                     "text/html",
                     "utf-8",
@@ -100,7 +100,7 @@ fun WebViewYouTubePlayer(
             LoggerHelper.logDebug("🔄 WebView updated for videoId=$videoId", "WebViewYouTubePlayer")
             val html = createYouTubePlayerHTML(videoId, autoplay)
             webView.loadDataWithBaseURL(
-                "https://www.youtube.com",
+                "https://www.youtube-nocookie.com",
                 html,
                 "text/html",
                 "utf-8",
@@ -159,7 +159,8 @@ function onYouTubeIframeAPIReady() {
             'playsinline': 1,
             'fs': 1,
             'modestbranding': 1,
-            'enablejsapi': 1
+            'enablejsapi': 1,
+            'origin': 'https://www.youtube-nocookie.com'
         },
         events: {
             'onReady': onPlayerReady,
