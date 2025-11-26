@@ -6,21 +6,21 @@ android-targetSdk = "35"
 kermit-version = "2.0.5"
 androidx-activityCompose = "1.10.1"
 androidx-core-ktx = "1.15.0"
-androidx-lifecycle = "2.8.4"
+androidx-lifecycle = "2.9.4"
 androidx-savedstate = "1.2.1"
-compose-multiplatform = "1.7.3"
+compose-multiplatform = "1.8.2"
 gradle = "8.9.1"
-kotlin = "2.1.10"
+kotlin = "2.1.21"
 navigationCompose = "2.9.0"
 kotlinSerialization = "1.7.3"
 kotlinxDatetime = "0.6.0"
-koin = "4.0.4"
+koin = "4.1.0"
 ktor = "3.0.3"
 coil3 = "3.0.0-rc02"
-ksp = "2.1.10-1.0.29"
+ksp = "2.1.21-2.0.1"
 sqlite = "2.5.0"
 room = "2.7.0"
-jetbrainsKotlinJvm = "2.1.10"
+jetbrainsKotlinJvm = "2.1.21"
 uiTooling = "1.8.2"
 popcorn_guineapig = "3.1.2"
 googleid = "1.1.1"
@@ -33,7 +33,7 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
-androidx-savedstate = { group = "org.jetbrains.androidx.savedstate", name = "savedstate", version.ref = "androidx-savedstate" }
+androidx-savedstate = { group = "androidx.savedstate", name = "savedstate", version.ref = "androidx-savedstate" }
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit-version" }
 navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref= "navigationCompose"}
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerialization" }

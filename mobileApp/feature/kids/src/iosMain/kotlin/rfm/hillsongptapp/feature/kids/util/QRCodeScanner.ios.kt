@@ -6,6 +6,7 @@ import platform.CoreMedia.CMSampleBufferGetImageBuffer
 import platform.Foundation.NSError
 import platform.QuartzCore.CALayer
 import platform.UIKit.UIView
+import platform.darwin.NSObject
 import kotlinx.cinterop.*
 
 /**
@@ -48,6 +49,7 @@ class IOSQRCodeScanner(
     
     override fun isScanning(): Boolean = isCurrentlyScanning
     
+    @OptIn(ExperimentalForeignApi::class)
     private fun setupCaptureSession() {
         val session = AVCaptureSession()
         captureSession = session

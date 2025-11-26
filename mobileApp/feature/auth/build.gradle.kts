@@ -1,27 +1,12 @@
 plugins {
     id("kmp-feature-plugin")
     alias(libs.plugins.ksp)
-    kotlin("native.cocoapods") version "2.0.0"
 }
 
 kotlin {
     iosX64()
     iosArm64()
     iosSimulatorArm64()
-
-    cocoapods {
-        version = "1.0"
-        summary = "Some description for a Kotlin/Native module"
-        homepage = "Link to a Kotlin/Native module homepage"
-        ios.deploymentTarget = "16.0"
-
-        pod("GoogleSignIn")
-
-        framework {
-            baseName = "feature.auth"
-            isStatic = true
-        }
-    }
 
     sourceSets {
         androidMain.dependencies {

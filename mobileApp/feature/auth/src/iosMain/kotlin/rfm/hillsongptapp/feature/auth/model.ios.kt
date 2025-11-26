@@ -7,48 +7,17 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 actual class GoogleAuthUiProvider {
-    @OptIn(ExperimentalForeignApi::class)
-    actual suspend fun signIn(): GoogleAccount? =
-        suspendCoroutine { continutation ->
-
-
-            val rootViewController =
-                UIApplication.sharedApplication.keyWindow?.rootViewController
-
-
-            if (rootViewController == null) {
-                continutation.resume(null)
-            } else {
-                GIDSignIn.sharedInstance
-                    .signInWithPresentingViewController(rootViewController) { gidSignInResult, nsError ->
-                        nsError?.let { 
-                            // Error while signing in with Google
-                        }
-                        val idToken = gidSignInResult?.user?.idToken?.tokenString
-                        val profile = gidSignInResult?.user?.profile
-                        if (idToken != null) {
-                            val googleUser =
-                                GoogleAccount(
-                                    token = idToken,
-                                    displayName = profile?.name ?: "",
-                                    profileImageUrl = profile?.imageURLWithDimension(320u)?.absoluteString,
-                                )
-                            continutation.resume(googleUser)
-                        } else {
-                            continutation.resume(null)
-                        }
-                    }
-            }
-        }
+    actual suspend fun signIn(): GoogleAccount? {
+        // TODO: Implement GoogleSignIn for iOS
+        return null
+    }
 }
 
 actual class GoogleAuthProvider {
     @Composable
     actual fun getUiProvider(): GoogleAuthUiProvider = GoogleAuthUiProvider()
 
-
-    @OptIn(ExperimentalForeignApi::class)
     actual suspend fun signOut() {
-        GIDSignIn.sharedInstance.signOut()
+        // TODO: Implement Google Sign Out for iOS
     }
 }

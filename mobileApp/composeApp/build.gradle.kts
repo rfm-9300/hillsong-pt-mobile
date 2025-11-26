@@ -31,8 +31,6 @@ kotlin {
 
         podfile = project.file("../iosApp/Podfile")
 
-        pod("GoogleSignIn")
-
         framework {
             baseName = "composeApp"
             isStatic = true
