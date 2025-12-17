@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, ApiResponse } from '@/lib/types';
 import { api, ENDPOINTS } from '@/lib/api';
+import { User, ApiResponse, CreateUserRequest, AdminUpdateUserRequest } from '@/lib/types';
 
 interface UseUsersReturn {
   users: User[];
@@ -11,6 +11,8 @@ interface UseUsersReturn {
   refetch: () => Promise<void>;
   deleteUser: (userId: string) => Promise<boolean>;
   updateUserAdminStatus: (userId: string, isAdmin: boolean) => Promise<boolean>;
+  createUser: (data: CreateUserRequest) => Promise<boolean>;
+  updateUser: (userId: string, data: AdminUpdateUserRequest) => Promise<boolean>;
 }
 
 export function useUsers(): UseUsersReturn {
@@ -67,6 +69,28 @@ export function useUsers(): UseUsersReturn {
     }
   };
 
+  const createUser = async (data: CreateUserRequest): Promise<boolean> => {
+    try {
+      await api.post(ENDPOINTS.PROFILE_CREATE, data);
+      await fetchUsers();
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create user');
+      throw err;
+    }
+  };
+
+  const updateUser = async (userId: string, data: AdminUpdateUserRequest): Promise<boolean> => {
+    try {
+      await api.put(ENDPOINTS.PROFILE_UPDATE_ADMIN(userId), data);
+      await fetchUsers();
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update user');
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -77,6 +101,8 @@ export function useUsers(): UseUsersReturn {
     error,
     refetch: fetchUsers,
     deleteUser,
-    updateUserAdminStatus
+    updateUserAdminStatus,
+    createUser,
+    updateUser
   };
 }

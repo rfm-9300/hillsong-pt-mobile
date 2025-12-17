@@ -1,23 +1,29 @@
 'use client';
 
 import { useState } from 'react';
-import { User } from '@/lib/types';
+import { User, CreateUserRequest, AdminUpdateUserRequest } from '@/lib/types';
 import {
   UsersList,
   DeleteConfirmationModal,
   UserEditModal,
+  CreateUserModal,
   Alert,
-  NavigationHeader
+  NavigationHeader,
+  Button
 } from '@/app/components';
 import { useUsers } from '@/app/hooks';
 import { getUserDisplayName } from '@/lib/userUtils';
 
 export default function UsersPage() {
-  const { users, loading, error, refetch, deleteUser, updateUserAdminStatus } = useUsers();
+  const { users, loading, error, refetch, deleteUser, createUser, updateUser } = useUsers();
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -25,16 +31,31 @@ export default function UsersPage() {
     setEditingUser(user);
   };
 
-  const handleUserUpdate = async (userId: string, isAdmin: boolean) => {
+  const handleUserUpdate = async (userId: string, data: AdminUpdateUserRequest) => {
     setUpdateLoading(true);
     try {
-      await updateUserAdminStatus(userId, isAdmin);
-      setSuccessMessage(`User permissions updated successfully.`);
+      await updateUser(userId, data);
+      setSuccessMessage(`User updated successfully.`);
       setTimeout(() => setSuccessMessage(null), 3000);
+      setEditingUser(null);
     } catch {
       // Error is handled in the modal
     } finally {
       setUpdateLoading(false);
+    }
+  };
+
+  const handleCreateUser = async (data: CreateUserRequest) => {
+    setCreateLoading(true);
+    try {
+      await createUser(data);
+      setSuccessMessage(`User ${data.email} created successfully.`);
+      setTimeout(() => setSuccessMessage(null), 3000);
+      setIsCreateModalOpen(false);
+    } catch {
+      // Error is handled in the modal
+    } finally {
+      setCreateLoading(false);
     }
   };
 
@@ -78,7 +99,11 @@ export default function UsersPage() {
           { label: 'Dashboard', href: '/admin/dashboard' },
           { label: 'Users', current: true },
         ]}
-      />
+      >
+        <Button onClick={() => setIsCreateModalOpen(true)}>
+          Create User
+        </Button>
+      </NavigationHeader>
 
       {successMessage && (
         <Alert
@@ -124,6 +149,14 @@ export default function UsersPage() {
         onClose={() => setEditingUser(null)}
         onSave={handleUserUpdate}
         loading={updateLoading}
+      />
+
+      {/* Create User Modal */}
+      <CreateUserModal
+        show={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSave={handleCreateUser}
+        loading={createLoading}
       />
     </div>
   );

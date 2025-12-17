@@ -16,3 +16,5 @@ export { default as EventsList } from './EventsList';
 export { default as UserCard } from './UserCard';
 export { default as UsersList } from './UsersList';
 export { default as UserEditModal } from './UserEditModal';
+export { default as CreateUserModal } from './CreateUserModal';
+export { default as UsersTable } from './UsersTable';

@@ -5,3 +5,4 @@ export { useFormValidation, useFieldValidation, validationSchemas, fieldValidato
 export { useErrorHandling, useGlobalErrorHandler, useApiErrorHandling } from './useErrorHandling';
 export { useLoadingState, useCategorizedLoadingState, useProgressiveLoadingState } from './useLoadingState';
 export { useResponsive, useTouchDevice, useMediaQuery } from './useResponsive';
+export { useAuth } from './useAuth';

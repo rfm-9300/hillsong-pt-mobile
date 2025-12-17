@@ -698,4 +698,80 @@ class UserService(
             ApiResponse(success = false, message = "Failed to retrieve user roles")
         }
     }
+    
+    /**
+     * Create user by Admin (pre-verified)
+     */
+    fun createUserByAdmin(request: CreateUserRequest): ApiResponse<String> {
+        return try {
+            logger.debug("Admin creating user with email: ${request.email}")
+            
+            // Check if user already exists
+            if (userRepository.existsByEmail(request.email)) {
+                return ApiResponse(success = false, message = "User with this email already exists")
+            }
+            
+            // Generate BCrypt hash for password
+            val hashedPassword = passwordService.encodePassword(request.password)
+            
+            // Create user entity (Verified by default since Admin created it)
+            val user = User(
+                email = request.email,
+                password = hashedPassword,
+                salt = "",
+                verified = true,
+                verificationToken = null,
+                authProvider = AuthProvider.LOCAL
+            )
+            
+            val savedUser = userRepository.save(user)
+            
+            // Create user profile
+            val userProfile = UserProfile(
+                user = savedUser,
+                firstName = request.firstName,
+                lastName = request.lastName,
+                email = savedUser.email,
+                phone = request.phone ?: "",
+                imagePath = "",
+                isAdmin = request.isAdmin
+            )
+            
+            userProfileRepository.save(userProfile)
+            
+            logger.info("User created by admin successfully: ${request.email}")
+            ApiResponse(success = true, message = "User created successfully")
+        } catch (ex: Exception) {
+            logger.error("Failed to create user by admin: ${request.email}", ex)
+            ApiResponse(success = false, message = "User creation failed: ${ex.message}")
+        }
+    }
+    
+    /**
+     * Update user by Admin (Full update)
+     */
+    fun updateUserByAdmin(userId: Long, request: AdminUpdateUserRequest): ApiResponse<String> {
+        return try {
+            val user = userRepository.findByIdWithProfile(userId)
+                ?: return ApiResponse(success = false, message = "User not found")
+            
+            val profile = user.profile
+                ?: return ApiResponse(success = false, message = "User profile not found")
+            
+            val updatedProfile = profile.copy(
+                firstName = request.firstName ?: profile.firstName,
+                lastName = request.lastName ?: profile.lastName,
+                phone = request.phone ?: profile.phone,
+                isAdmin = request.isAdmin ?: profile.isAdmin
+            )
+            
+            userProfileRepository.save(updatedProfile)
+            
+            logger.info("User updated by admin for user ID: $userId")
+            ApiResponse(success = true, message = "User updated successfully")
+        } catch (ex: Exception) {
+            logger.error("Failed to update user by admin for ID: $userId", ex)
+            ApiResponse(success = false, message = "Failed to update user: ${ex.message}")
+        }
+    }
 }

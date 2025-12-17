@@ -62,6 +62,8 @@ export const ENDPOINTS = {
     PROFILE_ADMINS: '/profile/admins',
     PROFILE_ADMIN_STATUS: (userId: string) => `/profile/${userId}/admin-status`,
     PROFILE_DELETE: (userId: string) => `/profile/${userId}`,
+    PROFILE_CREATE: '/profile',
+    PROFILE_UPDATE_ADMIN: (userId: string) => `/profile/${userId}`,
 
     // Attendance - /api/attendance/*
     ATTENDANCE_CHECK_IN: '/attendance/check-in',

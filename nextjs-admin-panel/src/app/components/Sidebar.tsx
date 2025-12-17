@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/app/hooks';
 
 interface NavItem {
   label: string;
@@ -79,6 +80,7 @@ const navItems: NavItem[] = [
 
 const Sidebar: React.FC = () => {
   const pathname = usePathname();
+  const { user, loading, logout } = useAuth();
 
   const isActiveLink = (href: string) => {
     if (href === '/admin/attendance') {
@@ -145,7 +147,27 @@ const Sidebar: React.FC = () => {
       </nav>
 
       {/* Footer */}
-      <div className="absolute bottom-4 left-4 right-4">
+      {/* User Profile & Footer */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700 bg-gray-800">
+        {!loading && user && (
+          <div className="mb-4 flex items-center justify-between">
+            <div className="overflow-hidden">
+              <p className="text-sm font-medium text-white truncate">
+                {user.fullName || user.email}
+              </p>
+              <p className="text-xs text-gray-400 truncate">
+                {user.email}
+              </p>
+            </div>
+            <button
+              onClick={logout}
+              className="ml-2 p-2 text-gray-400 hover:text-white rounded-md hover:bg-gray-700 transition-colors"
+              title="Logout"
+            >
+              🚪
+            </button>
+          </div>
+        )}
         <div className="text-xs text-gray-500 text-center">
           <p>Admin Panel v1.0</p>
         </div>

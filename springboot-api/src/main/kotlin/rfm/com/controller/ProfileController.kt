@@ -278,6 +278,59 @@ class ProfileController(
         }
     }
     
+    /**
+     * Create user by admin
+     */
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    fun createUserByAdmin(
+        @Valid @RequestBody createUserRequest: CreateUserRequest
+    ): ResponseEntity<ApiResponse<String>> {
+        return try {
+            val response = userService.createUserByAdmin(createUserRequest)
+            
+            if (response.success) {
+                ResponseEntity.ok(response)
+            } else {
+                ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response)
+            }
+        } catch (ex: Exception) {
+            logger.error("Failed to create user by admin", ex)
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                ApiResponse(success = false, message = "Failed to create user")
+            )
+        }
+    }
+    
+    /**
+     * Update user by admin (full update)
+     */
+    @PutMapping("/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    fun updateUserByAdmin(
+        @PathVariable userId: Long,
+        @Valid @RequestBody adminUpdateUserRequest: AdminUpdateUserRequest,
+        authentication: Authentication
+    ): ResponseEntity<ApiResponse<String>> {
+        return try {
+            // Prevent users from changing their own profile through this endpoint 
+            // (Self-update should be done via updateCurrentUserProfile)
+            
+            val response = userService.updateUserByAdmin(userId, adminUpdateUserRequest)
+            
+            if (response.success) {
+                ResponseEntity.ok(response)
+            } else {
+                ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response)
+            }
+        } catch (ex: Exception) {
+            logger.error("Failed to update user by admin for ID: $userId", ex)
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                ApiResponse(success = false, message = "Failed to update user")
+            )
+        }
+    }
+    
     private fun getUserId(authentication: Authentication): Long {
         val principal = authentication.principal
         if (principal is UserPrincipal) {

@@ -1,25 +1,24 @@
-import { useState, useEffect } from 'react';
-import { User, AdminUpdateUserRequest } from '@/lib/types';
+import { useState } from 'react';
+import { CreateUserRequest } from '@/lib/types';
 import { Modal, Button, Alert } from './ui';
 import { Checkbox, Input } from './forms';
-import { getUserDisplayName } from '@/lib/userUtils';
 
-interface UserEditModalProps {
-    user: User | null;
+interface CreateUserModalProps {
     show: boolean;
     onClose: () => void;
-    onSave: (userId: string, data: AdminUpdateUserRequest) => Promise<void>;
+    onSave: (data: CreateUserRequest) => Promise<void>;
     loading?: boolean;
 }
 
-export default function UserEditModal({
-    user,
+export default function CreateUserModal({
     show,
     onClose,
     onSave,
     loading = false
-}: UserEditModalProps) {
-    const [formData, setFormData] = useState<AdminUpdateUserRequest>({
+}: CreateUserModalProps) {
+    const [formData, setFormData] = useState<CreateUserRequest>({
+        email: '',
+        password: '',
         firstName: '',
         lastName: '',
         phone: '',
@@ -27,31 +26,39 @@ export default function UserEditModal({
     });
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (user) {
-            setFormData({
-                firstName: user.firstName || '',
-                lastName: user.lastName || '',
-                phone: user.phone || '',
-                isAdmin: user.isAdmin
-            });
-            setError(null);
-        }
-    }, [user]);
-
-    if (!user) return null;
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
+
+        // Basic validation
+        if (!formData.email || !formData.password || !formData.firstName || !formData.lastName) {
+            setError('Please fill in all required fields');
+            return;
+        }
+
+        if (formData.password.length < 8) {
+            setError('Password must be at least 8 characters long');
+            return;
+        }
+
         try {
-            await onSave(user.id, formData);
+            await onSave(formData);
+            // Reset form on success (the modal will stick around until parent closes it, or we can reset here)
+            setFormData({
+                email: '',
+                password: '',
+                firstName: '',
+                lastName: '',
+                phone: '',
+                isAdmin: false
+            });
             onClose();
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to update user');
+            setError(err instanceof Error ? err.message : 'Failed to create user');
         }
     };
 
-    const handleChange = (field: keyof AdminUpdateUserRequest, value: string | boolean) => {
+    const handleChange = (field: keyof CreateUserRequest, value: string | boolean) => {
         setFormData(prev => ({
             ...prev,
             [field]: value
@@ -61,7 +68,7 @@ export default function UserEditModal({
     return (
         <Modal
             show={show}
-            title={`Edit User: ${getUserDisplayName(user)}`}
+            title="Create New User"
             onClose={onClose}
         >
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -74,27 +81,41 @@ export default function UserEditModal({
                 )}
 
                 <div className="space-y-4">
+                    <Input
+                        label="Email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(value) => handleChange('email', value)}
+                        placeholder="user@example.com"
+                        required
+                    />
+
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Email
-                        </label>
-                        <div className="text-gray-900 dark:text-white px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-md border border-gray-300 dark:border-gray-600 opacity-70">
-                            {user.email} <span className="text-xs ml-2 text-gray-500">(Cannot be changed)</span>
-                        </div>
+                        <Input
+                            label="Password"
+                            type="password"
+                            value={formData.password || ''}
+                            onChange={(value) => handleChange('password', value)}
+                            placeholder="••••••••"
+                            required
+                        />
+                        <p className="mt-1 text-xs text-gray-500">Must be at least 8 characters</p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <Input
                             label="First Name"
-                            value={formData.firstName || ''}
+                            value={formData.firstName}
                             onChange={(value) => handleChange('firstName', value)}
                             placeholder="John"
+                            required
                         />
                         <Input
                             label="Last Name"
-                            value={formData.lastName || ''}
+                            value={formData.lastName}
                             onChange={(value) => handleChange('lastName', value)}
                             placeholder="Doe"
+                            required
                         />
                     </div>
 
@@ -105,18 +126,12 @@ export default function UserEditModal({
                         placeholder="+1234567890"
                     />
 
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md border border-blue-100 dark:border-blue-800">
-                        <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
-                            Permissions
-                        </h4>
+                    <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-md border border-gray-200 dark:border-gray-600">
                         <Checkbox
                             label="Grant Admin Privileges"
                             checked={!!formData.isAdmin}
                             onChange={(checked) => handleChange('isAdmin', checked)}
                         />
-                        <p className="mt-2 text-xs text-blue-700 dark:text-blue-300">
-                            Admins have full access to manage users, events, and system settings.
-                        </p>
                     </div>
                 </div>
 
@@ -133,7 +148,7 @@ export default function UserEditModal({
                         type="submit"
                         loading={loading}
                     >
-                        Save Changes
+                        Create User
                     </Button>
                 </div>
             </form>
