@@ -45,11 +45,13 @@ export interface User {
   id: string;
   email: string;
   verified: boolean;
-  profile?: {
-    firstName?: string;
-    lastName?: string;
-    isAdmin: boolean;
-  };
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  isAdmin: boolean;
+  imagePath?: string;
+  phone?: string;
+  joinedAt?: string;
 }
 
 // Attendance Models
@@ -60,30 +62,30 @@ export enum EventType {
 }
 
 export enum CalendarEventType {
-    GENERAL = 'GENERAL',
-    WORSHIP_SERVICE = 'WORSHIP_SERVICE',
-    BIBLE_STUDY = 'BIBLE_STUDY',
-    YOUTH_EVENT = 'YOUTH_EVENT',
-    KIDS_EVENT = 'KIDS_EVENT',
-    PRAYER_MEETING = 'PRAYER_MEETING',
-    SMALL_GROUP = 'SMALL_GROUP',
-    CONFERENCE = 'CONFERENCE',
-    OUTREACH = 'OUTREACH',
-    SPECIAL_EVENT = 'SPECIAL_EVENT'
+  GENERAL = 'GENERAL',
+  WORSHIP_SERVICE = 'WORSHIP_SERVICE',
+  BIBLE_STUDY = 'BIBLE_STUDY',
+  YOUTH_EVENT = 'YOUTH_EVENT',
+  KIDS_EVENT = 'KIDS_EVENT',
+  PRAYER_MEETING = 'PRAYER_MEETING',
+  SMALL_GROUP = 'SMALL_GROUP',
+  CONFERENCE = 'CONFERENCE',
+  OUTREACH = 'OUTREACH',
+  SPECIAL_EVENT = 'SPECIAL_EVENT'
 }
 
 export interface CalendarEvent {
-    id: number;
-    title: string;
-    description: string | null;
-    date: string;
-    startTime: string | null;
-    endTime: string | null;
-    location: string | null;
-    imageUrl: string | null;
-    isAllDay: boolean;
-    eventType: CalendarEventType;
-    createdAt: string;
+  id: number;
+  title: string;
+  description: string | null;
+  date: string;
+  startTime: string | null;
+  endTime: string | null;
+  location: string | null;
+  imageUrl: string | null;
+  isAllDay: boolean;
+  eventType: CalendarEventType;
+  createdAt: string;
 }
 
 export enum AttendanceStatus {

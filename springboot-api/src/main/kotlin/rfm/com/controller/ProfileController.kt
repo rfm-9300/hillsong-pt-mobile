@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile
 import rfm.com.dto.*
 import rfm.com.service.FileStorageService
 import rfm.com.service.UserService
+import rfm.com.security.jwt.UserPrincipal
 
 @RestController
 @RequestMapping("/api/profile")
@@ -29,7 +30,7 @@ class ProfileController(
     @PreAuthorize("hasRole('USER')")
     fun getCurrentUserProfile(authentication: Authentication): ResponseEntity<ApiResponse<UserProfileResponse>> {
         return try {
-            val userId = authentication.name.toLong()
+            val userId = getUserId(authentication)
             val response = userService.getUserProfile(userId)
             
             if (response.success) {
@@ -77,7 +78,7 @@ class ProfileController(
         authentication: Authentication
     ): ResponseEntity<ApiResponse<String>> {
         return try {
-            val userId = authentication.name.toLong()
+            val userId = getUserId(authentication)
             val response = userService.updateUserProfile(
                 userId = userId,
                 firstName = updateProfileRequest.firstName,
@@ -108,7 +109,7 @@ class ProfileController(
         authentication: Authentication
     ): ResponseEntity<ApiResponse<String>> {
         return try {
-            val userId = authentication.name.toLong()
+            val userId = getUserId(authentication)
             
             // Validate file
             if (image.isEmpty) {
@@ -219,7 +220,7 @@ class ProfileController(
         authentication: Authentication
     ): ResponseEntity<ApiResponse<String>> {
         return try {
-            val currentUserId = authentication.name.toLong()
+            val currentUserId = getUserId(authentication)
             
             // Prevent users from changing their own admin status
             if (currentUserId == userId) {
@@ -253,7 +254,7 @@ class ProfileController(
         authentication: Authentication
     ): ResponseEntity<ApiResponse<String>> {
         return try {
-            val currentUserId = authentication.name.toLong()
+            val currentUserId = getUserId(authentication)
             
             // Prevent users from deleting their own account
             if (currentUserId == userId) {
@@ -275,5 +276,15 @@ class ProfileController(
                 ApiResponse(success = false, message = "Failed to delete user")
             )
         }
+    }
+    
+    private fun getUserId(authentication: Authentication): Long {
+        val principal = authentication.principal
+        if (principal is UserPrincipal) {
+            return principal.id
+        }
+        // Fallback or error if principal is not UserPrincipal 
+        // (though in this context it should strictly be UserPrincipal due to JwtFilter)
+        throw IllegalStateException("Authentication principal is not a UserPrincipal")
     }
 }

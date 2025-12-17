@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User } from '@/lib/types';
+import { User, ApiResponse } from '@/lib/types';
 import { api, ENDPOINTS } from '@/lib/api';
 
 interface UseUsersReturn {
@@ -10,6 +10,7 @@ interface UseUsersReturn {
   error: string | null;
   refetch: () => Promise<void>;
   deleteUser: (userId: string) => Promise<boolean>;
+  updateUserAdminStatus: (userId: string, isAdmin: boolean) => Promise<boolean>;
 }
 
 export function useUsers(): UseUsersReturn {
@@ -21,9 +22,16 @@ export function useUsers(): UseUsersReturn {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await api.get<User[]>(ENDPOINTS.USERS);
-      setUsers(response || []);
+
+      const response = await api.get<ApiResponse<User[]>>(ENDPOINTS.PROFILE_ALL);
+      if (response && response.success && Array.isArray(response.data)) {
+        setUsers(response.data);
+      } else {
+        setUsers([]);
+        if (response && !response.success) {
+          throw new Error(response.message || 'Failed to fetch users');
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch users');
     } finally {
@@ -33,14 +41,29 @@ export function useUsers(): UseUsersReturn {
 
   const deleteUser = async (userId: string): Promise<boolean> => {
     try {
-      await api.delete(`/users/${userId}`);
-      
+      await api.delete(ENDPOINTS.PROFILE_DELETE(userId));
+
       // Remove user from local state
       setUsers(prev => prev.filter(user => user.id !== userId));
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete user');
       return false;
+    }
+  };
+
+  const updateUserAdminStatus = async (userId: string, isAdmin: boolean): Promise<boolean> => {
+    try {
+      await api.put(ENDPOINTS.PROFILE_ADMIN_STATUS(userId), { isAdmin });
+
+      // Update local state
+      setUsers(prev => prev.map(user =>
+        user.id === userId ? { ...user, isAdmin } : user
+      ));
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update user status');
+      throw err;
     }
   };
 
@@ -53,6 +76,7 @@ export function useUsers(): UseUsersReturn {
     loading,
     error,
     refetch: fetchUsers,
-    deleteUser
+    deleteUser,
+    updateUserAdminStatus
   };
 }
