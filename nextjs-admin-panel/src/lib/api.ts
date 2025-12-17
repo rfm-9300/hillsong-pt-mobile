@@ -85,7 +85,14 @@ export const ENDPOINTS = {
     FILE_INFO: (subDirectory: string, fileName: string) => `/files/${subDirectory}/${fileName}/info`,
 
     // Health - /api/health
-    HEALTH: '/health'
+    HEALTH: '/health',
+
+    // Calendar - /api/calendar/*
+    CALENDAR: '/calendar',
+    CALENDAR_MONTH: '/calendar/month',
+    CALENDAR_UPCOMING: '/calendar/upcoming',
+    CALENDAR_BY_ID: (id: string) => `/calendar/${id}`,
+    CALENDAR_SEARCH: '/calendar/search',
 };
 
 interface RequestOptions {
@@ -286,6 +293,25 @@ export const api = {
         exportData: async (filters: Record<string, string>) => {
             const params = new URLSearchParams(filters);
             return client.request(`/attendance/export?${params}`, { method: 'GET' });
+        }
+    },
+    // Calendar API functions
+    calendar: {
+        getUpcoming: async (page = 0, size = 20) => {
+            return client.request(`/calendar/upcoming?page=${page}&size=${size}`, { method: 'GET' });
+        },
+        getByMonth: async (month: number, year: number) => {
+            return client.request(`/calendar/month?month=${month}&year=${year}`, { method: 'GET' });
+        },
+        create: async (formData: FormData) => {
+            return client.request('/calendar', {
+                method: 'POST',
+                body: formData,
+                isFormData: true
+            });
+        },
+        delete: async (id: number) => {
+            return client.request(`/calendar/${id}`, { method: 'DELETE' });
         }
     }
 };

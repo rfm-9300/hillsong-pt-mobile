@@ -26,7 +26,7 @@ class CalendarApiServiceImpl(
 ) : BaseApiService(httpClient, baseUrl), CalendarApiService {
 
     override suspend fun getEventsForMonth(month: Int, year: Int): NetworkResult<CalendarEventsResponse> {
-        return safeGet("api/calendar/events") {
+        return safeGet("api/calendar/month") {
             url {
                 parameters.append("month", month.toString())
                 parameters.append("year", year.toString())
@@ -35,7 +35,7 @@ class CalendarApiServiceImpl(
     }
 
     override suspend fun getEventById(eventId: Long): NetworkResult<CalendarEventResponse> {
-        return safeGet("api/calendar/events/$eventId")
+        return safeGet("api/calendar/$eventId")
     }
 
     override fun getEventsForMonthStream(month: Int, year: Int): Flow<NetworkResult<CalendarEventsResponse>> = flow {

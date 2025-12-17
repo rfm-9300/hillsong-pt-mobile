@@ -59,6 +59,33 @@ export enum EventType {
   KIDS_SERVICE = 'KIDS_SERVICE'
 }
 
+export enum CalendarEventType {
+    GENERAL = 'GENERAL',
+    WORSHIP_SERVICE = 'WORSHIP_SERVICE',
+    BIBLE_STUDY = 'BIBLE_STUDY',
+    YOUTH_EVENT = 'YOUTH_EVENT',
+    KIDS_EVENT = 'KIDS_EVENT',
+    PRAYER_MEETING = 'PRAYER_MEETING',
+    SMALL_GROUP = 'SMALL_GROUP',
+    CONFERENCE = 'CONFERENCE',
+    OUTREACH = 'OUTREACH',
+    SPECIAL_EVENT = 'SPECIAL_EVENT'
+}
+
+export interface CalendarEvent {
+    id: number;
+    title: string;
+    description: string | null;
+    date: string;
+    startTime: string | null;
+    endTime: string | null;
+    location: string | null;
+    imageUrl: string | null;
+    isAllDay: boolean;
+    eventType: CalendarEventType;
+    createdAt: string;
+}
+
 export enum AttendanceStatus {
   CHECKED_IN = 'CHECKED_IN',
   CHECKED_OUT = 'CHECKED_OUT',

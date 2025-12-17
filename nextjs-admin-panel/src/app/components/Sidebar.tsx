@@ -34,6 +34,11 @@ const navItems: NavItem[] = [
     icon: '🤝',
   },
   {
+    label: 'Calendar',
+    href: '/admin/calendar',
+    icon: '📅',
+  },
+  {
     label: 'Users',
     href: '/admin/users',
     icon: '👥',
@@ -95,7 +100,7 @@ const Sidebar: React.FC = () => {
         <h2 className="text-2xl font-bold">Admin Panel</h2>
         <p className="text-gray-400 text-sm mt-1">Hillsong PT Management</p>
       </div>
-      
+
       <nav>
         <ul className="space-y-2">
           {navItems.map((item) => (
@@ -112,7 +117,7 @@ const Sidebar: React.FC = () => {
                 <span className="mr-3 text-lg">{item.icon}</span>
                 <span className="font-medium">{item.label}</span>
               </Link>
-              
+
               {/* Sub-navigation for Attendance */}
               {item.subItems && isParentActive(item) && (
                 <ul className="mt-2 ml-6 space-y-1">
@@ -138,7 +143,7 @@ const Sidebar: React.FC = () => {
           ))}
         </ul>
       </nav>
-      
+
       {/* Footer */}
       <div className="absolute bottom-4 left-4 right-4">
         <div className="text-xs text-gray-500 text-center">

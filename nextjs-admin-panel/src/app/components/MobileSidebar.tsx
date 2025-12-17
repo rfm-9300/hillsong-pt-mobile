@@ -34,6 +34,11 @@ const navItems: NavItem[] = [
     icon: '🤝',
   },
   {
+    label: 'Calendar',
+    href: '/admin/calendar',
+    icon: '📅',
+  },
+  {
     label: 'Users',
     href: '/admin/users',
     icon: '👥',
@@ -96,8 +101,8 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose }) => {
   };
 
   const toggleExpanded = (href: string) => {
-    setExpandedItems(prev => 
-      prev.includes(href) 
+    setExpandedItems(prev =>
+      prev.includes(href)
         ? prev.filter(item => item !== href)
         : [...prev, href]
     );
@@ -111,13 +116,13 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose }) => {
     <>
       {/* Backdrop */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden animate-in fade-in"
           style={{ animationDuration: '200ms' }}
           onClick={onClose}
         />
       )}
-      
+
       {/* Sidebar */}
       <div
         className={cn(
@@ -131,8 +136,8 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose }) => {
             <h2 className="text-lg sm:text-xl font-bold">Admin Panel</h2>
             <p className="text-gray-400 text-xs">Hillsong PT</p>
           </div>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="text-white hover:text-gray-300 focus:outline-none touch-target p-2 rounded-md hover:bg-gray-700 transition-colors duration-200 active:scale-95"
             aria-label="Close navigation menu"
           >
@@ -141,7 +146,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose }) => {
             </svg>
           </button>
         </div>
-        
+
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto">
           <ul className="space-y-2">
@@ -161,7 +166,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose }) => {
                     <span className="mr-3 text-lg">{item.icon}</span>
                     <span className="font-medium">{item.label}</span>
                   </Link>
-                  
+
                   {/* Expand/Collapse button for items with sub-items */}
                   {item.subItems && (
                     <button
@@ -183,7 +188,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose }) => {
                     </button>
                   )}
                 </div>
-                
+
                 {/* Sub-navigation */}
                 {item.subItems && (expandedItems.includes(item.href) || isParentActive(item)) && (
                   <ul className="mt-2 ml-6 space-y-1">
@@ -210,7 +215,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose }) => {
             ))}
           </ul>
         </nav>
-        
+
         {/* Footer */}
         <div className="mt-6 pt-4 border-t border-gray-700">
           <div className="text-xs text-gray-500 text-center">
