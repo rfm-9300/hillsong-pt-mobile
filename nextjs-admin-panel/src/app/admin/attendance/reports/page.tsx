@@ -1,19 +1,18 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AttendanceRecord, AttendanceStatus, EventType } from '@/lib/types';
 
 type ApiResponse<T = unknown> = { success: boolean; data?: T };
-import { 
-  Card, 
-  Button, 
-  EmptyState, 
+import {
+  Card,
+  Button,
+  EmptyState,
   LoadingOverlay,
   Alert,
   NavigationHeader
 } from '@/app/components/ui';
 import { Input } from '@/app/components/forms';
-import { useApiCall } from '@/app/hooks';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
@@ -44,26 +43,20 @@ const AttendanceReportsPage: React.FC = () => {
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
   const [stats, setStats] = useState<AttendanceStats | null>(null);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-
-  const { 
-    execute: fetchAttendanceByDateRange, 
-    loading: loadingData 
-  } = useApiCall(api.attendance.getByDateRange);
-
-  const { 
-    execute: exportAttendanceData, 
-    loading: exporting 
-  } = useApiCall(api.attendance.exportData);
+  const [loadingData, setLoadingData] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const hasExecutedRef = useRef(false);
 
   const loadAttendanceData = useCallback(async () => {
+    setLoadingData(true);
     try {
       const eventTypeParam = filters.eventType === 'all' ? undefined : filters.eventType;
-      const response = await fetchAttendanceByDateRange(
-        filters.startDate, 
-        filters.endDate, 
+      const response = await api.attendance.getByDateRange(
+        filters.startDate,
+        filters.endDate,
         eventTypeParam
       ) as ApiResponse<AttendanceRecord[]>;
-      
+
       if (response && response.success && response.data) {
         setAttendanceData(response.data);
         calculateStats(response.data);
@@ -71,11 +64,17 @@ const AttendanceReportsPage: React.FC = () => {
     } catch (error) {
       console.error('Failed to load attendance data:', error);
       setAlert({ type: 'error', message: 'Failed to load attendance data' });
+    } finally {
+      setLoadingData(false);
     }
-  }, [fetchAttendanceByDateRange, filters.startDate, filters.endDate, filters.eventType]);
+  }, [filters.startDate, filters.endDate, filters.eventType]);
 
+  // Load data only once on mount
   useEffect(() => {
-    loadAttendanceData();
+    if (!hasExecutedRef.current) {
+      hasExecutedRef.current = true;
+      loadAttendanceData();
+    }
   }, [loadAttendanceData]);
 
   const calculateStats = (data: AttendanceRecord[]) => {
@@ -115,6 +114,7 @@ const AttendanceReportsPage: React.FC = () => {
   };
 
   const handleExport = async () => {
+    setExporting(true);
     try {
       const exportFilters = {
         startDate: filters.startDate,
@@ -124,8 +124,8 @@ const AttendanceReportsPage: React.FC = () => {
         ...(filters.searchTerm && { search: filters.searchTerm }),
       };
 
-      const response = await exportAttendanceData(exportFilters) as ApiResponse<string>;
-      
+      const response = await api.attendance.exportData(exportFilters) as ApiResponse<string>;
+
       if (response && response.success && response.data) {
         // Create and download the file
         const blob = new Blob([response.data], { type: 'text/csv' });
@@ -137,12 +137,14 @@ const AttendanceReportsPage: React.FC = () => {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        
+
         setAlert({ type: 'success', message: 'Report exported successfully' });
       }
     } catch (error) {
       console.error('Failed to export data:', error);
       setAlert({ type: 'error', message: 'Failed to export report' });
+    } finally {
+      setExporting(false);
     }
   };
 

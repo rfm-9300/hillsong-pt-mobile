@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { api, ENDPOINTS } from '../../../lib/api';
-import { useEnhancedMultipleApiCalls } from '../../hooks/useApiCall';
+import { useMultipleApiCalls } from '../../hooks';
 import { useErrorContext } from '../../context/ErrorContext';
 import {
   PageHeader,
@@ -46,7 +46,7 @@ export default function DashboardPage() {
     executeAll,
     retry,
     progress,
-  } = useEnhancedMultipleApiCalls<DashboardData>(apiCalls, {
+  } = useMultipleApiCalls<DashboardData>(apiCalls, {
     batchLoadingKey: 'dashboard_data',
     context: 'Dashboard Data Loading',
     message: 'Loading dashboard statistics...',
@@ -111,7 +111,7 @@ export default function DashboardPage() {
 
   return (
     <ErrorBoundary>
-      <div className="p-4 sm:p-6 space-y-6 page-transition">
+      <div className="space-y-6 page-transition">
         <div className="animate-in fade-in" style={{ animationDuration: '300ms' }}>
           <PageHeader
             title="Admin Dashboard"

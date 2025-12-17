@@ -1,22 +1,21 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AttendanceRecord, AttendanceStatus, EventType } from '@/lib/types';
 
 type ApiResponse<T = unknown> = { success: boolean; data?: T };
-import { 
-  Card, 
-  Button, 
-  EmptyState, 
+import {
+  Card,
+  Button,
+  EmptyState,
   LoadingOverlay,
   Alert,
   NavigationHeader
 } from '@/app/components/ui';
-import { 
-  AttendanceList, 
-  StatusUpdateInterface 
+import {
+  AttendanceList,
+  StatusUpdateInterface
 } from '@/app/components/attendance';
-import { useApiCall } from '@/app/hooks';
 import { api } from '@/lib/api';
 
 const KidsServiceAttendancePage: React.FC = () => {
@@ -25,49 +24,42 @@ const KidsServiceAttendancePage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<AttendanceStatus | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-
-  const { 
-    execute: fetchAttendance, 
-    loading: loadingAttendance 
-  } = useApiCall(api.attendance.getByEventType);
-
-  const { 
-    execute: updateAttendanceStatus, 
-    loading: updatingStatus 
-  } = useApiCall(api.attendance.updateStatus);
-
-  const { 
-    execute: updateAttendanceNotes, 
-    loading: updatingNotes 
-  } = useApiCall(api.attendance.updateNotes);
-
-  const { 
-    execute: bulkUpdateStatus, 
-    loading: bulkUpdating 
-  } = useApiCall(api.attendance.bulkUpdateStatus);
+  const [loadingAttendance, setLoadingAttendance] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [updatingNotes, setUpdatingNotes] = useState(false);
+  const [bulkUpdating, setBulkUpdating] = useState(false);
+  const hasExecutedRef = useRef(false);
 
   const loadAttendanceData = useCallback(async () => {
+    setLoadingAttendance(true);
     try {
-      const response = await fetchAttendance(EventType.KIDS_SERVICE) as { success: boolean; data?: AttendanceRecord[] };
-      if (response.success && response.data) {
+      const response = await api.attendance.getByEventType(EventType.KIDS_SERVICE) as ApiResponse<AttendanceRecord[]>;
+      if (response && response.success && response.data) {
         setAttendanceRecords(response.data);
       }
     } catch (error) {
       console.error('Failed to load attendance data:', error);
       setAlert({ type: 'error', message: 'Failed to load attendance data' });
+    } finally {
+      setLoadingAttendance(false);
     }
-  }, [fetchAttendance]);
+  }, []);
 
+  // Load data only once on mount
   useEffect(() => {
-    loadAttendanceData();
+    if (!hasExecutedRef.current) {
+      hasExecutedRef.current = true;
+      loadAttendanceData();
+    }
   }, [loadAttendanceData]);
 
   const handleStatusUpdate = async (id: string, status: AttendanceStatus) => {
+    setUpdatingStatus(true);
     try {
-      const response = await updateAttendanceStatus(id, status) as ApiResponse;
-      if (response.success) {
-        setAttendanceRecords(prev => 
-          prev.map(record => 
+      const response = await api.attendance.updateStatus(id, status) as ApiResponse;
+      if (response && response.success) {
+        setAttendanceRecords(prev =>
+          prev.map(record =>
             record.id === id ? { ...record, status } : record
           )
         );
@@ -76,15 +68,18 @@ const KidsServiceAttendancePage: React.FC = () => {
     } catch (error) {
       console.error('Failed to update status:', error);
       setAlert({ type: 'error', message: 'Failed to update attendance status' });
+    } finally {
+      setUpdatingStatus(false);
     }
   };
 
   const handleNotesUpdate = async (id: string, notes: string) => {
+    setUpdatingNotes(true);
     try {
-      const response = await updateAttendanceNotes(id, notes) as ApiResponse;
-      if (response.success) {
-        setAttendanceRecords(prev => 
-          prev.map(record => 
+      const response = await api.attendance.updateNotes(id, notes) as ApiResponse;
+      if (response && response.success) {
+        setAttendanceRecords(prev =>
+          prev.map(record =>
             record.id === id ? { ...record, notes } : record
           )
         );
@@ -93,15 +88,18 @@ const KidsServiceAttendancePage: React.FC = () => {
     } catch (error) {
       console.error('Failed to update notes:', error);
       setAlert({ type: 'error', message: 'Failed to update notes' });
+    } finally {
+      setUpdatingNotes(false);
     }
   };
 
   const handleBulkStatusUpdate = async (ids: string[], status: AttendanceStatus) => {
+    setBulkUpdating(true);
     try {
-      const response = await bulkUpdateStatus(ids, status) as ApiResponse;
-      if (response.success) {
-        setAttendanceRecords(prev => 
-          prev.map(record => 
+      const response = await api.attendance.bulkUpdateStatus(ids, status) as ApiResponse;
+      if (response && response.success) {
+        setAttendanceRecords(prev =>
+          prev.map(record =>
             ids.includes(record.id) ? { ...record, status } : record
           )
         );
@@ -110,6 +108,8 @@ const KidsServiceAttendancePage: React.FC = () => {
     } catch (error) {
       console.error('Failed to bulk update status:', error);
       setAlert({ type: 'error', message: 'Failed to update attendance records' });
+    } finally {
+      setBulkUpdating(false);
     }
   };
 

@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
+import rfm.hillsongptapp.core.designsystem.HillsongTopAppBar
 import rfm.hillsongptapp.core.designsystem.ui.components.AppSnackbarHost
 import rfm.hillsongptapp.core.navigation.navigateToHome
 
@@ -59,7 +60,8 @@ fun LoginScreen(viewModel: AuthViewModel = koinViewModel(), navigator: NavHostCo
                 setPassword = setPassword,
                 email = email,
                 setEmail = setEmail,
-                onEvent = viewModel::onEvent
+                onEvent = viewModel::onEvent,
+                onSkip = { navigator.navigateToHome() }
         )
     } else {
         LoginScreenMain(
@@ -68,7 +70,8 @@ fun LoginScreen(viewModel: AuthViewModel = koinViewModel(), navigator: NavHostCo
                 setUsername = setUsername,
                 password = password,
                 setPassword = setPassword,
-                onEvent = viewModel::onEvent
+                onEvent = viewModel::onEvent,
+                onSkip = { navigator.navigateToHome() }
         )
     }
 }
@@ -82,7 +85,8 @@ fun SignupScreen(
         setPassword: (String) -> Unit,
         email: String,
         setEmail: (String) -> Unit,
-        onEvent: (LoginUiEvent) -> Unit
+        onEvent: (LoginUiEvent) -> Unit,
+        onSkip: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val (confirmPassword, setConfirmPassword) =
@@ -93,6 +97,13 @@ fun SignupScreen(
             rememberSaveable { mutableStateOf(if (isDebugBuild()) "Martins" else "") }
 
     Scaffold(
+            topBar = {
+                HillsongTopAppBar(
+                    title = "Sign Up",
+                    showBackButton = true,
+                    onBackClick = onSkip
+                )
+            },
             snackbarHost = { AppSnackbarHost(hostState = snackbarHostState) },
     ) { paddingValues ->
         if (uiState.isLoading) {
@@ -115,7 +126,8 @@ fun SignupScreen(
                     setFirstName = setFirstName,
                     lastName = lastName,
                     setLastName = setLastName,
-                    onEvent = onEvent
+                    onEvent = onEvent,
+                    onSkip = onSkip
             )
         }
 
@@ -145,7 +157,8 @@ fun SignupScreenContent(
         setFirstName: (String) -> Unit,
         lastName: String,
         setLastName: (String) -> Unit,
-        onEvent: (LoginUiEvent) -> Unit
+        onEvent: (LoginUiEvent) -> Unit,
+        onSkip: () -> Unit = {}
 ) {
     Column(
             modifier =
@@ -235,11 +248,19 @@ fun LoginScreenMain(
         setUsername: (String) -> Unit,
         password: String,
         setPassword: (String) -> Unit,
-        onEvent: (LoginUiEvent) -> Unit
+        onEvent: (LoginUiEvent) -> Unit,
+        onSkip: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
+            topBar = {
+                HillsongTopAppBar(
+                    title = "Sign In",
+                    showBackButton = true,
+                    onBackClick = onSkip
+                )
+            },
             snackbarHost = { AppSnackbarHost(hostState = snackbarHostState) },
     ) { paddingValues ->
         if (uiState.isLoading) {
@@ -254,7 +275,8 @@ fun LoginScreenMain(
                     setUsername = setUsername,
                     password = password,
                     setPassword = setPassword,
-                    onEvent = onEvent
+                    onEvent = onEvent,
+                    onSkip = onSkip
             )
         }
 
@@ -276,7 +298,8 @@ fun LoginScreenContent(
         setUsername: (String) -> Unit,
         password: String,
         setPassword: (String) -> Unit,
-        onEvent: (LoginUiEvent) -> Unit
+        onEvent: (LoginUiEvent) -> Unit,
+        onSkip: () -> Unit = {}
 ) {
     Column(
             modifier =

@@ -18,7 +18,7 @@ function LayoutContentInner({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen  bg-gray-50">
       <CompactGlobalLoadingIndicator />
       {isAuthenticated ? (
         <>
@@ -26,8 +26,8 @@ function LayoutContentInner({ children }: { children: React.ReactNode }) {
           <MobileHeader onMenuClick={toggleSidebar} />
           <MobileSidebar isOpen={sidebarOpen} onClose={toggleSidebar} />
 
-          <main className="flex-1 md:ml-64">
-            <div className="flex flex-col w-full p-4 sm:p-6 md:p-8 min-h-screen page-transition">
+          <main className="flex-1 overflow-y-auto">
+            <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-6 sm:py-8 min-h-screen page-transition">
               {children}
             </div>
           </main>

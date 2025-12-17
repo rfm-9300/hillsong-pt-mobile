@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
@@ -21,21 +22,22 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import rfm.hillsongptapp.util.media.AsyncImage
 
 @Composable
 fun FeedScreen(
-    viewModel: FeedViewModel = koinInject(),
-    onBackClick: () -> Unit = {}
+    navController: NavHostController,
+    viewModel: FeedViewModel = koinInject()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
     FeedScreenContent(
         uiState = uiState,
         onEvent = viewModel::onEvent,
-        onBackClick = onBackClick
+        onBackClick = { navController.popBackStack() }
     )
 }
 
@@ -98,7 +100,7 @@ private fun FeedScreenContent(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }

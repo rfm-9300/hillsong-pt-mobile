@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Refresh
@@ -90,13 +91,14 @@ fun KidsManagementScreen(
                     title = {
                         Column {
                             Text(text = stringResource(Res.string.kids_management_title), fontWeight = FontWeight.Bold)
-                            if (uiState.showConnectionStatus) {
-                                ConnectionStatusIndicator(
-                                        connectionStatus = connectionStatus,
-                                        showText = true,
-                                        compact = true
-                                )
-                            }
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back"
+                            )
                         }
                     },
                     actions = {
@@ -128,12 +130,6 @@ fun KidsManagementScreen(
                             )
                         }
                     }
-            )
-
-            // Connection status banner for non-connected states
-            ConnectionStatusBanner(
-                    connectionStatus = connectionStatus,
-                    onDismiss = null // Don't allow dismissing for now
             )
 
             // Content

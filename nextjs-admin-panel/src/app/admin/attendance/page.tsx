@@ -1,19 +1,19 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { AttendanceRecord, AttendanceStatus, EventType } from '@/lib/types';
 
 type ApiResponse<T = unknown> = { success: boolean; data?: T };
-import { 
-  Card, 
-  Button, 
-  EmptyState, 
+import {
+  Card,
+  Button,
+  EmptyState,
   LoadingOverlay,
   Alert,
   StatCard,
   NavigationHeader
 } from '@/app/components/ui';
-import { useApiCall } from '@/app/hooks';
+import { useMultipleApiCalls } from '@/app/hooks';
 import { api } from '@/lib/api';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -26,44 +26,64 @@ interface AttendanceStats {
   recentActivity: AttendanceRecord[];
 }
 
+interface AttendanceData extends Record<string, unknown> {
+  stats: ApiResponse<AttendanceStats> | null;
+  recentActivity: ApiResponse<AttendanceRecord[]> | null;
+}
+
 const AttendanceOverviewPage: React.FC = () => {
   const [stats, setStats] = useState<AttendanceStats | null>(null);
   const [recentActivity, setRecentActivity] = useState<AttendanceRecord[]>([]);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [hasExecuted, setHasExecuted] = useState(false);
 
-  const { 
-    execute: fetchStats, 
-    loading: loadingStats 
-  } = useApiCall(api.attendance.getStats);
+  // Memoize API calls to prevent infinite loops
+  const apiCalls = useMemo(() => ({
+    stats: () => api.attendance.getStats() as Promise<ApiResponse<AttendanceStats>>,
+    recentActivity: () => api.attendance.getRecent(10) as Promise<ApiResponse<AttendanceRecord[]>>,
+  }), []);
 
-  const { 
-    execute: fetchRecentActivity, 
-    loading: loadingActivity 
-  } = useApiCall(api.attendance.getRecent);
+  const {
+    data,
+    globalLoading,
+    executeAll,
+  } = useMultipleApiCalls<AttendanceData>(apiCalls, {
+    batchLoadingKey: 'attendance_overview',
+    showToUser: false,
+  });
+
+  // Update local state when data changes
+  useEffect(() => {
+    if (data.stats && (data.stats as ApiResponse<AttendanceStats>).success && (data.stats as ApiResponse<AttendanceStats>).data) {
+      setStats((data.stats as ApiResponse<AttendanceStats>).data!);
+    }
+    if (data.recentActivity && (data.recentActivity as ApiResponse<AttendanceRecord[]>).success && (data.recentActivity as ApiResponse<AttendanceRecord[]>).data) {
+      setRecentActivity((data.recentActivity as ApiResponse<AttendanceRecord[]>).data!);
+    }
+  }, [data]);
+
+  // Load data only once on mount
+  useEffect(() => {
+    if (!hasExecuted) {
+      setHasExecuted(true);
+      executeAll().catch((error) => {
+        console.error('Failed to load attendance data:', error);
+        setAlert({ type: 'error', message: 'Failed to load attendance data' });
+      });
+    }
+  }, [hasExecuted, executeAll]);
 
   const loadData = useCallback(async () => {
     try {
-      const [statsResponse, activityResponse] = await Promise.all([
-        fetchStats() as Promise<ApiResponse<AttendanceStats>>,
-        fetchRecentActivity(10) as Promise<ApiResponse<AttendanceRecord[]>>
-      ]);
-
-      if (statsResponse && statsResponse.success && statsResponse.data) {
-        setStats(statsResponse.data);
-      }
-
-      if (activityResponse && activityResponse.success && activityResponse.data) {
-        setRecentActivity(activityResponse.data);
-      }
+      await executeAll();
     } catch (error) {
       console.error('Failed to load attendance data:', error);
       setAlert({ type: 'error', message: 'Failed to load attendance data' });
     }
-  }, [fetchStats, fetchRecentActivity]);
+  }, [executeAll]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  const loadingStats = globalLoading;
+  const loadingActivity = globalLoading;
 
   const formatTimestamp = (timestamp: string) => {
     return new Date(timestamp).toLocaleString();

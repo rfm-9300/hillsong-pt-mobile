@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <string name="calendar_title">Calendário</string>
+    <string name="no_events">Sem eventos para este dia</string>
+    <string name="previous_month">Mês anterior</string>
+    <string name="next_month">Próximo mês</string>
+    <string name="event_details">Detalhes do Evento</string>
+</resources>

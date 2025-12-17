@@ -15,6 +15,8 @@ import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 import rfm.hillsongptapp.core.network.api.AuthApiService
 import rfm.hillsongptapp.core.network.api.AuthApiServiceImpl
+import rfm.hillsongptapp.core.network.api.CalendarApiService
+import rfm.hillsongptapp.core.network.api.CalendarApiServiceImpl
 import rfm.hillsongptapp.core.network.api.CheckInRequestApiService
 import rfm.hillsongptapp.core.network.api.CheckInRequestApiServiceImpl
 import rfm.hillsongptapp.core.network.api.EncountersApiService
@@ -168,7 +170,14 @@ val networkModule =
                 baseUrl = get(qualifier = org.koin.core.qualifier.named("baseUrl"))
             )
         }
-        
+
+        single<CalendarApiService> {
+            CalendarApiServiceImpl(
+                httpClient = get(),
+                baseUrl = get(qualifier = org.koin.core.qualifier.named("baseUrl"))
+            )
+        }
+
         // WebSocket Client for real-time check-in updates
         factory {
             val authTokenProvider = get<AuthTokenProvider>()

@@ -3,7 +3,7 @@
 
     <string name="en">English</string>
     <string name="es">Spanish</string>
-    <string name="kids_management_title">Kids Management</string>
+    <string name="kids_management_title">Kids</string>
     <!-- Child Card -->
     <string name="child_card_age">Age: %1$s years</string>
     <string name="child_card_currently_in">Currently in: %1$s</string>

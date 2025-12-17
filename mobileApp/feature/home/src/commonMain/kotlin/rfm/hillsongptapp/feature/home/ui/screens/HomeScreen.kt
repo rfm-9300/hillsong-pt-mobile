@@ -14,12 +14,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Settings
@@ -52,7 +54,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -77,6 +81,7 @@ import rfm.hillsongptapp.core.navigation.navigateToGroups
 import rfm.hillsongptapp.core.navigation.navigateToGiving
 import rfm.hillsongptapp.core.navigation.navigateToFeed
 import rfm.hillsongptapp.core.navigation.navigateToEvents
+import rfm.hillsongptapp.core.navigation.navigateToCalendar
 import rfm.hillsongptapp.core.navigation.navigateToYouTubeVideo
 import rfm.hillsongptapp.core.network.api.Encounter
 
@@ -268,6 +273,25 @@ fun homeScreen(
                     onClick = {
                         showMenu = false
                         navController.navigateToEvents()
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(Res.string.module_calendar),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.DateRange,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    onClick = {
+                        showMenu = false
+                        navController.navigateToCalendar()
                     }
                 )
 
@@ -525,16 +549,106 @@ fun UpcomingEncountersCarousel(
             }
         }
     } else {
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(horizontal = 4.dp)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(encounters) { encounterWithUrl ->
-                EncounterCard(
-                    encounter = encounterWithUrl.encounter,
-                    imageUrl = encounterWithUrl.imageUrl,
-                    onClick = onEncounterClick
-                )
+            val pagerState = rememberPagerState(pageCount = { encounters.size })
+            val coroutineScope = rememberCoroutineScope()
+
+            Box(modifier = Modifier.fillMaxWidth()) {
+                HorizontalPager(
+                    state = pagerState,
+                    contentPadding = PaddingValues(horizontal = 0.dp),
+                    pageSpacing = 0.dp
+                ) { page ->
+                    val encounterWithUrl = encounters[page]
+                    EncounterCard(
+                        encounter = encounterWithUrl.encounter,
+                        imageUrl = encounterWithUrl.imageUrl,
+                        onClick = onEncounterClick,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                // Navigation arrows
+                if (encounters.size > 1) {
+                    // Left arrow
+                    if (pagerState.currentPage > 0) {
+                        IconButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                                }
+                            },
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .padding(start = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Previous",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                        shape = CircleShape
+                                    )
+                                    .padding(4.dp)
+                            )
+                        }
+                    }
+
+                    // Right arrow
+                    if (pagerState.currentPage < encounters.size - 1) {
+                        IconButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                }
+                            },
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(end = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = "Next",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                        shape = CircleShape
+                                    )
+                                    .padding(4.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Page indicators
+            if (encounters.size > 1) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    repeat(encounters.size) { index ->
+                        Box(
+                            modifier = Modifier
+                                .size(if (index == pagerState.currentPage) 8.dp else 6.dp)
+                                .background(
+                                    color = if (index == pagerState.currentPage)
+                                        MaterialTheme.colorScheme.primary
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                                    shape = CircleShape
+                                )
+                        )
+                    }
+                }
             }
         }
     }
@@ -544,18 +658,18 @@ fun UpcomingEncountersCarousel(
 fun EncounterCard(
     encounter: Encounter,
     imageUrl: String?,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     // Log for debugging
     rfm.hillsongptapp.logging.LoggerHelper.logDebug(
         "EncounterCard - Title: ${encounter.title}, ImageURL: $imageUrl",
         "EncounterCard"
     )
-    
+
     Surface(
-        modifier = Modifier
-            .width(280.dp)
-            .height(180.dp)
+        modifier = modifier
+            .height(240.dp)
             .clip(RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surface,
@@ -692,15 +806,105 @@ fun YouTubeVideosCarousel(
             }
         }
     } else {
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(horizontal = 4.dp)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(videos) { video ->
-                YouTubeVideoCard(
-                    video = video,
-                    onClick = { onVideoClick(video) }
-                )
+            val pagerState = rememberPagerState(pageCount = { videos.size })
+            val coroutineScope = rememberCoroutineScope()
+
+            Box(modifier = Modifier.fillMaxWidth()) {
+                HorizontalPager(
+                    state = pagerState,
+                    contentPadding = PaddingValues(horizontal = 0.dp),
+                    pageSpacing = 0.dp
+                ) { page ->
+                    val video = videos[page]
+                    YouTubeVideoCard(
+                        video = video,
+                        onClick = { onVideoClick(video) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                // Navigation arrows
+                if (videos.size > 1) {
+                    // Left arrow
+                    if (pagerState.currentPage > 0) {
+                        IconButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                                }
+                            },
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .padding(start = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Previous",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                        shape = CircleShape
+                                    )
+                                    .padding(4.dp)
+                            )
+                        }
+                    }
+
+                    // Right arrow
+                    if (pagerState.currentPage < videos.size - 1) {
+                        IconButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                }
+                            },
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(end = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = "Next",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                        shape = CircleShape
+                                    )
+                                    .padding(4.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Page indicators
+            if (videos.size > 1) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    repeat(videos.size) { index ->
+                        Box(
+                            modifier = Modifier
+                                .size(if (index == pagerState.currentPage) 8.dp else 6.dp)
+                                .background(
+                                    color = if (index == pagerState.currentPage)
+                                        MaterialTheme.colorScheme.primary
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                                    shape = CircleShape
+                                )
+                        )
+                    }
+                }
             }
         }
     }
@@ -709,12 +913,12 @@ fun YouTubeVideosCarousel(
 @Composable
 fun YouTubeVideoCard(
     video: rfm.hillsongptapp.core.network.api.YouTubeVideo,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = Modifier
-            .width(280.dp)
-            .height(200.dp)
+        modifier = modifier
+            .height(260.dp)
             .clip(RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surface,
@@ -726,7 +930,7 @@ fun YouTubeVideoCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(140.dp)
+                    .height(180.dp)
             ) {
                 rfm.hillsongptapp.util.media.AsyncImage(
                     imageUrl = video.thumbnailUrl,

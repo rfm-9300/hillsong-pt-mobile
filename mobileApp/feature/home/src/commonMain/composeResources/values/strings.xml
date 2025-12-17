@@ -34,6 +34,7 @@
     <string name="module_giving">Giving</string>
     <string name="module_feed">Feed</string>
     <string name="module_events">Events</string>
+    <string name="module_calendar">Calendar</string>
     
     <!-- Empty States -->
     <string name="no_upcoming_encounters">No upcoming encounters</string>

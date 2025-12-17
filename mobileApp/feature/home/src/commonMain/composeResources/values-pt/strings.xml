@@ -33,6 +33,7 @@
     <string name="module_giving">Ofertas</string>
     <string name="module_feed">Feed</string>
     <string name="module_events">Eventos</string>
+    <string name="module_calendar">Calendário</string>
     
     <!-- Empty States -->
     <string name="no_upcoming_encounters">Sem encontros próximos</string>

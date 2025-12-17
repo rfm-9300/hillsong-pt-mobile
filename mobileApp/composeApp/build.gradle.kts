@@ -80,6 +80,7 @@ kotlin {
             implementation(projects.feature.giving)
             implementation(projects.feature.groups)
             implementation(projects.feature.videoPlayer)
+            implementation(projects.feature.calendar)
 
             implementation(compose.runtime)
             implementation(compose.foundation)

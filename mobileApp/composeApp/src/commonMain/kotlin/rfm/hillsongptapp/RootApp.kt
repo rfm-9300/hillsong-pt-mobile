@@ -29,6 +29,7 @@ import rfm.hillsongptapp.feature.groups.GroupsScreen
 import rfm.hillsongptapp.feature.giving.GivingScreen
 import rfm.hillsongptapp.feature.feed.FeedScreen
 import rfm.hillsongptapp.feature.events.EventsScreen
+import rfm.hillsongptapp.feature.calendar.CalendarScreen
 import rfm.hillsongptapp.feature.home.ui.screens.homeScreen
 import rfm.hillsongptapp.feature.videoplayer.ui.VideoPlayerScreen
 import rfm.hillsongptapp.logging.LoggerHelper
@@ -48,15 +49,16 @@ fun RootNavigation() {
     ) {
         loginGraph(content = { LoginScreen(navigator = rootNavController) }, rootNavController = rootNavController)
         homeGraph(
-            stream = { StreamScreen() },
-            settings = { SettingsScreen() },
+            stream = { StreamScreen(navController = rootNavController) },
+            settings = { SettingsScreen(navController = rootNavController) },
             profile = { ProfileScreen(navController = rootNavController) },
-            ministries = { MinistriesScreen() },
+            ministries = { MinistriesScreen(navController = rootNavController) },
             kids = { KidsScreen(navController = rootNavController) },
-            groups = { GroupsScreen() },
-            giving = { GivingScreen() },
-            feed = { FeedScreen() },
-            events = { EventsScreen() },
+            groups = { GroupsScreen(navController = rootNavController) },
+            giving = { GivingScreen(navController = rootNavController) },
+            feed = { FeedScreen(navController = rootNavController) },
+            events = { EventsScreen(navController = rootNavController) },
+            calendar = { CalendarScreen(navController = rootNavController) },
             homeScreen = { homeScreen(navController = rootNavController) },
             youtubeVideoScreen = { videoId, videoUrl ->
                 VideoPlayerScreen(

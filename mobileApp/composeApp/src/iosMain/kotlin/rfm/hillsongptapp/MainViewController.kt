@@ -1,6 +1,7 @@
 package rfm.hillsongptapp
 
 import androidx.compose.ui.window.ComposeUIViewController
+import rfm.hillsongptapp.core.designsystem.theme.AppTheme
 import rfm.hillsongptapp.di.initKoin
 
 
@@ -15,4 +16,6 @@ fun MainViewController() = ComposeUIViewController(
             )
         }
     }
-) { RootApp() }
+) { AppTheme {
+    RootApp()
+} }
