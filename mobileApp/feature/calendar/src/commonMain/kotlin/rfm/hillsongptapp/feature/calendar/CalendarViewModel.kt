@@ -96,7 +96,7 @@ class CalendarViewModel(
         _uiState.value = currentState.copy(
             selectedDate = date,
             selectedDayEvents = eventsForDay,
-            showEventSheet = eventsForDay.isNotEmpty()
+            showEventSheet = false
         )
     }
 

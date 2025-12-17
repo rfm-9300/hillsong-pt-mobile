@@ -15,29 +15,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -50,12 +45,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import kotlinx.datetime.Clock
-import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.minus
-import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 import rfm.hillsongptapp.core.designsystem.HillsongTopAppBar
@@ -68,7 +60,6 @@ fun CalendarScreen(
     viewModel: CalendarViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val sheetState = rememberModalBottomSheetState()
 
     Scaffold(
         topBar = {
@@ -92,41 +83,54 @@ fun CalendarScreen(
                     CircularProgressIndicator()
                 }
             } else {
-                // Month header with navigation
-                MonthHeader(
-                    month = uiState.currentMonth,
-                    year = uiState.currentYear,
-                    onPreviousMonth = { viewModel.onEvent(CalendarUiEvent.PreviousMonth) },
-                    onNextMonth = { viewModel.onEvent(CalendarUiEvent.NextMonth) }
-                )
+                // Fixed Calendar Section
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    MonthHeader(
+                        month = uiState.currentMonth,
+                        year = uiState.currentYear,
+                        onPreviousMonth = { viewModel.onEvent(CalendarUiEvent.PreviousMonth) },
+                        onNextMonth = { viewModel.onEvent(CalendarUiEvent.NextMonth) }
+                    )
 
-                // Day of week labels
-                DayOfWeekLabels()
+                    DayOfWeekLabels()
 
-                // Calendar grid
-                CalendarGrid(
-                    month = uiState.currentMonth,
-                    year = uiState.currentYear,
-                    events = uiState.events,
-                    selectedDate = uiState.selectedDate,
-                    onDateSelected = { date -> viewModel.onEvent(CalendarUiEvent.SelectDate(date)) }
-                )
-            }
-        }
+                    CalendarGrid(
+                        month = uiState.currentMonth,
+                        year = uiState.currentYear,
+                        events = uiState.events,
+                        selectedDate = uiState.selectedDate,
+                        onDateSelected = { date -> viewModel.onEvent(CalendarUiEvent.SelectDate(date)) }
+                    )
+                }
 
-        // Bottom sheet for events on selected day
-        if (uiState.showEventSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { viewModel.onEvent(CalendarUiEvent.DismissEventSheet) },
-                sheetState = sheetState
-            ) {
-                EventsBottomSheetContent(
-                    date = uiState.selectedDate ?: "",
-                    events = uiState.selectedDayEvents,
-                    onEventClick = { eventId ->
-                        viewModel.onEvent(CalendarUiEvent.SelectEvent(eventId))
+                HorizontalDivider(modifier = Modifier.padding(top = 8.dp))
+
+                // Scrollable Events Section
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f) // Takes remaining space
+                ) {
+                    if (uiState.selectedDate == null) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(
+                                text = "Select a date to view events",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
+                        SelectedDayEvents(
+                            date = uiState.selectedDate!!,
+                            events = uiState.selectedDayEvents,
+                            onEventClick = { eventId ->
+                                viewModel.onEvent(CalendarUiEvent.SelectEvent(eventId))
+                            }
+                        )
                     }
-                )
+                }
             }
         }
     }
@@ -216,9 +220,7 @@ private fun CalendarGrid(
         else -> 30
     }
 
-    // Get the day of week of the first day (0 = Monday, 6 = Sunday in kotlinx.datetime)
     val firstDayOfWeek = firstDayOfMonth.dayOfWeek
-    // Convert to Sunday-based (0 = Sunday)
     val startOffset = when (firstDayOfWeek) {
         DayOfWeek.SUNDAY -> 0
         DayOfWeek.MONDAY -> 1
@@ -229,7 +231,6 @@ private fun CalendarGrid(
         DayOfWeek.SATURDAY -> 6
     }
 
-    // Calculate previous month days
     val previousMonth = if (month == 1) 12 else month - 1
     val previousYear = if (month == 1) year - 1 else year
     val daysInPreviousMonth = when (previousMonth) {
@@ -239,23 +240,22 @@ private fun CalendarGrid(
         else -> 30
     }
 
-    // Build list of day cells (42 cells = 6 weeks)
     val dayCells = mutableListOf<DayCell>()
 
-    // Previous month days
+    // Previous month (fillers)
     for (i in startOffset - 1 downTo 0) {
         val day = daysInPreviousMonth - i
         val date = formatDate(previousYear, previousMonth, day)
         dayCells.add(DayCell(day, date, isCurrentMonth = false, hasEvents = events.containsKey(date)))
     }
 
-    // Current month days
+    // Current month
     for (day in 1..daysInMonth) {
         val date = formatDate(year, month, day)
         dayCells.add(DayCell(day, date, isCurrentMonth = true, hasEvents = events.containsKey(date)))
     }
 
-    // Next month days
+    // Next month (fillers)
     val nextMonth = if (month == 12) 1 else month + 1
     val nextYear = if (month == 12) year + 1 else year
     var nextDay = 1
@@ -265,20 +265,26 @@ private fun CalendarGrid(
         nextDay++
     }
 
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(7),
+    // Render Grid using Column/Row to avoid nesting infinite-height LazyVerticalGrid in main Column
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp),
-        userScrollEnabled = false
+            .padding(horizontal = 8.dp)
     ) {
-        items(dayCells) { cell ->
-            CalendarDayCell(
-                cell = cell,
-                isToday = cell.date == formatDate(today.year, today.monthNumber, today.dayOfMonth),
-                isSelected = cell.date == selectedDate,
-                onClick = { onDateSelected(cell.date) }
-            )
+        val rows = dayCells.chunked(7)
+        rows.forEach { rowCells ->
+            Row(modifier = Modifier.fillMaxWidth()) {
+                rowCells.forEach { cell ->
+                    Box(modifier = Modifier.weight(1f)) {
+                        CalendarDayCell(
+                            cell = cell,
+                            isToday = cell.date == formatDate(today.year, today.monthNumber, today.dayOfMonth),
+                            isSelected = cell.date == selectedDate,
+                            onClick = { onDateSelected(cell.date) }
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -329,7 +335,6 @@ private fun CalendarDayCell(
                 color = textColor
             )
 
-            // Event indicator dot
             if (cell.hasEvents && cell.isCurrentMonth) {
                 Box(
                     modifier = Modifier
@@ -346,33 +351,41 @@ private fun CalendarDayCell(
 }
 
 @Composable
-private fun EventsBottomSheetContent(
+private fun SelectedDayEvents(
     date: String,
     events: List<CalendarEvent>,
     onEventClick: (Long) -> Unit
 ) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .padding(16.dp)
     ) {
         Text(
             text = formatDisplayDate(date),
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         if (events.isEmpty()) {
-            Text(
-                text = "No events for this day",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                Text(
+                    text = "No events scheduled for this day.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 32.dp)
+                )
+            }
         } else {
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxSize()
             ) {
                 items(events) { event ->
                     EventCard(
@@ -380,10 +393,10 @@ private fun EventsBottomSheetContent(
                         onClick = { onEventClick(event.id) }
                     )
                 }
+                // Bottom padding
+                item { Spacer(modifier = Modifier.height(32.dp)) }
             }
         }
-
-        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
@@ -397,7 +410,7 @@ private fun EventCard(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         ),
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -416,7 +429,6 @@ private fun EventCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Time
             if (event.startTime != null) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
@@ -439,7 +451,6 @@ private fun EventCard(
                 }
             }
 
-            // Location
             event.location?.let { location ->
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(
