@@ -11,10 +11,10 @@ import java.time.LocalDateTime
  */
 data class CreateCheckInRequestDto(
     @field:NotNull(message = "Child ID is required")
-    val childId: Long,
+    val childId: String,
     
     @field:NotNull(message = "Service ID is required")
-    val serviceId: Long,
+    val serviceId: String,
     
     val notes: String? = null
 )
@@ -41,7 +41,7 @@ data class RejectCheckInDto(
  * Returned when a parent creates a check-in request
  */
 data class CheckInRequestResponse(
-    val id: Long,
+    val id: String,
     val token: String,
     val qrCodeData: String, // Token string to be encoded in QR code
     val child: ChildSummaryResponse,
@@ -64,7 +64,7 @@ data class CheckInRequestResponse(
  * Returned when staff scans a QR code to view request details
  */
 data class CheckInRequestDetailsResponse(
-    val id: Long,
+    val id: String,
     val child: ChildDetailedResponse, // Includes medical info
     val service: KidsServiceResponse,
     val requestedBy: ParentResponse,
@@ -91,7 +91,7 @@ data class CheckInRequestDetailsResponse(
  * Used in check-in verification to show all relevant child details
  */
 data class ChildDetailedResponse(
-    val id: Long,
+    val id: String,
     val firstName: String,
     val lastName: String,
     val fullName: String,
@@ -111,8 +111,8 @@ data class ChildDetailedResponse(
  * Returned when staff approves a check-in request
  */
 data class CheckInApprovalResponse(
-    val requestId: Long,
-    val attendanceId: Long,
+    val requestId: String,
+    val attendanceId: String,
     val child: ChildSummaryResponse,
     val service: KidsServiceResponse,
     
@@ -128,7 +128,7 @@ data class CheckInApprovalResponse(
  * Returned when staff rejects a check-in request
  */
 data class CheckInRejectionResponse(
-    val requestId: Long,
+    val requestId: String,
     val child: ChildSummaryResponse,
     val service: KidsServiceResponse,
     val rejectedBy: String,
@@ -141,9 +141,9 @@ data class CheckInRejectionResponse(
  * Sent to parents when their check-in request status changes
  */
 data class CheckInStatusNotification(
-    val requestId: Long,
-    val childId: Long,
-    val serviceId: Long,
+    val requestId: String,
+    val childId: String,
+    val serviceId: String,
     val status: String,
     
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -152,5 +152,5 @@ data class CheckInStatusNotification(
     val message: String? = null,
     val rejectionReason: String? = null,
     val approvedBy: String? = null,
-    val attendanceId: Long? = null
+    val attendanceId: String? = null
 )

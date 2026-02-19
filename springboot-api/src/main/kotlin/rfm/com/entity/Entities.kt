@@ -1,49 +1,32 @@
 package rfm.com.entity
 
 /**
- * This file serves as an index for all JPA entities in the application.
- * It provides a central location to reference all entity classes for
- * configuration and documentation purposes.
+ * This file serves as an index for all MongoDB documents in the application.
  */
 
-// Core entities
-typealias UserEntity = User
-typealias UserProfileEntity = UserProfile
-typealias EventEntity = Event
-typealias PostEntity = Post
+// Core documents
+typealias UserDocument = User
+typealias EventDocument = Event
+typealias PostDocument = Post
 
-// Supporting entities
-typealias PostCommentEntity = PostComment
-typealias UserTokenEntity = UserToken
-typealias PasswordResetEntity = PasswordReset
-typealias RoleEntity = Role
-typealias UserRoleEntity = UserRole
+// Supporting documents
+typealias EncounterDocument = Encounter
+typealias CalendarEventDocument = CalendarEvent
+typealias YouTubeVideoDocument = YouTubeVideo
 
-// Specialized feature entities
-typealias AttendanceEntity = Attendance
-typealias KidEntity = Kid
-typealias KidAttendanceEntity = KidAttendance
-typealias ServiceEntity = Service
-typealias KidsServiceEntity = KidsService
-typealias CheckInRequestEntity = CheckInRequest
+// Kids feature documents
+typealias KidDocument = Kid
+typealias KidAttendanceDocument = KidAttendance
+typealias ServiceDocument = Service
+typealias KidsServiceDocument = KidsService
+typealias CheckInRequestDocument = CheckInRequest
+typealias AttendanceDocument = Attendance
 
 /**
- * List of all entity classes for JPA configuration
+ * Standard role names used in the system
  */
-val ALL_ENTITIES = listOf(
-    User::class.java,
-    UserProfile::class.java,
-    Event::class.java,
-    Post::class.java,
-    PostComment::class.java,
-    UserToken::class.java,
-    PasswordReset::class.java,
-    Attendance::class.java,
-    Kid::class.java,
-    KidAttendance::class.java,
-    Service::class.java,
-    KidsService::class.java,
-    CheckInRequest::class.java,
-    Role::class.java,
-    UserRole::class.java
-)
+object RoleNames {
+    const val USER = "USER"
+    const val ADMIN = "ADMIN"
+    const val STAFF = "STAFF"
+}

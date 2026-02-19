@@ -1,7 +1,6 @@
 plugins {
     kotlin("jvm") version "1.9.22"
     kotlin("plugin.spring") version "1.9.22"
-    kotlin("plugin.jpa") version "1.9.22"
     id("org.springframework.boot") version "3.2.2"
     id("io.spring.dependency-management") version "1.1.4"
     id("com.google.cloud.tools.jib") version "3.4.0"
@@ -62,11 +61,11 @@ repositories {
 
 jib {
     from {
-        image = "openjdk:17-jdk-alpine"
+        image = "eclipse-temurin:17-jdk-alpine"
     }
     to {
         image = "rfm9300/spring-boot-central"
-        tags = setOf("${project.version}")
+        tags = setOf("${project.version}", "latest")
     }
 }
 
@@ -75,7 +74,7 @@ dependencies {
     // Spring Boot Starters
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-mail")
@@ -96,15 +95,18 @@ dependencies {
     implementation("com.auth0:java-jwt:4.4.0")
     
     // Database
-    implementation("org.postgresql:postgresql")
-    implementation("org.flywaydb:flyway-core")
-    runtimeOnly("com.h2database:h2")
+    // MongoDB is provided by spring-boot-starter-data-mongodb
     
     // OAuth2 Support
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     
     // Utilities
     implementation("commons-codec:commons-codec:1.15")
+    
+    // S3-compatible Object Storage (MinIO)
+    implementation(platform("software.amazon.awssdk:bom:2.25.16"))
+    implementation("software.amazon.awssdk:s3")
+    implementation("software.amazon.awssdk:sts")
     
     // Logging
     implementation("net.logstash.logback:logstash-logback-encoder:7.4")
@@ -115,7 +117,7 @@ dependencies {
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
-    testImplementation("org.testcontainers:postgresql")
+    testImplementation("org.testcontainers:mongodb")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("com.ninja-squad:springmockk:4.0.2")

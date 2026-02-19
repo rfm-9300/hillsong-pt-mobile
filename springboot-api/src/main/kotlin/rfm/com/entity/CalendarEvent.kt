@@ -1,57 +1,42 @@
 package rfm.com.entity
 
-import jakarta.persistence.*
-import org.hibernate.annotations.CreationTimestamp
-import org.hibernate.annotations.UpdateTimestamp
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
-@Entity
-@Table(name = "calendar_event")
+@Document(collection = "calendar_events")
 data class CalendarEvent(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    val id: String? = null,
 
-    @Column(nullable = false, length = 255)
     val title: String,
 
-    @Column(columnDefinition = "TEXT")
     val description: String? = null,
 
-    @Column(name = "event_date", nullable = false)
     val eventDate: LocalDate,
 
-    @Column(name = "start_time")
     val startTime: LocalTime? = null,
 
-    @Column(name = "end_time")
     val endTime: LocalTime? = null,
 
-    @Column(length = 255)
     val location: String? = null,
 
-    @Column(name = "image_path", length = 500)
     val imagePath: String? = null,
 
-    @Column(name = "is_all_day", nullable = false)
     val isAllDay: Boolean = false,
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "event_type", length = 50, nullable = false)
     val eventType: CalendarEventType = CalendarEventType.GENERAL,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by_id")
-    val createdBy: UserProfile? = null,
+    val createdById: String? = null,
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @CreatedDate
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
+    @LastModifiedDate
     val updatedAt: LocalDateTime = LocalDateTime.now()
 ) {
     override fun equals(other: Any?): Boolean {

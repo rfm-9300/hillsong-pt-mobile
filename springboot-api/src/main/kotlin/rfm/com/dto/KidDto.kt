@@ -24,7 +24,7 @@ data class ChildRegistrationRequest(
     
     val gender: Gender? = null,
     
-    val secondaryParentId: Long? = null,
+    val secondaryParentId: String? = null,
     
     @field:Size(max = 255, message = "Emergency contact name must not exceed 255 characters")
     val emergencyContactName: String? = null,
@@ -53,7 +53,7 @@ data class ChildUpdateRequest(
     
     val gender: Gender? = null,
     
-    val secondaryParentId: Long? = null,
+    val secondaryParentId: String? = null,
     
     @field:Size(max = 255, message = "Emergency contact name must not exceed 255 characters")
     val emergencyContactName: String? = null,
@@ -72,7 +72,7 @@ data class ChildUpdateRequest(
  * Response DTO for child information
  */
 data class ChildResponse(
-    val id: Long,
+    val id: String,
     val firstName: String,
     val lastName: String,
     val fullName: String,
@@ -109,7 +109,7 @@ data class ChildResponse(
  * Response DTO for parent information (simplified)
  */
 data class ParentResponse(
-    val id: Long,
+    val id: String,
     val firstName: String,
     val lastName: String,
     val fullName: String,
@@ -123,7 +123,7 @@ data class ParentResponse(
 data class CheckInStatusResponse(
     val isCheckedIn: Boolean,
     val serviceName: String? = null,
-    val serviceId: Long? = null,
+    val serviceId: String? = null,
     
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     val checkInTime: LocalDateTime? = null,
@@ -138,10 +138,10 @@ data class CheckInStatusResponse(
  */
 data class KidsCheckInRequest(
     @field:NotNull(message = "Child ID is required")
-    val childId: Long,
+    val childId: String,
     
     @field:NotNull(message = "Service ID is required")
-    val serviceId: Long,
+    val serviceId: String,
     
     val notes: String? = null
 )
@@ -151,7 +151,7 @@ data class KidsCheckInRequest(
  */
 data class KidsCheckOutRequest(
     @field:NotNull(message = "Child ID is required")
-    val childId: Long,
+    val childId: String,
     
     val notes: String? = null
 )
@@ -160,7 +160,7 @@ data class KidsCheckOutRequest(
  * Response DTO for kids check-in operations
  */
 data class KidsCheckInResponse(
-    val id: Long,
+    val id: String,
     val child: ChildSummaryResponse,
     val service: KidsServiceResponse,
     
@@ -179,7 +179,7 @@ data class KidsCheckInResponse(
     
     // QR code check-in information
     val checkInMethod: CheckInMethod,
-    val checkInRequestId: Long? = null,
+    val checkInRequestId: String? = null,
     val approvedByStaff: String? = null
 )
 
@@ -195,9 +195,9 @@ enum class CheckInMethod {
  * Response DTO for kids check-out operations
  */
 data class KidsCheckOutResponse(
-    val id: Long,
-    val childId: Long,  // Flat field for mobile app compatibility
-    val serviceId: Long,  // Flat field for mobile app compatibility
+    val id: String,
+    val childId: String,  // Flat field for mobile app compatibility
+    val serviceId: String,  // Flat field for mobile app compatibility
     val child: ChildSummaryResponse,
     val service: KidsServiceResponse,
     
@@ -218,7 +218,7 @@ data class KidsCheckOutResponse(
  * Simplified child response for list views
  */
 data class ChildSummaryResponse(
-    val id: Long,
+    val id: String,
     val firstName: String,
     val lastName: String,
     val fullName: String,

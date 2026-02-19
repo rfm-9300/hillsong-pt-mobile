@@ -47,7 +47,7 @@ object LoggingUtils {
     /**
      * Set user context in MDC for logging
      */
-    fun setUserContext(userId: Long?, sessionId: String? = null) {
+    fun setUserContext(userId: String?, sessionId: String? = null) {
         userId?.let { MDC.put(USER_ID_KEY, it.toString()) }
         sessionId?.let { MDC.put(SESSION_ID_KEY, it) }
     }
@@ -134,7 +134,7 @@ object SecurityLogger {
      */
     fun logSecurityEvent(
         event: SecurityEvent,
-        userId: Long? = null,
+        userId: String? = null,
         email: String? = null,
         ipAddress: String? = null,
         userAgent: String? = null,
@@ -226,7 +226,7 @@ object AccessLogger {
     fun logRequest(
         request: HttpServletRequest,
         requestId: String,
-        userId: Long? = null
+        userId: String? = null
     ) {
         try {
             MDC.put("accessRequestId", requestId)

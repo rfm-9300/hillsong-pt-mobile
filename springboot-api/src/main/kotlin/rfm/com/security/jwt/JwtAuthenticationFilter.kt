@@ -71,7 +71,7 @@ class JwtAuthenticationFilter(
                 
                 // Create a proper UserPrincipal with a valid user ID (999 for master test user)
                 val masterUserPrincipal = UserPrincipal(
-                    id = 4L,
+                    id = "master-test-user",
                     email = "master-test@test.com",
                     password = "",
                     authorities = authorities,
@@ -92,10 +92,12 @@ class JwtAuthenticationFilter(
             }
             // Normal JWT validation
             else if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt!!)) {
-                val userId = jwtTokenProvider.getUserIdFromToken(jwt)
-                
-                // Load user details with authorities from database
-                val userDetails = customUserDetailsService.loadUserById(userId)
+                // Get user ID and email from JWT claims
+                val userId = jwtTokenProvider.getUserIdFromToken(jwt).toString()
+                val email = runCatching { jwtTokenProvider.getEmailFromToken(jwt) }.getOrNull()
+
+                // Load user details by authId — auto-provisions if not found in local DB
+                val userDetails = customUserDetailsService.loadUserByAuthId(userId, email)
                 
                 val authentication = UsernamePasswordAuthenticationToken(
                     userDetails,

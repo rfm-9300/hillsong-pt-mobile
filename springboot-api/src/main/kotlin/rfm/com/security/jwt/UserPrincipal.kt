@@ -5,15 +5,16 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import rfm.com.entity.User
-import rfm.com.service.OAuth2Service
 
 /**
- * UserPrincipal represents the authenticated user in Spring Security context
+ * UserPrincipal represents the authenticated user in Spring Security context.
+ * Credentials are managed by auth-service; this only holds identity and roles.
  */
 data class UserPrincipal(
-    val id: Long,
+    val id: String,
+    val authId: String? = null,
     private val email: String,
-    private val password: String,
+    private val password: String = "",
     private val authorities: Collection<GrantedAuthority>,
     val verified: Boolean = true,
     val enabled: Boolean = true
@@ -25,9 +26,6 @@ data class UserPrincipal(
 
     override fun getUsername(): String = email
     
-    /**
-     * Get the email address of the user
-     */
     fun getEmail(): String = email
 
     override fun isAccountNonExpired(): Boolean = true
@@ -38,37 +36,30 @@ data class UserPrincipal(
 
     override fun isEnabled(): Boolean = enabled && verified
 
-
     companion object {
-        private val logger = LoggerFactory.getLogger(OAuth2Service::class.java)
-        /**
-         * Create UserPrincipal from User entity
-         */
+        private val logger = LoggerFactory.getLogger(UserPrincipal::class.java)
+
         fun create(user: User): UserPrincipal {
             val authorities = mutableListOf<GrantedAuthority>()
             logger.debug("Creating UserPrincipal for user: ${user.email}")
             
-            // Get roles from user_roles table
-            val roleNames = user.getRoleNames()
-            logger.debug("User roles from database: $roleNames")
+            // Get roles directly from the user document
+            val roles = user.roles
+            logger.debug("User roles: $roles")
             
-            // Add authorities based on roles
-            roleNames.forEach { roleName ->
-                authorities.add(SimpleGrantedAuthority("ROLE_$roleName"))
-                logger.debug("Added ROLE_$roleName for user: ${user.email}")
+            roles.forEach { role ->
+                authorities.add(SimpleGrantedAuthority("ROLE_${role.name}"))
+                logger.debug("Added ROLE_${role.name} for user: ${user.email}")
             }
             
-            // Fallback: If no roles found in user_roles table, check legacy isAdmin flag
+            // Fallback: if no roles, add USER role
             if (authorities.isEmpty()) {
-                logger.debug("No roles found in user_roles table, checking legacy isAdmin flag")
                 authorities.add(SimpleGrantedAuthority("ROLE_USER"))
-                logger.debug("Added ROLE_USER (fallback)")
+                logger.debug("Added ROLE_USER (fallback) for user: ${user.email}")
                 
-                user.profile?.let { profile ->
-                    if (profile.isAdmin) {
-                        authorities.add(SimpleGrantedAuthority("ROLE_ADMIN"))
-                        logger.debug("Added ROLE_ADMIN from legacy flag for user: ${user.email}")
-                    }
+                if (user.isAdmin) {
+                    authorities.add(SimpleGrantedAuthority("ROLE_ADMIN"))
+                    logger.debug("Added ROLE_ADMIN from isAdmin flag for user: ${user.email}")
                 }
             }
             
@@ -76,10 +67,11 @@ data class UserPrincipal(
             
             return UserPrincipal(
                 id = user.id!!,
+                authId = user.authId,
                 email = user.email,
-                password = user.password,
+                password = "",
                 authorities = authorities,
-                verified = user.verified,
+                verified = true,
                 enabled = true
             )
         }

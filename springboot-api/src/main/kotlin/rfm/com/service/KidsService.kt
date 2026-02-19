@@ -1,34 +1,29 @@
 package rfm.com.service
 
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import rfm.com.dto.*
 import rfm.com.entity.*
 import rfm.com.repository.*
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Service
-@Transactional
 class KidsService(
     private val kidRepository: KidRepository,
     private val kidsServiceRepository: KidsServiceRepository,
     private val kidAttendanceRepository: KidAttendanceRepository,
-    private val userProfileRepository: UserProfileRepository
+    private val userRepository: UserRepository
 ) {
 
     /**
      * Get all available kids services with optional filtering
      */
-    @Transactional(readOnly = true)
     fun getAvailableServices(
         minAge: Int? = null,
         maxAge: Int? = null,
         acceptingCheckIns: Boolean? = null,
         location: String? = null
     ): List<KidsServiceResponse> {
-        val services = kidsServiceRepository.findActiveKidsServices()
+        val services = kidsServiceRepository.findByIsActiveTrue()
         
         return services.filter { service ->
             var matches = true
@@ -53,25 +48,22 @@ class KidsService(
     /**
      * Get a specific kids service
      */
-    @Transactional(readOnly = true)
-    fun getService(serviceId: Long): KidsServiceResponse {
-        val service = kidsServiceRepository.findByIdOrNull(serviceId)
+    fun getService(serviceId: String): KidsServiceResponse {
+        val service = kidsServiceRepository.findById(serviceId).orElse(null)
             ?: throw IllegalArgumentException("Kids service not found with ID: $serviceId")
         
         return mapToKidsServiceResponse(service)
     }
 
-
-
     /**
      * Register a new child
      */
-    fun registerChild(parentId: Long, request: ChildRegistrationRequest): ChildResponse {
-        val primaryParent = userProfileRepository.findByIdOrNull(parentId)
+    fun registerChild(parentId: String, request: ChildRegistrationRequest): ChildResponse {
+        userRepository.findById(parentId).orElse(null)
             ?: throw IllegalArgumentException("Parent not found with ID: $parentId")
         
-        val secondaryParent = request.secondaryParentId?.let { 
-            userProfileRepository.findByIdOrNull(it)
+        request.secondaryParentId?.let {
+            userRepository.findById(it).orElse(null)
                 ?: throw IllegalArgumentException("Secondary parent not found with ID: $it")
         }
         
@@ -80,8 +72,8 @@ class KidsService(
             lastName = request.lastName,
             dateOfBirth = request.dateOfBirth,
             gender = request.gender,
-            primaryParent = primaryParent,
-            secondaryParent = secondaryParent,
+            primaryParentId = parentId,
+            secondaryParentId = request.secondaryParentId,
             emergencyContactName = request.emergencyContactName,
             emergencyContactPhone = request.emergencyContactPhone,
             medicalNotes = request.medicalNotes,
@@ -97,27 +89,22 @@ class KidsService(
     /**
      * Get children for a specific parent
      */
-    @Transactional(readOnly = true)
-    fun getChildrenForParent(parentId: Long): List<ChildResponse> {
-        val parent = userProfileRepository.findByIdOrNull(parentId)
+    fun getChildrenForParent(parentId: String): List<ChildResponse> {
+        userRepository.findById(parentId).orElse(null)
             ?: throw IllegalArgumentException("Parent not found with ID: $parentId")
         
-        val children = kidRepository.findByEitherParent(parent).filter { it.isActive }
+        val children = kidRepository.findByEitherParent(parentId).filter { it.isActive }
         return children.map { mapToChildResponse(it) }
     }
 
     /**
      * Get a specific child (with parent verification)
      */
-    @Transactional(readOnly = true)
-    fun getChild(childId: Long, parentId: Long): ChildResponse {
-        val child = kidRepository.findByIdOrNull(childId)
+    fun getChild(childId: String, parentId: String): ChildResponse {
+        val child = kidRepository.findById(childId).orElse(null)
             ?: throw IllegalArgumentException("Child not found with ID: $childId")
         
-        val parent = userProfileRepository.findByIdOrNull(parentId)
-            ?: throw IllegalArgumentException("Parent not found with ID: $parentId")
-        
-        if (!child.hasParent(parent)) {
+        if (!child.hasParent(parentId)) {
             throw SecurityException("Access denied: You are not authorized to view this child")
         }
         
@@ -127,19 +114,16 @@ class KidsService(
     /**
      * Update a child (with parent verification)
      */
-    fun updateChild(childId: Long, parentId: Long, request: ChildUpdateRequest): ChildResponse {
-        val child = kidRepository.findByIdOrNull(childId)
+    fun updateChild(childId: String, parentId: String, request: ChildUpdateRequest): ChildResponse {
+        val child = kidRepository.findById(childId).orElse(null)
             ?: throw IllegalArgumentException("Child not found with ID: $childId")
         
-        val parent = userProfileRepository.findByIdOrNull(parentId)
-            ?: throw IllegalArgumentException("Parent not found with ID: $parentId")
-        
-        if (!child.hasParent(parent)) {
+        if (!child.hasParent(parentId)) {
             throw SecurityException("Access denied: You are not authorized to update this child")
         }
         
-        val secondaryParent = request.secondaryParentId?.let { 
-            userProfileRepository.findByIdOrNull(it)
+        request.secondaryParentId?.let {
+            userRepository.findById(it).orElse(null)
                 ?: throw IllegalArgumentException("Secondary parent not found with ID: $it")
         }
         
@@ -148,7 +132,7 @@ class KidsService(
             lastName = request.lastName ?: child.lastName,
             dateOfBirth = request.dateOfBirth ?: child.dateOfBirth,
             gender = request.gender ?: child.gender,
-            secondaryParent = secondaryParent ?: child.secondaryParent,
+            secondaryParentId = request.secondaryParentId ?: child.secondaryParentId,
             emergencyContactName = request.emergencyContactName ?: child.emergencyContactName,
             emergencyContactPhone = request.emergencyContactPhone ?: child.emergencyContactPhone,
             medicalNotes = request.medicalNotes ?: child.medicalNotes,
@@ -166,14 +150,11 @@ class KidsService(
     /**
      * Delete a child (with parent verification)
      */
-    fun deleteChild(childId: Long, parentId: Long) {
-        val child = kidRepository.findByIdOrNull(childId)
+    fun deleteChild(childId: String, parentId: String) {
+        val child = kidRepository.findById(childId).orElse(null)
             ?: throw IllegalArgumentException("Child not found with ID: $childId")
         
-        val parent = userProfileRepository.findByIdOrNull(parentId)
-            ?: throw IllegalArgumentException("Parent not found with ID: $parentId")
-        
-        if (!child.hasParent(parent)) {
+        if (!child.hasParent(parentId)) {
             throw SecurityException("Access denied: You are not authorized to delete this child")
         }
         
@@ -192,18 +173,15 @@ class KidsService(
         message = "Use QR code-based check-in system via CheckInRequestService",
         level = DeprecationLevel.WARNING
     )
-    fun checkInChild(parentId: Long, request: KidsCheckInRequest): KidsCheckInResponse {
-        val child = kidRepository.findByIdOrNull(request.childId)
+    fun checkInChild(parentId: String, request: KidsCheckInRequest): KidsCheckInResponse {
+        val child = kidRepository.findById(request.childId).orElse(null)
             ?: throw IllegalArgumentException("Child not found with ID: ${request.childId}")
         
-        val parent = userProfileRepository.findByIdOrNull(parentId)
-            ?: throw IllegalArgumentException("Parent not found with ID: $parentId")
-        
-        if (!child.hasParent(parent)) {
+        if (!child.hasParent(parentId)) {
             throw SecurityException("Access denied: You are not authorized to check in this child")
         }
         
-        val service = kidsServiceRepository.findByIdOrNull(request.serviceId)
+        val service = kidsServiceRepository.findById(request.serviceId).orElse(null)
             ?: throw IllegalArgumentException("Kids service not found with ID: ${request.serviceId}")
         
         if (!service.isActive) {
@@ -214,16 +192,17 @@ class KidsService(
             throw IllegalStateException("Check-in is not currently open for this service")
         }
         
-        if (!child.isEligibleForService(service)) {
+        if (child.age < service.minAge || child.age > service.maxAge) {
             throw IllegalArgumentException("Child is not eligible for this service")
         }
         
         // Check if child is already checked in to this service today
-        val existingCheckIn = kidAttendanceRepository.findByKidAndCheckInTimeBetween(
-            child,
-            LocalDateTime.now().toLocalDate().atStartOfDay(),
-            LocalDateTime.now().toLocalDate().atTime(23, 59, 59)
-        ).firstOrNull { it.status == AttendanceStatus.CHECKED_IN && it.kidsService.id == service.id }
+        val todayStart = LocalDateTime.now().toLocalDate().atStartOfDay()
+        val todayEnd = LocalDateTime.now().toLocalDate().atTime(23, 59, 59)
+        val todayAttendances = kidAttendanceRepository.findByCheckInTimeBetween(todayStart, todayEnd)
+        val existingCheckIn = todayAttendances.firstOrNull { 
+            it.kidId == child.id && it.status == AttendanceStatus.CHECKED_IN && it.kidsServiceId == service.id 
+        }
         
         if (existingCheckIn != null) {
             throw IllegalStateException("Child is already checked in to this service today")
@@ -233,10 +212,12 @@ class KidsService(
             throw IllegalStateException("Service is at capacity")
         }
         
+        val parent = userRepository.findById(parentId).orElse(null)
+        
         val attendance = KidAttendance(
-            kid = child,
-            kidsService = service,
-            checkedInBy = parent.fullName,
+            kidId = child.id!!,
+            kidsServiceId = service.id!!,
+            checkedInBy = parent?.fullName ?: "Unknown",
             notes = request.notes,
             status = AttendanceStatus.CHECKED_IN
         )
@@ -248,25 +229,24 @@ class KidsService(
     /**
      * Check out a child from a service
      */
-    fun checkOutChild(parentId: Long, request: KidsCheckOutRequest): KidsCheckOutResponse {
-        val child = kidRepository.findByIdOrNull(request.childId)
+    fun checkOutChild(parentId: String, request: KidsCheckOutRequest): KidsCheckOutResponse {
+        val child = kidRepository.findById(request.childId).orElse(null)
             ?: throw IllegalArgumentException("Child not found with ID: ${request.childId}")
         
-        val parent = userProfileRepository.findByIdOrNull(parentId)
-            ?: throw IllegalArgumentException("Parent not found with ID: $parentId")
-        
-        if (!child.hasParent(parent)) {
+        if (!child.hasParent(parentId)) {
             throw SecurityException("Access denied: You are not authorized to check out this child")
         }
         
         // Find the current check-in record
-        val currentCheckIn = kidAttendanceRepository.findByKid(child)
+        val currentCheckIn = kidAttendanceRepository.findByKidId(child.id!!)
             .firstOrNull { it.status == AttendanceStatus.CHECKED_IN }
             ?: throw IllegalStateException("Child is not currently checked in")
         
+        val parent = userRepository.findById(parentId).orElse(null)
+        
         val checkedOutAttendance = currentCheckIn.checkOut(
             checkOutTime = LocalDateTime.now(),
-            checkedOutBy = parent.fullName
+            checkedOutBy = parent?.fullName ?: "Unknown"
         ).copy(notes = request.notes ?: currentCheckIn.notes)
         
         val savedAttendance = kidAttendanceRepository.save(checkedOutAttendance)
@@ -276,12 +256,11 @@ class KidsService(
     /**
      * Get current check-ins
      */
-    @Transactional(readOnly = true)
-    fun getCurrentCheckIns(serviceId: Long? = null): List<KidsCheckInResponse> {
+    fun getCurrentCheckIns(serviceId: String? = null): List<KidsCheckInResponse> {
         val checkIns = if (serviceId != null) {
-            val service = kidsServiceRepository.findByIdOrNull(serviceId)
+            kidsServiceRepository.findById(serviceId).orElse(null)
                 ?: throw IllegalArgumentException("Kids service not found with ID: $serviceId")
-            kidAttendanceRepository.findByKidsService(service).filter { it.status == AttendanceStatus.CHECKED_IN }
+            kidAttendanceRepository.findByKidsServiceId(serviceId).filter { it.status == AttendanceStatus.CHECKED_IN }
         } else {
             kidAttendanceRepository.findByStatus(AttendanceStatus.CHECKED_IN)
         }
@@ -292,52 +271,53 @@ class KidsService(
     /**
      * Get check-in history
      */
-    @Transactional(readOnly = true)
     fun getCheckInHistory(
-        parentId: Long,
-        childId: Long? = null,
-        serviceId: Long? = null,
+        parentId: String,
+        childId: String? = null,
+        serviceId: String? = null,
         page: Int = 0,
         pageSize: Int = 20
     ): List<KidsCheckInResponse> {
-        val parent = userProfileRepository.findByIdOrNull(parentId)
+        userRepository.findById(parentId).orElse(null)
             ?: throw IllegalArgumentException("Parent not found with ID: $parentId")
         
         val checkIns = when {
             childId != null && serviceId != null -> {
-                val child = kidRepository.findByIdOrNull(childId)
+                val child = kidRepository.findById(childId).orElse(null)
                     ?: throw IllegalArgumentException("Child not found with ID: $childId")
-                val service = kidsServiceRepository.findByIdOrNull(serviceId)
+                kidsServiceRepository.findById(serviceId).orElse(null)
                     ?: throw IllegalArgumentException("Kids service not found with ID: $serviceId")
                 
-                if (!child.hasParent(parent)) {
+                if (!child.hasParent(parentId)) {
                     throw SecurityException("Access denied: You are not authorized to view this child's history")
                 }
                 
-                kidAttendanceRepository.findByKidAndKidsService(child, service)
+                kidAttendanceRepository.findByKidIdAndKidsServiceId(childId, serviceId)
             }
             childId != null -> {
-                val child = kidRepository.findByIdOrNull(childId)
+                val child = kidRepository.findById(childId).orElse(null)
                     ?: throw IllegalArgumentException("Child not found with ID: $childId")
                 
-                if (!child.hasParent(parent)) {
+                if (!child.hasParent(parentId)) {
                     throw SecurityException("Access denied: You are not authorized to view this child's history")
                 }
                 
-                kidAttendanceRepository.findByKid(child)
+                kidAttendanceRepository.findByKidId(childId)
             }
             serviceId != null -> {
-                val service = kidsServiceRepository.findByIdOrNull(serviceId)
+                kidsServiceRepository.findById(serviceId).orElse(null)
                     ?: throw IllegalArgumentException("Kids service not found with ID: $serviceId")
                 
                 // Get all children for this parent and filter by service
-                val children = kidRepository.findByEitherParent(parent).filter { it.isActive }
-                kidAttendanceRepository.findByKidsService(service).filter { it.kid in children }
+                val children = kidRepository.findByEitherParent(parentId).filter { it.isActive }
+                val childIds = children.mapNotNull { it.id }
+                kidAttendanceRepository.findByKidsServiceId(serviceId)
+                    .filter { it.kidId in childIds }
             }
             else -> {
                 // Get all check-ins for all children of this parent
-                val children = kidRepository.findByEitherParent(parent).filter { it.isActive }
-                children.flatMap { kidAttendanceRepository.findByKid(it) }
+                val children = kidRepository.findByEitherParent(parentId).filter { it.isActive }
+                children.flatMap { kidAttendanceRepository.findByKidId(it.id!!) }
             }
         }
         
@@ -350,6 +330,7 @@ class KidsService(
 
     // Mapping functions
     private fun mapToKidsServiceResponse(service: rfm.com.entity.KidsService): KidsServiceResponse {
+        val leader = service.leaderId?.let { userRepository.findById(it).orElse(null) }
         return KidsServiceResponse(
             id = service.id!!,
             name = service.name,
@@ -358,7 +339,7 @@ class KidsService(
             startTime = service.startTime.toString(),
             endTime = service.endTime.toString(),
             location = service.location,
-            leaderName = service.leader?.let { "${it.firstName} ${it.lastName}" },
+            leaderName = leader?.fullName,
             maxCapacity = service.maxCapacity,
             minAge = service.minAge,
             maxAge = service.maxAge,
@@ -368,11 +349,14 @@ class KidsService(
     }
 
     private fun mapToChildResponse(child: Kid): ChildResponse {
-        val currentCheckIn = kidAttendanceRepository.findByKid(child)
+        val currentCheckIn = kidAttendanceRepository.findByKidId(child.id!!)
             .firstOrNull { it.status == AttendanceStatus.CHECKED_IN }
         
+        val primaryParent = userRepository.findById(child.primaryParentId).orElse(null)
+        val secondaryParent = child.secondaryParentId?.let { userRepository.findById(it).orElse(null) }
+        
         return ChildResponse(
-            id = child.id!!,
+            id = child.id,
             firstName = child.firstName,
             lastName = child.lastName,
             fullName = child.fullName,
@@ -380,8 +364,8 @@ class KidsService(
             age = child.age,
             ageGroup = child.ageGroup.name,
             gender = child.gender,
-            primaryParent = mapToParentResponse(child.primaryParent),
-            secondaryParent = child.secondaryParent?.let { mapToParentResponse(it) },
+            primaryParent = mapToParentResponse(child.primaryParentId, primaryParent),
+            secondaryParent = secondaryParent?.let { mapToParentResponse(child.secondaryParentId!!, it) },
             emergencyContactName = child.emergencyContactName,
             emergencyContactPhone = child.emergencyContactPhone,
             medicalNotes = child.medicalNotes,
@@ -395,34 +379,41 @@ class KidsService(
         )
     }
 
-    private fun mapToParentResponse(parent: UserProfile): ParentResponse {
+    private fun mapToParentResponse(parentId: String, user: User?): ParentResponse {
         return ParentResponse(
-            id = parent.id!!,
-            firstName = parent.firstName,
-            lastName = parent.lastName,
-            fullName = parent.fullName,
-            email = parent.email,
-            phone = parent.phone
+            id = parentId,
+            firstName = user?.firstName ?: "Unknown",
+            lastName = user?.lastName ?: "",
+            fullName = user?.fullName ?: "Unknown",
+            email = user?.email,
+            phone = user?.phone
         )
     }
 
     private fun mapToCheckInStatusResponse(attendance: KidAttendance): CheckInStatusResponse {
+        val service = kidsServiceRepository.findById(attendance.kidsServiceId).orElse(null)
         return CheckInStatusResponse(
             isCheckedIn = attendance.status == AttendanceStatus.CHECKED_IN,
-            serviceName = attendance.kidsService.name,
-            serviceId = attendance.kidsService.id,
+            serviceName = service?.name,
+            serviceId = attendance.kidsServiceId,
             checkInTime = attendance.checkInTime,
             checkedInBy = attendance.checkedInBy,
-            checkInMethod = if (attendance.checkInRequest != null) CheckInMethod.QR_CODE else CheckInMethod.DIRECT,
+            checkInMethod = if (attendance.checkInRequestId != null) CheckInMethod.QR_CODE else CheckInMethod.DIRECT,
             approvedByStaff = attendance.approvedByStaff
         )
     }
 
     private fun mapToKidsCheckInResponse(attendance: KidAttendance): KidsCheckInResponse {
+        val child = kidRepository.findById(attendance.kidId).orElse(null)
+        val service = kidsServiceRepository.findById(attendance.kidsServiceId).orElse(null)
+        
         return KidsCheckInResponse(
             id = attendance.id!!,
-            child = mapToChildSummaryResponse(attendance.kid),
-            service = mapToKidsServiceResponse(attendance.kidsService),
+            child = child?.let { mapToChildSummaryResponse(it) } ?: ChildSummaryResponse(
+                id = attendance.kidId, firstName = "Unknown", lastName = "", fullName = "Unknown",
+                age = 0, ageGroup = "UNKNOWN", isActive = false
+            ),
+            service = service?.let { mapToKidsServiceResponse(it) } ?: throw IllegalStateException("Service not found"),
             checkInTime = attendance.checkInTime,
             checkOutTime = attendance.checkOutTime,
             checkedInBy = attendance.checkedInBy,
@@ -431,19 +422,25 @@ class KidsService(
             status = attendance.status.name,
             isCheckedOut = attendance.isCheckedOut,
             duration = attendance.duration,
-            checkInMethod = if (attendance.checkInRequest != null) CheckInMethod.QR_CODE else CheckInMethod.DIRECT,
-            checkInRequestId = attendance.checkInRequest?.id,
+            checkInMethod = if (attendance.checkInRequestId != null) CheckInMethod.QR_CODE else CheckInMethod.DIRECT,
+            checkInRequestId = attendance.checkInRequestId,
             approvedByStaff = attendance.approvedByStaff
         )
     }
 
     private fun mapToKidsCheckOutResponse(attendance: KidAttendance): KidsCheckOutResponse {
+        val child = kidRepository.findById(attendance.kidId).orElse(null)
+        val service = kidsServiceRepository.findById(attendance.kidsServiceId).orElse(null)
+        
         return KidsCheckOutResponse(
             id = attendance.id!!,
-            childId = attendance.kid.id!!,
-            serviceId = attendance.kidsService.id!!,
-            child = mapToChildSummaryResponse(attendance.kid),
-            service = mapToKidsServiceResponse(attendance.kidsService),
+            childId = attendance.kidId,
+            serviceId = attendance.kidsServiceId,
+            child = child?.let { mapToChildSummaryResponse(it) } ?: ChildSummaryResponse(
+                id = attendance.kidId, firstName = "Unknown", lastName = "", fullName = "Unknown",
+                age = 0, ageGroup = "UNKNOWN", isActive = false
+            ),
+            service = service?.let { mapToKidsServiceResponse(it) } ?: throw IllegalStateException("Service not found"),
             checkInTime = attendance.checkInTime,
             checkOutTime = attendance.checkOutTime!!,
             checkedInBy = attendance.checkedInBy,

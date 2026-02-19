@@ -1,20 +1,6 @@
 services:
-  db:
-    image: postgres
-    platform: linux/amd64
-    restart: always
-    container_name: backend-db
-    volumes:
-      - pg-volume:/var/lib/postgresql/data
-    env_file:
-      - .env
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USERNAME -d $POSTGRES_DB"]
-      interval: 5s
   app:
-    build: .
+    image: ${DOCKER_IMAGE_NAME:-rfm9300/spring-boot-central:latest}
     platform: linux/amd64
     container_name: backend-springboot
     volumes:
@@ -26,9 +12,46 @@ services:
       - "8080:8080"
     env_file:
       - .env
+    environment:
+      - MINIO_ENDPOINT=http://minio:9000
     depends_on:
-      db:
+      minio:
         condition: service_healthy
 
+  minio:
+    image: minio/minio:latest
+    container_name: backend-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    restart: always
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ACCESS_KEY:-minioadmin} ${MINIO_SECRET_KEY:-minioadmin};
+      /usr/bin/mc mb --ignore-existing myminio/${MINIO_BUCKET:-church-files};
+      /usr/bin/mc anonymous set download myminio/${MINIO_BUCKET:-church-files};
+      exit 0;
+      "
+
+      exit 0;
+      "
+
 volumes:
-  pg-volume: {}
+  minio_data: {}

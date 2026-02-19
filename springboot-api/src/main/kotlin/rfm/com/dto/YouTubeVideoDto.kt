@@ -57,7 +57,7 @@ data class UpdateYouTubeVideoRequest(
  * Response DTO for YouTube video information
  */
 data class YouTubeVideoResponse(
-    val id: Long,
+    val id: String,
     val title: String,
     val description: String?,
     val videoUrl: String,

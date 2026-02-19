@@ -18,7 +18,6 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException
 import rfm.com.dto.ApiResponse
 import java.time.LocalDateTime
 import rfm.com.exception.*
-import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ConstraintViolationException
 
 /**
@@ -59,7 +58,7 @@ class GlobalExceptionHandler {
     /**
      * Handle entity not found exceptions
      */
-    @ExceptionHandler(EntityNotFoundException::class, rfm.com.exception.EntityNotFoundException::class)
+    @ExceptionHandler(rfm.com.exception.EntityNotFoundException::class)
     fun handleEntityNotFound(
         ex: Exception,
         request: WebRequest

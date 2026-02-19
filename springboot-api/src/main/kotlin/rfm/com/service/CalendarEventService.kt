@@ -1,6 +1,5 @@
 package rfm.com.service
 
-import jakarta.persistence.EntityNotFoundException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
@@ -8,21 +7,21 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import rfm.com.dto.*
 import rfm.com.entity.CalendarEvent
 import rfm.com.entity.CalendarEventType
+import rfm.com.exception.EntityNotFoundException
 import rfm.com.repository.CalendarEventRepository
-import rfm.com.repository.UserProfileRepository
+import rfm.com.repository.UserRepository
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 @Service
-@Transactional
 class CalendarEventService(
     private val calendarEventRepository: CalendarEventRepository,
-    private val userProfileRepository: UserProfileRepository,
+    private val userRepository: UserRepository,
     private val fileStorageService: FileStorageService
 ) {
     private val logger = LoggerFactory.getLogger(CalendarEventService::class.java)
@@ -34,13 +33,13 @@ class CalendarEventService(
      */
     suspend fun createCalendarEvent(
         request: CreateCalendarEventRequest,
-        creatorId: Long,
+        creatorId: String,
         image: MultipartFile? = null
     ): CalendarEventResponse = withContext(Dispatchers.IO) {
         logger.info("Creating calendar event: ${request.title} for user: $creatorId")
 
-        val creator = userProfileRepository.findById(creatorId)
-            .orElseThrow { EntityNotFoundException("User profile not found with id: $creatorId") }
+        userRepository.findById(creatorId).orElse(null)
+            ?: throw EntityNotFoundException("User", creatorId)
 
         val imagePath = image?.let { img ->
             try {
@@ -61,7 +60,7 @@ class CalendarEventService(
             imagePath = imagePath,
             isAllDay = request.isAllDay,
             eventType = request.eventType,
-            createdBy = creator
+            createdById = creatorId
         )
 
         val savedEvent = calendarEventRepository.save(calendarEvent)
@@ -80,18 +79,22 @@ class CalendarEventService(
             throw IllegalArgumentException("Month must be between 1 and 12")
         }
 
-        calendarEventRepository.findByMonth(month, year)
+        val yearMonth = YearMonth.of(year, month)
+        val startDate = yearMonth.atDay(1)
+        val endDate = yearMonth.atEndOfMonth()
+
+        calendarEventRepository.findByDateRange(startDate, endDate)
             .map { mapToCalendarEventResponse(it) }
     }
 
     /**
      * Get event by ID
      */
-    suspend fun getEventById(eventId: Long): CalendarEventResponse = withContext(Dispatchers.IO) {
+    suspend fun getEventById(eventId: String): CalendarEventResponse = withContext(Dispatchers.IO) {
         logger.debug("Fetching calendar event by id: $eventId")
 
-        val event = calendarEventRepository.findByIdWithCreator(eventId)
-            ?: throw EntityNotFoundException("Calendar event not found with id: $eventId")
+        val event = calendarEventRepository.findById(eventId).orElse(null)
+            ?: throw EntityNotFoundException("CalendarEvent", eventId)
 
         mapToCalendarEventResponse(event)
     }
@@ -119,7 +122,7 @@ class CalendarEventService(
     suspend fun getEventsForDate(date: LocalDate): List<CalendarEventResponse> = withContext(Dispatchers.IO) {
         logger.debug("Fetching calendar events for date: $date")
 
-        calendarEventRepository.findByDate(date)
+        calendarEventRepository.findByEventDate(date)
             .map { mapToCalendarEventResponse(it) }
     }
 
@@ -147,27 +150,25 @@ class CalendarEventService(
      * Update a calendar event
      */
     suspend fun updateCalendarEvent(
-        eventId: Long,
+        eventId: String,
         request: UpdateCalendarEventRequest,
-        userId: Long,
+        userId: String,
         image: MultipartFile? = null
     ): CalendarEventResponse = withContext(Dispatchers.IO) {
         logger.info("Updating calendar event: $eventId by user: $userId")
 
-        val event = calendarEventRepository.findByIdWithCreator(eventId)
-            ?: throw EntityNotFoundException("Calendar event not found with id: $eventId")
+        val event = calendarEventRepository.findById(eventId).orElse(null)
+            ?: throw EntityNotFoundException("CalendarEvent", eventId)
 
-        // Check if user is the creator (if creator exists)
-        event.createdBy?.let { creator ->
-            if (creator.id != userId) {
+        // Check if user is the creator
+        event.createdById?.let { creatorId ->
+            if (creatorId != userId) {
                 throw AccessDeniedException("Only the event creator can update this event")
             }
         }
 
-        // Handle image upload if provided
         val newImagePath = image?.let { img ->
             try {
-                // Delete old image if it exists
                 event.imagePath?.let { oldPath ->
                     fileStorageService.deleteFile(oldPath)
                 }
@@ -199,20 +200,19 @@ class CalendarEventService(
     /**
      * Delete a calendar event
      */
-    suspend fun deleteCalendarEvent(eventId: Long, userId: Long): Boolean = withContext(Dispatchers.IO) {
+    suspend fun deleteCalendarEvent(eventId: String, userId: String): Boolean = withContext(Dispatchers.IO) {
         logger.info("Deleting calendar event: $eventId by user: $userId")
 
-        val event = calendarEventRepository.findByIdWithCreator(eventId)
-            ?: throw EntityNotFoundException("Calendar event not found with id: $eventId")
+        val event = calendarEventRepository.findById(eventId).orElse(null)
+            ?: throw EntityNotFoundException("CalendarEvent", eventId)
 
-        // Check if user is the creator (if creator exists)
-        event.createdBy?.let { creator ->
-            if (creator.id != userId) {
+        // Check if user is the creator
+        event.createdById?.let { creatorId ->
+            if (creatorId != userId) {
                 throw AccessDeniedException("Only the event creator can delete this event")
             }
         }
 
-        // Delete associated image if it exists
         event.imagePath?.let { imagePath ->
             fileStorageService.deleteFile(imagePath)
         }

@@ -51,7 +51,7 @@ class ProfileController(
      */
     @GetMapping("/{userId}")
     @PreAuthorize("hasRole('USER')")
-    fun getUserProfile(@PathVariable userId: Long): ResponseEntity<ApiResponse<UserProfileResponse>> {
+    fun getUserProfile(@PathVariable userId: String): ResponseEntity<ApiResponse<UserProfileResponse>> {
         return try {
             val response = userService.getUserProfile(userId)
             
@@ -215,7 +215,7 @@ class ProfileController(
     @PutMapping("/{userId}/admin-status")
     @PreAuthorize("hasRole('ADMIN')")
     fun updateUserAdminStatus(
-        @PathVariable userId: Long,
+        @PathVariable userId: String,
         @Valid @RequestBody updateAdminStatusRequest: UpdateAdminStatusRequest,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<String>> {
@@ -250,7 +250,7 @@ class ProfileController(
     @DeleteMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     fun deleteUser(
-        @PathVariable userId: Long,
+        @PathVariable userId: String,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<String>> {
         return try {
@@ -308,7 +308,7 @@ class ProfileController(
     @PutMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     fun updateUserByAdmin(
-        @PathVariable userId: Long,
+        @PathVariable userId: String,
         @Valid @RequestBody adminUpdateUserRequest: AdminUpdateUserRequest,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<String>> {
@@ -331,7 +331,7 @@ class ProfileController(
         }
     }
     
-    private fun getUserId(authentication: Authentication): Long {
+    private fun getUserId(authentication: Authentication): String {
         val principal = authentication.principal
         if (principal is UserPrincipal) {
             return principal.id

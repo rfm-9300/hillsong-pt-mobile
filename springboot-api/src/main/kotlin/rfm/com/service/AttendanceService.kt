@@ -3,7 +3,6 @@ package rfm.com.service
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service as SpringService
-import org.springframework.transaction.annotation.Transactional
 import rfm.com.dto.*
 import rfm.com.dto.CheckInRequest as CheckInRequestDto
 import rfm.com.entity.*
@@ -13,7 +12,6 @@ import java.time.LocalDateTime
 import kotlin.jvm.optionals.getOrNull
 
 @SpringService
-@Transactional
 class AttendanceService(
     private val attendanceRepository: AttendanceRepository,
     private val userRepository: UserRepository,
@@ -25,41 +23,37 @@ class AttendanceService(
     /**
      * Check in a user to an event, service, or kids service
      */
-    fun checkIn(userId: Long, request: CheckInRequestDto): AttendanceResponse {
+    fun checkIn(userId: String, request: CheckInRequestDto): AttendanceResponse {
         val user = userRepository.findById(userId).getOrNull()
             ?: throw IllegalArgumentException("User not found with ID: $userId")
 
         // Validate that the target entity exists
-        val (event, serviceEntity, kidsService) = when (request.attendanceType) {
+        when (request.attendanceType) {
             AttendanceType.EVENT -> {
-                val event = eventRepository.findById(request.eventId!!).getOrNull()
+                eventRepository.findById(request.eventId!!).getOrNull()
                     ?: throw IllegalArgumentException("Event not found with ID: ${request.eventId}")
-                Triple(event, null, null)
             }
             AttendanceType.SERVICE -> {
-                val serviceEntity = serviceRepository.findById(request.serviceId!!).getOrNull()
+                serviceRepository.findById(request.serviceId!!).getOrNull()
                     ?: throw IllegalArgumentException("Service not found with ID: ${request.serviceId}")
-                Triple(null, serviceEntity, null)
             }
             AttendanceType.KIDS_SERVICE -> {
-                val kidsService = kidsServiceRepository.findById(request.kidsServiceId!!).getOrNull()
+                kidsServiceRepository.findById(request.kidsServiceId!!).getOrNull()
                     ?: throw IllegalArgumentException("Kids service not found with ID: ${request.kidsServiceId}")
-                Triple(null, null, kidsService)
             }
         }
 
         // Check if user is already checked in for this entity today
-        val existingAttendance = findExistingTodayAttendance(user, event, serviceEntity, kidsService)
+        val existingAttendance = findExistingTodayAttendance(userId, request.eventId, request.serviceId, request.kidsServiceId)
         if (existingAttendance != null && existingAttendance.status == AttendanceStatus.CHECKED_IN) {
             throw IllegalStateException("User is already checked in for this ${request.attendanceType.name.lowercase()}")
         }
 
-        // Create new attendance record
         val attendance = Attendance(
-            user = user,
-            event = event,
-            service = serviceEntity,
-            kidsService = kidsService,
+            userId = userId,
+            eventId = request.eventId,
+            serviceId = request.serviceId,
+            kidsServiceId = request.kidsServiceId,
             attendanceType = request.attendanceType,
             status = AttendanceStatus.CHECKED_IN,
             checkInTime = LocalDateTime.now(),
@@ -74,21 +68,18 @@ class AttendanceService(
     /**
      * Check out a user from their attendance record
      */
-    fun checkOut(userId: Long, request: CheckOutRequest): AttendanceResponse {
-        val attendance = attendanceRepository.findByIdWithAllRelationships(request.attendanceId)
+    fun checkOut(userId: String, request: CheckOutRequest): AttendanceResponse {
+        val attendance = attendanceRepository.findById(request.attendanceId).getOrNull()
             ?: throw IllegalArgumentException("Attendance record not found with ID: ${request.attendanceId}")
 
-        // Verify the attendance belongs to the user
-        if (attendance.user.id != userId) {
+        if (attendance.userId != userId) {
             throw IllegalArgumentException("Attendance record does not belong to the specified user")
         }
 
-        // Check if already checked out
         if (attendance.status == AttendanceStatus.CHECKED_OUT) {
             throw IllegalStateException("User is already checked out")
         }
 
-        // Update attendance record
         val updatedAttendance = attendance.checkOut(
             checkOutTime = LocalDateTime.now(),
             checkedOutBy = request.checkedOutBy
@@ -101,82 +92,77 @@ class AttendanceService(
     /**
      * Get attendance records for a specific user
      */
-    @Transactional(readOnly = true)
-    fun getUserAttendance(userId: Long, pageable: Pageable): Page<AttendanceSummaryResponse> {
-        val user = userRepository.findById(userId).getOrNull()
+    fun getUserAttendance(userId: String, pageable: Pageable): Page<AttendanceSummaryResponse> {
+        userRepository.findById(userId).getOrNull()
             ?: throw IllegalArgumentException("User not found with ID: $userId")
 
-        return attendanceRepository.findByUser(user, pageable)
+        return attendanceRepository.findByUserId(userId, pageable)
             .map { mapToAttendanceSummaryResponse(it) }
     }
 
     /**
      * Get attendance records for a specific event
      */
-    @Transactional(readOnly = true)
-    fun getEventAttendance(eventId: Long): List<AttendanceSummaryResponse> {
-        val event = eventRepository.findById(eventId).getOrNull()
+    fun getEventAttendance(eventId: String): List<AttendanceSummaryResponse> {
+        eventRepository.findById(eventId).getOrNull()
             ?: throw IllegalArgumentException("Event not found with ID: $eventId")
 
-        return attendanceRepository.findByEvent(event)
+        return attendanceRepository.findByEventId(eventId)
             .map { mapToAttendanceSummaryResponse(it) }
     }
 
     /**
      * Get attendance records for a specific service
      */
-    @Transactional(readOnly = true)
-    fun getServiceAttendance(serviceId: Long): List<AttendanceSummaryResponse> {
-        val serviceEntity = serviceRepository.findById(serviceId).getOrNull()
+    fun getServiceAttendance(serviceId: String): List<AttendanceSummaryResponse> {
+        serviceRepository.findById(serviceId).getOrNull()
             ?: throw IllegalArgumentException("Service not found with ID: $serviceId")
 
-        return attendanceRepository.findByService(serviceEntity)
+        return attendanceRepository.findByServiceId(serviceId)
             .map { mapToAttendanceSummaryResponse(it) }
     }
 
     /**
      * Get attendance records for a specific kids service
      */
-    @Transactional(readOnly = true)
-    fun getKidsServiceAttendance(kidsServiceId: Long): List<AttendanceSummaryResponse> {
-        val kidsService = kidsServiceRepository.findById(kidsServiceId).getOrNull()
+    fun getKidsServiceAttendance(kidsServiceId: String): List<AttendanceSummaryResponse> {
+        kidsServiceRepository.findById(kidsServiceId).getOrNull()
             ?: throw IllegalArgumentException("Kids service not found with ID: $kidsServiceId")
 
-        return attendanceRepository.findByKidsService(kidsService)
+        return attendanceRepository.findByKidsServiceId(kidsServiceId)
             .map { mapToAttendanceSummaryResponse(it) }
     }
 
     /**
      * Get currently checked-in users
      */
-    @Transactional(readOnly = true)
     fun getCurrentlyCheckedIn(): List<AttendanceSummaryResponse> {
-        return attendanceRepository.findCurrentlyCheckedIn()
+        return attendanceRepository.findByCheckOutTimeIsNullOrderByCheckInTimeDesc()
             .map { mapToAttendanceSummaryResponse(it) }
     }
 
     /**
      * Get attendance statistics for a date range
      */
-    @Transactional(readOnly = true)
     fun getAttendanceStats(request: AttendanceReportRequest): AttendanceStatsResponse {
         val attendanceRecords = when {
             request.userId != null -> {
-                val user = userRepository.findById(request.userId).getOrNull()
+                userRepository.findById(request.userId).getOrNull()
                     ?: throw IllegalArgumentException("User not found with ID: ${request.userId}")
-                attendanceRepository.findByUserAndCheckInTimeBetween(user, request.startDate, request.endDate)
+                attendanceRepository.findByUserId(request.userId)
+                    .filter { it.checkInTime.isAfter(request.startDate) && it.checkInTime.isBefore(request.endDate) }
             }
             request.eventId != null -> {
-                val event = eventRepository.findById(request.eventId).getOrNull()
+                eventRepository.findById(request.eventId).getOrNull()
                     ?: throw IllegalArgumentException("Event not found with ID: ${request.eventId}")
-                attendanceRepository.findByEventAndCheckInTimeBetween(event, request.startDate, request.endDate)
+                attendanceRepository.findByEventId(request.eventId)
+                    .filter { it.checkInTime.isAfter(request.startDate) && it.checkInTime.isBefore(request.endDate) }
             }
             else -> {
                 attendanceRepository.findByCheckInTimeBetween(request.startDate, request.endDate)
             }
         }
 
-        // Filter by type and status if specified
         val filteredRecords = attendanceRecords.filter { attendance ->
             (request.attendanceType == null || attendance.attendanceType == request.attendanceType) &&
             (request.status == null || attendance.status == request.status)
@@ -217,24 +203,22 @@ class AttendanceService(
     /**
      * Get most frequent attendees
      */
-    @Transactional(readOnly = true)
-    fun getMostFrequentAttendees(pageable: Pageable): Page<FrequentAttendeesResponse> {
-        return attendanceRepository.findMostFrequentAttendees(pageable)
-            .map { result ->
-                val user = result[0] as User
-                val count = result[1] as Long
-                
-                // Get last attendance for this user
-                val lastAttendance = attendanceRepository.findByUser(user)
-                    .maxByOrNull { it.checkInTime }
-                    ?.checkInTime
-
-                FrequentAttendeesResponse(
-                    user = mapToUserResponse(user),
-                    attendanceCount = count,
-                    lastAttendance = lastAttendance
-                )
-            }
+    fun getMostFrequentAttendees(pageable: Pageable): List<FrequentAttendeesResponse> {
+        // Group attendance by userId and count
+        val allAttendance = attendanceRepository.findAll()
+        val grouped = allAttendance.groupBy { it.userId }
+        val sorted = grouped.entries.sortedByDescending { it.value.size }
+        
+        val page = sorted.drop(pageable.pageNumber * pageable.pageSize).take(pageable.pageSize)
+        
+        return page.mapNotNull { (userId, records) ->
+            val user = userRepository.findById(userId).getOrNull() ?: return@mapNotNull null
+            FrequentAttendeesResponse(
+                user = mapToUserResponse(user),
+                attendanceCount = records.size.toLong(),
+                lastAttendance = records.maxByOrNull { it.checkInTime }?.checkInTime
+            )
+        }
     }
 
     /**
@@ -273,8 +257,8 @@ class AttendanceService(
     /**
      * Update attendance status (for admin operations)
      */
-    fun updateAttendanceStatus(attendanceId: Long, status: AttendanceStatus, notes: String? = null): AttendanceResponse {
-        val attendance = attendanceRepository.findByIdWithAllRelationships(attendanceId)
+    fun updateAttendanceStatus(attendanceId: String, status: AttendanceStatus, notes: String? = null): AttendanceResponse {
+        val attendance = attendanceRepository.findById(attendanceId).getOrNull()
             ?: throw IllegalArgumentException("Attendance record not found with ID: $attendanceId")
 
         val updatedAttendance = when (status) {
@@ -299,29 +283,39 @@ class AttendanceService(
     // Helper methods
 
     private fun findExistingTodayAttendance(
-        user: User, 
-        event: Event?, 
-        serviceEntity: rfm.com.entity.Service?, 
-        kidsService: rfm.com.entity.KidsService?
+        userId: String,
+        eventId: String?,
+        serviceId: String?,
+        kidsServiceId: String?
     ): Attendance? {
         val today = LocalDateTime.now().toLocalDate()
         val startOfDay = today.atStartOfDay()
         val endOfDay = today.plusDays(1).atStartOfDay()
 
-        return when {
-            event != null -> attendanceRepository.findByUserAndEvent(user, event)
-            serviceEntity != null -> attendanceRepository.findByUserAndService(user, serviceEntity)
-            kidsService != null -> attendanceRepository.findByUserAndKidsService(user, kidsService)
-            else -> null
-        }?.firstOrNull { attendance ->
+        val records = when {
+            eventId != null -> attendanceRepository.findByUserIdAndEventId(userId, eventId)
+            serviceId != null -> attendanceRepository.findByUserIdAndServiceId(userId, serviceId)
+            kidsServiceId != null -> attendanceRepository.findByUserIdAndKidsServiceId(userId, kidsServiceId)
+            else -> return null
+        }
+        
+        return records.firstOrNull { attendance ->
             attendance.checkInTime.isAfter(startOfDay) && attendance.checkInTime.isBefore(endOfDay)
         }
     }
 
     private fun mapToAttendanceResponse(attendance: Attendance): AttendanceResponse {
+        val user = userRepository.findById(attendance.userId).getOrNull()
+        
         return AttendanceResponse(
             id = attendance.id!!,
-            user = mapToUserResponse(attendance.user),
+            user = user?.let { mapToUserResponse(it) } ?: UserResponse(
+                id = attendance.userId,
+                email = "",
+                firstName = "Unknown",
+                lastName = "User",
+                createdAt = LocalDateTime.now()
+            ),
             attendanceType = attendance.attendanceType,
             status = attendance.status,
             checkInTime = attendance.checkInTime,
@@ -331,23 +325,34 @@ class AttendanceService(
             checkedOutBy = attendance.checkedOutBy,
             duration = attendance.duration,
             isCheckedOut = attendance.isCheckedOut,
-            event = attendance.event?.let { mapToEventSummaryResponse(it) },
-            service = attendance.service?.let { mapToServiceResponse(it) },
-            kidsService = attendance.kidsService?.let { mapToKidsServiceResponse(it) }
+            event = attendance.eventId?.let { loadEventSummary(it) },
+            service = attendance.serviceId?.let { loadServiceResponse(it) },
+            kidsService = attendance.kidsServiceId?.let { loadKidsServiceResponse(it) }
         )
     }
 
     private fun mapToAttendanceSummaryResponse(attendance: Attendance): AttendanceSummaryResponse {
+        val user = userRepository.findById(attendance.userId).getOrNull()
+        
         val (entityName, entityId) = when (attendance.attendanceType) {
-            AttendanceType.EVENT -> Pair(attendance.event?.title ?: "Unknown Event", attendance.event?.id ?: 0L)
-            AttendanceType.SERVICE -> Pair(attendance.service?.name ?: "Unknown Service", attendance.service?.id ?: 0L)
-            AttendanceType.KIDS_SERVICE -> Pair(attendance.kidsService?.name ?: "Unknown Kids Service", attendance.kidsService?.id ?: 0L)
+            AttendanceType.EVENT -> {
+                val event = attendance.eventId?.let { eventRepository.findById(it).getOrNull() }
+                Pair(event?.title ?: "Unknown Event", attendance.eventId ?: "")
+            }
+            AttendanceType.SERVICE -> {
+                val service = attendance.serviceId?.let { serviceRepository.findById(it).getOrNull() }
+                Pair(service?.name ?: "Unknown Service", attendance.serviceId ?: "")
+            }
+            AttendanceType.KIDS_SERVICE -> {
+                val ks = attendance.kidsServiceId?.let { kidsServiceRepository.findById(it).getOrNull() }
+                Pair(ks?.name ?: "Unknown Kids Service", attendance.kidsServiceId ?: "")
+            }
         }
 
         return AttendanceSummaryResponse(
             id = attendance.id!!,
-            userId = attendance.user.id!!,
-            userName = "${attendance.user.profile?.firstName ?: ""} ${attendance.user.profile?.lastName ?: ""}".trim(),
+            userId = attendance.userId,
+            userName = "${user?.firstName ?: ""} ${user?.lastName ?: ""}".trim(),
             attendanceType = attendance.attendanceType,
             status = attendance.status,
             checkInTime = attendance.checkInTime,
@@ -363,34 +368,36 @@ class AttendanceService(
         return UserResponse(
             id = user.id!!,
             email = user.email,
-            firstName = user.profile?.firstName ?: "",
-            lastName = user.profile?.lastName ?: "",
-            verified = user.verified,
-            createdAt = user.createdAt,
-            authProvider = user.authProvider.name
+            firstName = user.firstName,
+            lastName = user.lastName,
+            createdAt = user.joinedAt
         )
     }
 
-    private fun mapToEventSummaryResponse(event: Event): EventSummaryResponse {
+    private fun loadEventSummary(eventId: String): EventSummaryResponse? {
+        val event = eventRepository.findById(eventId).getOrNull() ?: return null
+        val organizer = event.organizerId?.let { userRepository.findById(it).getOrNull() }
         return EventSummaryResponse(
             id = event.id!!,
             title = event.title,
             description = event.description,
             date = event.date,
             location = event.location,
-            organizerName = "${event.organizer.firstName} ${event.organizer.lastName}",
-            organizerId = event.organizer.id!!,
-            attendeeCount = event.attendeeCount,
+            organizerName = organizer?.fullName ?: "Unknown",
+            organizerId = event.organizerId ?: "",
+            attendeeCount = event.attendeeIds.size,
             maxAttendees = event.maxAttendees,
-            availableSpots = event.availableSpots,
+            availableSpots = event.maxAttendees?.let { it - event.attendeeIds.size } ?: 0,
             headerImagePath = event.headerImagePath,
             needsApproval = event.needsApproval,
-            isAtCapacity = event.isAtCapacity,
+            isAtCapacity = event.maxAttendees != null && event.attendeeIds.size >= event.maxAttendees,
             createdAt = event.createdAt
         )
     }
 
-    private fun mapToServiceResponse(serviceEntity: rfm.com.entity.Service): ServiceResponse {
+    private fun loadServiceResponse(serviceId: String): ServiceResponse? {
+        val serviceEntity = serviceRepository.findById(serviceId).getOrNull() ?: return null
+        val leader = serviceEntity.leaderId?.let { userRepository.findById(it).getOrNull() }
         return ServiceResponse(
             id = serviceEntity.id!!,
             name = serviceEntity.name,
@@ -399,13 +406,15 @@ class AttendanceService(
             startTime = serviceEntity.startTime.toString(),
             endTime = serviceEntity.endTime.toString(),
             location = serviceEntity.location,
-            leaderName = serviceEntity.leader?.let { "${it.firstName} ${it.lastName}" },
+            leaderName = leader?.fullName,
             maxCapacity = serviceEntity.maxCapacity,
             isActive = serviceEntity.isActive
         )
     }
 
-    private fun mapToKidsServiceResponse(kidsService: KidsService): KidsServiceResponse {
+    private fun loadKidsServiceResponse(kidsServiceId: String): KidsServiceResponse? {
+        val kidsService = kidsServiceRepository.findById(kidsServiceId).getOrNull() ?: return null
+        val leader = kidsService.leaderId?.let { userRepository.findById(it).getOrNull() }
         return KidsServiceResponse(
             id = kidsService.id!!,
             name = kidsService.name,
@@ -414,7 +423,7 @@ class AttendanceService(
             startTime = kidsService.startTime.toString(),
             endTime = kidsService.endTime.toString(),
             location = kidsService.location,
-            leaderName = kidsService.leader?.let { "${it.firstName} ${it.lastName}" },
+            leaderName = leader?.fullName,
             maxCapacity = kidsService.maxCapacity,
             minAge = kidsService.minAge,
             maxAge = kidsService.maxAge,
@@ -426,7 +435,6 @@ class AttendanceService(
     /**
      * Get attendance records by type
      */
-    @Transactional(readOnly = true)
     fun getAttendanceByType(type: AttendanceType): List<AttendanceSummaryResponse> {
         return attendanceRepository.findByAttendanceType(type)
             .map { mapToAttendanceSummaryResponse(it) }
@@ -435,7 +443,6 @@ class AttendanceService(
     /**
      * Get attendance records by status
      */
-    @Transactional(readOnly = true)
     fun getAttendanceByStatus(status: AttendanceStatus): List<AttendanceSummaryResponse> {
         return attendanceRepository.findByStatus(status)
             .map { mapToAttendanceSummaryResponse(it) }

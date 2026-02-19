@@ -90,7 +90,7 @@ class RequestLoggingInterceptor : HandlerInterceptor {
     /**
      * Get the current authenticated user ID
      */
-    private fun getCurrentUserId(): Long? {
+    private fun getCurrentUserId(): String? {
         return try {
             val authentication = SecurityContextHolder.getContext().authentication
             if (authentication?.isAuthenticated == true && authentication.principal is UserPrincipal) {

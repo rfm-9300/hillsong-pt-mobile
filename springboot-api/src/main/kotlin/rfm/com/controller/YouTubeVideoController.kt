@@ -115,7 +115,7 @@ class YouTubeVideoController(
      * Get a specific YouTube video by ID
      */
     @GetMapping("/{id}")
-    fun getVideoById(@PathVariable id: Long): ResponseEntity<ApiResponse<YouTubeVideoResponse>> {
+    fun getVideoById(@PathVariable id: String): ResponseEntity<ApiResponse<YouTubeVideoResponse>> {
         return try {
             logger.debug("Fetching YouTube video with ID: $id")
             
@@ -153,7 +153,7 @@ class YouTubeVideoController(
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     fun updateVideo(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         @Valid @RequestBody request: UpdateYouTubeVideoRequest
     ): ResponseEntity<ApiResponse<YouTubeVideoResponse>> {
         return try {
@@ -192,7 +192,7 @@ class YouTubeVideoController(
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    fun deleteVideo(@PathVariable id: Long): ResponseEntity<ApiResponse<String>> {
+    fun deleteVideo(@PathVariable id: String): ResponseEntity<ApiResponse<String>> {
         return try {
             logger.info("Deleting YouTube video with ID: $id")
             
@@ -229,7 +229,7 @@ class YouTubeVideoController(
      */
     @PatchMapping("/{id}/toggle-active")
     @PreAuthorize("hasRole('ADMIN')")
-    fun toggleActiveStatus(@PathVariable id: Long): ResponseEntity<ApiResponse<YouTubeVideoResponse>> {
+    fun toggleActiveStatus(@PathVariable id: String): ResponseEntity<ApiResponse<YouTubeVideoResponse>> {
         return try {
             logger.info("Toggling active status for YouTube video with ID: $id")
             

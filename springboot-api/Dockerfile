@@ -7,14 +7,14 @@ WORKDIR /home/gradle/src
 RUN gradle bootJar --no-daemon
 
 # Runtime stage
-FROM openjdk:17-jdk-alpine
+FROM eclipse-temurin:17-jdk-jammy
 
 # Install curl for health checks
-RUN apk add --no-cache curl
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
 # Create app directory and user for security
-RUN addgroup -g 1001 -S appgroup && \
-    adduser -u 1001 -S appuser -G appgroup && \
+RUN groupadd -g 1001 appgroup && \
+    useradd -u 1001 -g appgroup -s /bin/false appuser && \
     mkdir -p /app/logs /app/uploads && \
     chown -R appuser:appgroup /app
 
@@ -24,11 +24,8 @@ WORKDIR /app
 # Copy the built JAR file
 COPY --from=build --chown=appuser:appgroup /home/gradle/src/build/libs/*.jar /app/church-management-api.jar
 
-# Copy static files directory structure
-COPY --chown=appuser:appgroup app/files /app/files
-
 # Create volume mount points
-VOLUME ["/app/logs", "/app/uploads", "/app/files"]
+VOLUME ["/app/logs"]
 
 # Switch to non-root user
 USER appuser

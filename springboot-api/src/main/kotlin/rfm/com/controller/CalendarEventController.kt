@@ -58,7 +58,7 @@ class CalendarEventController(
      */
     @GetMapping("/{id}")
     fun getEventById(
-        @PathVariable id: Long
+        @PathVariable id: String
     ): ResponseEntity<ApiResponse<CalendarEventResponse>> = runBlocking {
         logger.debug("Fetching calendar event by id: $id")
 
@@ -241,7 +241,7 @@ class CalendarEventController(
     @PutMapping("/{id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     @PreAuthorize("hasRole('ADMIN')")
     fun updateCalendarEvent(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         @Valid @RequestPart("event") request: UpdateCalendarEventRequest,
         @RequestPart("image", required = false) image: MultipartFile?,
         authentication: Authentication
@@ -267,7 +267,7 @@ class CalendarEventController(
     @PutMapping("/{id}/json", consumes = [MediaType.APPLICATION_JSON_VALUE])
     @PreAuthorize("hasRole('ADMIN')")
     fun updateCalendarEventJson(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         @Valid @RequestBody request: UpdateCalendarEventRequest,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<CalendarEventResponse>> = runBlocking {
@@ -292,7 +292,7 @@ class CalendarEventController(
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     fun deleteCalendarEvent(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<String>> = runBlocking {
         val userId = authentication.getCurrentUserId()

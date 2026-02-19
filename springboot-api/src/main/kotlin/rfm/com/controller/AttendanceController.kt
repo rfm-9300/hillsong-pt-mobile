@@ -153,7 +153,7 @@ class AttendanceController(private val attendanceService: AttendanceService) {
         @GetMapping("/user/{userId}")
         @PreAuthorize("hasRole('ADMIN')")
         fun getUserAttendance(
-                @PathVariable userId: Long,
+                @PathVariable userId: String,
                 @RequestParam(defaultValue = "0") page: Int,
                 @RequestParam(defaultValue = "20") size: Int,
                 @RequestParam(defaultValue = "checkInTime") sortBy: String,
@@ -200,7 +200,7 @@ class AttendanceController(private val attendanceService: AttendanceService) {
         @GetMapping("/event/{eventId}")
         @PreAuthorize("hasRole('USER')")
         fun getEventAttendance(
-                @PathVariable eventId: Long
+                @PathVariable eventId: String
         ): ResponseEntity<ApiResponse<List<AttendanceSummaryResponse>>> {
                 return try {
                         val attendance = attendanceService.getEventAttendance(eventId)
@@ -236,7 +236,7 @@ class AttendanceController(private val attendanceService: AttendanceService) {
         @GetMapping("/service/{serviceId}")
         @PreAuthorize("hasRole('USER')")
         fun getServiceAttendance(
-                @PathVariable serviceId: Long
+                @PathVariable serviceId: String
         ): ResponseEntity<ApiResponse<List<AttendanceSummaryResponse>>> {
                 return try {
                         val attendance = attendanceService.getServiceAttendance(serviceId)
@@ -273,7 +273,7 @@ class AttendanceController(private val attendanceService: AttendanceService) {
         @GetMapping("/kids-service/{kidsServiceId}")
         @PreAuthorize("hasRole('USER')")
         fun getKidsServiceAttendance(
-                @PathVariable kidsServiceId: Long
+                @PathVariable kidsServiceId: String
         ): ResponseEntity<ApiResponse<List<AttendanceSummaryResponse>>> {
                 return try {
                         val attendance = attendanceService.getKidsServiceAttendance(kidsServiceId)
@@ -375,7 +375,7 @@ class AttendanceController(private val attendanceService: AttendanceService) {
         fun getMostFrequentAttendees(
                 @RequestParam(defaultValue = "0") page: Int,
                 @RequestParam(defaultValue = "20") size: Int
-        ): ResponseEntity<ApiResponse<Page<FrequentAttendeesResponse>>> {
+        ): ResponseEntity<ApiResponse<List<FrequentAttendeesResponse>>> {
                 return try {
                         val pageable = PageRequest.of(page, size)
                         val frequentAttendees = attendanceService.getMostFrequentAttendees(pageable)
@@ -431,7 +431,7 @@ class AttendanceController(private val attendanceService: AttendanceService) {
         @PutMapping("/{attendanceId}/status")
         @PreAuthorize("hasRole('ADMIN')")
         fun updateAttendanceStatus(
-                @PathVariable attendanceId: Long,
+                @PathVariable attendanceId: String,
                 @RequestParam status: AttendanceStatus,
                 @RequestParam(required = false) notes: String?
         ): ResponseEntity<ApiResponse<AttendanceResponse>> {

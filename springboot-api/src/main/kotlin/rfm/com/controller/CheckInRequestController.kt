@@ -286,7 +286,7 @@ class CheckInRequestController(private val checkInRequestService: CheckInRequest
     @DeleteMapping("/{requestId}")
     @PreAuthorize("hasRole('USER')")
     fun cancelRequest(
-            @PathVariable requestId: Long,
+            @PathVariable requestId: String,
             authentication: Authentication
     ): ResponseEntity<ApiResponse<Unit>> {
         return try {

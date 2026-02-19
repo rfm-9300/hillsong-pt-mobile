@@ -56,14 +56,14 @@ data class UpdateEventRequest(
  * Response DTO for event details
  */
 data class EventResponse(
-    val id: Long,
+    val id: String,
     val title: String,
     val description: String,
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     val date: LocalDateTime,
     val location: String,
     val organizerName: String,
-    val organizerId: Long,
+    val organizerId: String,
     val attendeeCount: Int,
     val maxAttendees: Int,
     val availableSpots: Int,
@@ -80,14 +80,14 @@ data class EventResponse(
  * Simplified event response for list views
  */
 data class EventSummaryResponse(
-    val id: Long,
+    val id: String,
     val title: String,
     val description: String,
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     val date: LocalDateTime,
     val location: String,
     val organizerName: String,
-    val organizerId: Long,
+    val organizerId: String,
     val attendeeCount: Int,
     val maxAttendees: Int,
     val availableSpots: Int,
@@ -103,7 +103,7 @@ data class EventSummaryResponse(
  */
 data class JoinEventRequest(
     @field:NotNull(message = "Event ID is required")
-    val eventId: Long
+    val eventId: String
 )
 
 /**
@@ -111,10 +111,10 @@ data class JoinEventRequest(
  */
 data class ApproveUserRequest(
     @field:NotNull(message = "Event ID is required")
-    val eventId: Long,
+    val eventId: String,
     
     @field:NotNull(message = "User ID is required")
-    val userId: Long
+    val userId: String
 )
 
 /**
@@ -123,8 +123,8 @@ data class ApproveUserRequest(
 data class EventActionResponse(
     val success: Boolean,
     val message: String,
-    val eventId: Long,
-    val userId: Long,
+    val eventId: String,
+    val userId: String,
     val currentStatus: EventUserStatus
 )
 
@@ -142,8 +142,8 @@ enum class EventUserStatus {
  * Response DTO for user's event status
  */
 data class UserEventStatusResponse(
-    val eventId: Long,
-    val userId: Long,
+    val eventId: String,
+    val userId: String,
     val status: EventUserStatus,
     val canJoin: Boolean,
     val canLeave: Boolean

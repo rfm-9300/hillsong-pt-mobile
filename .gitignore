@@ -363,3 +363,4 @@ Pods/
 springboot-api/app/files/uploads/images
 springboot-api/uploads/posts/2025-05-12_08-52.png
 springboot-api/uploads/posts/PHOTO-2025-06-21-12-43-08.jpg
+!springboot-api/DEPLOYMENT.md

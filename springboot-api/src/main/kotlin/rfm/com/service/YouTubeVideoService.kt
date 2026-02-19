@@ -2,7 +2,6 @@ package rfm.com.service
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import rfm.com.dto.CreateYouTubeVideoRequest
 import rfm.com.dto.UpdateYouTubeVideoRequest
 import rfm.com.dto.YouTubeVideoResponse
@@ -20,7 +19,6 @@ class YouTubeVideoService(
     /**
      * Create a new YouTube video
      */
-    @Transactional
     fun createVideo(request: CreateYouTubeVideoRequest): YouTubeVideoResponse {
         logger.info("Creating new YouTube video: ${request.title}")
         
@@ -42,7 +40,6 @@ class YouTubeVideoService(
     /**
      * Get all active YouTube videos ordered by display order
      */
-    @Transactional(readOnly = true)
     fun getActiveVideos(): List<YouTubeVideoResponse> {
         logger.debug("Fetching all active YouTube videos")
         
@@ -54,7 +51,6 @@ class YouTubeVideoService(
     /**
      * Get all YouTube videos (including inactive)
      */
-    @Transactional(readOnly = true)
     fun getAllVideos(): List<YouTubeVideoResponse> {
         logger.debug("Fetching all YouTube videos")
         
@@ -67,8 +63,7 @@ class YouTubeVideoService(
     /**
      * Get a specific YouTube video by ID
      */
-    @Transactional(readOnly = true)
-    fun getVideoById(id: Long): YouTubeVideoResponse {
+    fun getVideoById(id: String): YouTubeVideoResponse {
         logger.debug("Fetching YouTube video with ID: $id")
         
         val video = youTubeVideoRepository.findById(id)
@@ -80,8 +75,7 @@ class YouTubeVideoService(
     /**
      * Update an existing YouTube video
      */
-    @Transactional
-    fun updateVideo(id: Long, request: UpdateYouTubeVideoRequest): YouTubeVideoResponse {
+    fun updateVideo(id: String, request: UpdateYouTubeVideoRequest): YouTubeVideoResponse {
         logger.info("Updating YouTube video with ID: $id")
         
         val video = youTubeVideoRepository.findById(id)
@@ -106,8 +100,7 @@ class YouTubeVideoService(
     /**
      * Delete a YouTube video
      */
-    @Transactional
-    fun deleteVideo(id: Long) {
+    fun deleteVideo(id: String) {
         logger.info("Deleting YouTube video with ID: $id")
         
         if (!youTubeVideoRepository.existsById(id)) {
@@ -121,8 +114,7 @@ class YouTubeVideoService(
     /**
      * Toggle active status of a YouTube video
      */
-    @Transactional
-    fun toggleActiveStatus(id: Long): YouTubeVideoResponse {
+    fun toggleActiveStatus(id: String): YouTubeVideoResponse {
         logger.info("Toggling active status for YouTube video with ID: $id")
         
         val video = youTubeVideoRepository.findById(id)

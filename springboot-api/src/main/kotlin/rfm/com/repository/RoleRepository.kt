@@ -1,18 +1,9 @@
 package rfm.com.repository
 
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.stereotype.Repository
+import org.springframework.data.mongodb.repository.MongoRepository
 import rfm.com.entity.Role
+import java.util.*
 
-@Repository
-interface RoleRepository : JpaRepository<Role, Long> {
-    /**
-     * Find role by name
-     */
-    fun findByName(name: String): Role?
-    
-    /**
-     * Check if role exists by name
-     */
-    fun existsByName(name: String): Boolean
+interface RoleRepository : MongoRepository<Role, String> {
+    fun findByName(name: String): Optional<Role>
 }

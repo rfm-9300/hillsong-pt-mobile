@@ -10,21 +10,19 @@ import org.springframework.security.core.userdetails.UserDetails
 /**
  * Get the current user ID from the authentication object
  */
-fun Authentication.getCurrentUserId(): Long {
+fun Authentication.getCurrentUserId(): String {
     return when (val principal = this.principal) {
         is rfm.com.security.jwt.UserPrincipal -> {
             // Extract user ID from UserPrincipal
             principal.id
         }
         is UserDetails -> {
-            // Try to extract user ID from username (fallback)
-            principal.username.toLongOrNull() 
-                ?: throw IllegalStateException("Invalid user ID in authentication: ${principal.username}")
+            // Use username as user ID (fallback)
+            principal.username
         }
         is String -> {
             // Direct string principal (user ID)
-            principal.toLongOrNull() 
-                ?: throw IllegalStateException("Invalid user ID in authentication: $principal")
+            principal
         }
         else -> {
             throw IllegalStateException("Unsupported principal type: ${principal?.javaClass?.simpleName}")

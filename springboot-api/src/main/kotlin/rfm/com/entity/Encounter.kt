@@ -1,37 +1,28 @@
 package rfm.com.entity
 
-import jakarta.persistence.*
-import org.hibernate.annotations.CreationTimestamp
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDateTime
 
-@Entity
-@Table(name = "encounter")
+@Document(collection = "encounters")
 data class Encounter(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
-    
-    @Column(nullable = false, length = 255)
+    val id: String? = null,
+
     val title: String,
-    
-    @Column(columnDefinition = "TEXT", nullable = false)
+
     val description: String,
-    
-    @Column(nullable = false)
+
     val date: LocalDateTime,
-    
-    @Column(nullable = false, length = 255)
+
     val location: String,
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organizer_id", nullable = false)
-    val organizer: UserProfile,
-    
-    @Column(name = "image_path", length = 255)
+
+    val organizerId: String,
+
     val imagePath: String? = null,
-    
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+
+    @CreatedDate
     val createdAt: LocalDateTime = LocalDateTime.now()
 ) {
     override fun equals(other: Any?): Boolean {
@@ -42,6 +33,6 @@ data class Encounter(
     }
 
     override fun hashCode(): Int = id?.hashCode() ?: 0
-    
+
     override fun toString(): String = "Encounter(id=$id, title='$title', date=$date, location='$location')"
 }

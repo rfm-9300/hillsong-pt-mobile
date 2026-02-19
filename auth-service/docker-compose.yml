@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  auth-service:
+    build: .
+    container_name: auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://auth-db:27017/auth_db
+      - APP_JWT_SECRET=5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437
+    depends_on:
+      - auth-db
+    networks:
+      - auth-network
+
+  auth-db:
+    image: mongo:latest
+    container_name: auth-db
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - auth-db-data:/data/db
+    networks:
+      - auth-network
+
+networks:
+  auth-network:
+    driver: bridge
+
+volumes:
+  auth-db-data:

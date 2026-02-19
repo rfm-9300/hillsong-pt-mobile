@@ -1,6 +1,5 @@
 package rfm.com.service
 
-import jakarta.persistence.EntityNotFoundException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
@@ -8,22 +7,21 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import rfm.com.dto.*
 import rfm.com.entity.Encounter
+import rfm.com.exception.EntityNotFoundException
 import rfm.com.repository.EncounterRepository
-import rfm.com.repository.UserProfileRepository
+import rfm.com.repository.UserRepository
 import java.time.LocalDateTime
 
 /**
  * Service for managing encounters
  */
 @Service
-@Transactional
 class EncounterService(
     private val encounterRepository: EncounterRepository,
-    private val userProfileRepository: UserProfileRepository,
+    private val userRepository: UserRepository,
     private val fileStorageService: FileStorageService
 ) {
     
@@ -34,15 +32,14 @@ class EncounterService(
      */
     suspend fun createEncounter(
         createEncounterRequest: CreateEncounterRequest,
-        organizerId: Long,
+        organizerId: String,
         image: MultipartFile? = null
     ): EncounterResponse = withContext(Dispatchers.IO) {
         logger.info("Creating encounter: ${createEncounterRequest.title} for organizer: $organizerId")
         
-        val organizer = userProfileRepository.findById(organizerId)
-            .orElseThrow { EntityNotFoundException("User profile not found with id: $organizerId") }
+        userRepository.findById(organizerId).orElse(null)
+            ?: throw EntityNotFoundException("User", organizerId)
         
-        // Handle image upload if provided
         val imagePath = image?.let { img ->
             try {
                 fileStorageService.storeEncounterImage(img)
@@ -57,7 +54,7 @@ class EncounterService(
             description = createEncounterRequest.description,
             date = createEncounterRequest.date,
             location = createEncounterRequest.location,
-            organizer = organizer,
+            organizerId = organizerId,
             imagePath = imagePath
         )
         
@@ -72,7 +69,7 @@ class EncounterService(
      */
     suspend fun getAllEncounters(pageable: Pageable): Page<EncounterResponse> = withContext(Dispatchers.IO) {
         logger.debug("Fetching all encounters with pagination")
-        encounterRepository.findAllWithOrganizer(pageable)
+        encounterRepository.findAll(pageable)
             .map { mapToEncounterResponse(it) }
     }
     
@@ -89,11 +86,11 @@ class EncounterService(
     /**
      * Get encounter by ID
      */
-    suspend fun getEncounterById(encounterId: Long): EncounterResponse = withContext(Dispatchers.IO) {
+    suspend fun getEncounterById(encounterId: String): EncounterResponse = withContext(Dispatchers.IO) {
         logger.debug("Fetching encounter by id: $encounterId")
         
-        val encounter = encounterRepository.findByIdWithOrganizer(encounterId)
-            ?: throw EntityNotFoundException("Encounter not found with id: $encounterId")
+        val encounter = encounterRepository.findById(encounterId).orElse(null)
+            ?: throw EntityNotFoundException("Encounter", encounterId)
         
         mapToEncounterResponse(encounter)
     }
@@ -102,25 +99,22 @@ class EncounterService(
      * Update an existing encounter
      */
     suspend fun updateEncounter(
-        encounterId: Long,
+        encounterId: String,
         updateRequest: UpdateEncounterRequest,
-        userId: Long,
+        userId: String,
         image: MultipartFile? = null
     ): EncounterResponse = withContext(Dispatchers.IO) {
         logger.info("Updating encounter: $encounterId by user: $userId")
         
-        val encounter = encounterRepository.findByIdWithOrganizer(encounterId)
-            ?: throw EntityNotFoundException("Encounter not found with id: $encounterId")
+        val encounter = encounterRepository.findById(encounterId).orElse(null)
+            ?: throw EntityNotFoundException("Encounter", encounterId)
         
-        // Check if user is the organizer
-        if (encounter.organizer.id != userId) {
+        if (encounter.organizerId != userId) {
             throw AccessDeniedException("Only the encounter organizer can update this encounter")
         }
         
-        // Handle image upload if provided
         val newImagePath = image?.let { img ->
             try {
-                // Delete old image if it exists
                 encounter.imagePath?.let { oldPath ->
                     fileStorageService.deleteFile(oldPath)
                 }
@@ -131,7 +125,6 @@ class EncounterService(
             }
         }
         
-        // Create updated encounter
         val updatedEncounter = encounter.copy(
             title = updateRequest.title ?: encounter.title,
             description = updateRequest.description ?: encounter.description,
@@ -149,18 +142,16 @@ class EncounterService(
     /**
      * Delete an encounter
      */
-    suspend fun deleteEncounter(encounterId: Long, userId: Long): Boolean = withContext(Dispatchers.IO) {
+    suspend fun deleteEncounter(encounterId: String, userId: String): Boolean = withContext(Dispatchers.IO) {
         logger.info("Deleting encounter: $encounterId by user: $userId")
         
-        val encounter = encounterRepository.findByIdWithOrganizer(encounterId)
-            ?: throw EntityNotFoundException("Encounter not found with id: $encounterId")
+        val encounter = encounterRepository.findById(encounterId).orElse(null)
+            ?: throw EntityNotFoundException("Encounter", encounterId)
         
-        // Check if user is the organizer
-        if (encounter.organizer.id != userId) {
+        if (encounter.organizerId != userId) {
             throw AccessDeniedException("Only the encounter organizer can delete this encounter")
         }
         
-        // Delete associated image if it exists
         encounter.imagePath?.let { imagePath ->
             fileStorageService.deleteFile(imagePath)
         }
@@ -173,11 +164,11 @@ class EncounterService(
     /**
      * Get encounters organized by a user
      */
-    suspend fun getEncountersByOrganizer(organizerId: Long, pageable: Pageable): Page<EncounterResponse> = withContext(Dispatchers.IO) {
-        val organizer = userProfileRepository.findById(organizerId)
-            .orElseThrow { EntityNotFoundException("User profile not found with id: $organizerId") }
+    suspend fun getEncountersByOrganizer(organizerId: String, pageable: Pageable): Page<EncounterResponse> = withContext(Dispatchers.IO) {
+        userRepository.findById(organizerId).orElse(null)
+            ?: throw EntityNotFoundException("User", organizerId)
         
-        encounterRepository.findByOrganizer(organizer, pageable)
+        encounterRepository.findByOrganizerId(organizerId, pageable)
             .map { mapToEncounterResponse(it) }
     }
     
@@ -195,14 +186,15 @@ class EncounterService(
     
     // Helper method for mapping entity to DTO
     private fun mapToEncounterResponse(encounter: Encounter): EncounterResponse {
+        val organizer = userRepository.findById(encounter.organizerId).orElse(null)
         return EncounterResponse(
             id = encounter.id!!,
             title = encounter.title,
             description = encounter.description,
             date = encounter.date,
             location = encounter.location,
-            organizerName = "${encounter.organizer.firstName} ${encounter.organizer.lastName}",
-            organizerId = encounter.organizer.id!!,
+            organizerName = organizer?.fullName ?: "Unknown",
+            organizerId = encounter.organizerId,
             imagePath = encounter.imagePath,
             createdAt = encounter.createdAt
         )

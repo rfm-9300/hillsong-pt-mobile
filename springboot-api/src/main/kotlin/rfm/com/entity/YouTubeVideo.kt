@@ -1,39 +1,30 @@
 package rfm.com.entity
 
-import jakarta.persistence.*
-import org.hibernate.annotations.CreationTimestamp
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDateTime
 
-@Entity
-@Table(name = "youtube_video")
+@Document(collection = "youtube_videos")
 data class YouTubeVideo(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
-    
-    @Column(nullable = false, length = 255)
+    val id: String? = null,
+
     val title: String,
-    
-    @Column(columnDefinition = "TEXT")
+
     val description: String? = null,
-    
-    @Column(name = "video_url", nullable = false, length = 500)
+
     val videoUrl: String,
-    
-    @Column(name = "thumbnail_url", nullable = false, length = 500)
+
     val thumbnailUrl: String,
-    
-    @Column(name = "display_order", nullable = false)
+
     val displayOrder: Int = 0,
-    
-    @Column(nullable = false)
+
     val active: Boolean = true,
-    
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+
+    @CreatedDate
     val createdAt: LocalDateTime = LocalDateTime.now(),
-    
-    @Column(name = "updated_at")
+
     var updatedAt: LocalDateTime? = null
 ) {
     override fun equals(other: Any?): Boolean {
@@ -44,6 +35,6 @@ data class YouTubeVideo(
     }
 
     override fun hashCode(): Int = id?.hashCode() ?: 0
-    
+
     override fun toString(): String = "YouTubeVideo(id=$id, title='$title', active=$active)"
 }

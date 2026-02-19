@@ -4,70 +4,107 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import java.io.IOException
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.nio.file.StandardCopyOption
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.*
+import software.amazon.awssdk.services.s3.presigner.S3Presigner
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest
+import java.net.URI
+import java.time.Duration
 import java.util.*
 
 /**
- * Service for handling file storage operations
+ * Service for handling file storage operations using S3/MinIO
  */
 @Service
 class FileStorageService(
-    @Value("\${app.upload.path:./uploads}") private val uploadPath: String
+    private val s3Client: S3Client,
+    @Value("\${app.minio.bucket}") private val bucketName: String,
+    @Value("\${app.minio.endpoint}") private val endpoint: String,
+    @Value("\${app.minio.access-key}") private val accessKey: String,
+    @Value("\${app.minio.secret-key}") private val secretKey: String
 ) {
     
     private val logger = LoggerFactory.getLogger(FileStorageService::class.java)
-    private val uploadDir: Path = Paths.get(uploadPath).toAbsolutePath().normalize()
+    private val presigner: S3Presigner
     
     init {
+        // Initialize presigner
+        val credentials = software.amazon.awssdk.auth.credentials.AwsBasicCredentials.create(accessKey, secretKey)
+        val staticCredentialsProvider = software.amazon.awssdk.auth.credentials.StaticCredentialsProvider.create(credentials)
+        
+        presigner = S3Presigner.builder()
+            .endpointOverride(URI.create(endpoint))
+            .credentialsProvider(staticCredentialsProvider)
+            .region(software.amazon.awssdk.regions.Region.US_EAST_1)
+            .serviceConfiguration(
+                software.amazon.awssdk.services.s3.S3Configuration.builder()
+                    .pathStyleAccessEnabled(true)
+                    .build()
+            )
+            .build()
+            
+        initializeBucket()
+    }
+    
+    private fun initializeBucket() {
         try {
-            Files.createDirectories(uploadDir)
-            logger.info("Upload directory created/verified at: $uploadDir")
+            val bucketExists = try {
+                s3Client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build())
+                true
+            } catch (e: NoSuchBucketException) {
+                false
+            } catch (e: Exception) {
+                // If 404 is wrapped
+                if (e.message?.contains("404") == true) false else throw e
+            }
+            
+            if (!bucketExists) {
+                logger.info("Bucket $bucketName does not exist. Creating it...")
+                s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build())
+                logger.info("Bucket $bucketName created successfully")
+                
+                // Set bucket policy to allow public read access (optional, depending on requirements)
+                // For now, we'll stick to presigned URLs or direct access if configured publicly
+            } else {
+                logger.info("Bucket $bucketName already exists")
+            }
         } catch (ex: Exception) {
-            logger.error("Could not create upload directory: $uploadDir", ex)
-            throw RuntimeException("Could not create upload directory!", ex)
+            logger.error("Could not initialize S3 bucket: $bucketName", ex)
+            throw RuntimeException("Could not initialize storage!", ex)
         }
     }
     
     /**
-     * Store a file and return the file path
+     * Store a file and return the file path (key in S3)
      */
     fun storeFile(file: MultipartFile, subDirectory: String = ""): String {
         validateFile(file)
         
         val fileName = generateUniqueFileName(file.originalFilename ?: "file")
-        val targetDir = if (subDirectory.isNotBlank()) {
-            uploadDir.resolve(subDirectory)
+        val key = if (subDirectory.isNotBlank()) {
+            "$subDirectory/$fileName"
         } else {
-            uploadDir
+            fileName
         }
         
         try {
-            Files.createDirectories(targetDir)
-            val targetLocation = targetDir.resolve(fileName)
+            val putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .contentType(file.contentType)
+                .build()
+                
+            s3Client.putObject(
+                putObjectRequest,
+                RequestBody.fromInputStream(file.inputStream, file.size)
+            )
             
-            // Normalize the path to prevent directory traversal attacks
-            val normalizedPath = targetLocation.normalize()
-            if (!normalizedPath.startsWith(uploadDir.normalize())) {
-                throw SecurityException("Cannot store file outside upload directory")
-            }
+            logger.info("File stored successfully in S3: $key")
+            return key
             
-            Files.copy(file.inputStream, normalizedPath, StandardCopyOption.REPLACE_EXISTING)
-            
-            val relativePath = if (subDirectory.isNotBlank()) {
-                "$subDirectory/$fileName"
-            } else {
-                fileName
-            }
-            
-            logger.info("File stored successfully: $relativePath")
-            return relativePath
-            
-        } catch (ex: IOException) {
-            logger.error("Failed to store file: ${file.originalFilename}", ex)
+        } catch (ex: Exception) {
+            logger.error("Failed to store file in S3: ${file.originalFilename}", ex)
             throw RuntimeException("Failed to store file", ex)
         }
     }
@@ -104,57 +141,69 @@ class FileStorageService(
      * Delete a file
      */
     fun deleteFile(filePath: String): Boolean {
+        if (filePath.isBlank()) return false
+        
         return try {
-            val path = uploadDir.resolve(filePath).normalize()
-            
-            // Security check to prevent deletion outside upload directory
-            if (!path.startsWith(uploadDir.normalize())) {
-                logger.warn("Attempted to delete file outside upload directory: $filePath")
-                return false
-            }
-            
-            val deleted = Files.deleteIfExists(path)
-            if (deleted) {
-                logger.info("File deleted successfully: $filePath")
-            } else {
-                logger.warn("File not found for deletion: $filePath")
-            }
-            deleted
-        } catch (ex: IOException) {
-            logger.error("Failed to delete file: $filePath", ex)
+            s3Client.deleteObject(
+                DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(filePath)
+                    .build()
+            )
+            logger.info("File deleted successfully from S3: $filePath")
+            true
+        } catch (ex: Exception) {
+            logger.error("Failed to delete file from S3: $filePath", ex)
             false
         }
     }
     
     /**
-     * Get the full path to a file
-     */
-    fun getFilePath(relativePath: String): Path {
-        return uploadDir.resolve(relativePath).normalize()
-    }
-    
-    /**
      * Check if a file exists
      */
-    fun fileExists(relativePath: String): Boolean {
-        val path = uploadDir.resolve(relativePath).normalize()
-        return Files.exists(path) && path.startsWith(uploadDir.normalize())
+    fun fileExists(filePath: String): Boolean {
+        if (filePath.isBlank()) return false
+        
+        return try {
+            s3Client.headObject(
+                HeadObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(filePath)
+                    .build()
+            )
+            true
+        } catch (e: NoSuchKeyException) {
+            false
+        } catch (e: Exception) {
+            // If 404 is wrapped
+            if (e.message?.contains("404") == true) false else {
+                logger.warn("Error checking file existence: $filePath", e)
+                false
+            }
+        }
     }
     
     /**
-     * Get file size in bytes
+     * Get a presigned URL for the file
      */
-    fun getFileSize(relativePath: String): Long {
+    fun getPresignedUrl(filePath: String, duration: Duration = Duration.ofHours(1)): String {
+        if (filePath.isBlank()) return ""
+        
         return try {
-            val path = uploadDir.resolve(relativePath).normalize()
-            if (path.startsWith(uploadDir.normalize()) && Files.exists(path)) {
-                Files.size(path)
-            } else {
-                -1L
+            if (!fileExists(filePath)) {
+                return ""
             }
-        } catch (ex: IOException) {
-            logger.error("Failed to get file size: $relativePath", ex)
-            -1L
+            
+            val presignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(duration)
+                .getObjectRequest { it.bucket(bucketName).key(filePath) }
+                .build()
+                
+            val presignedRequest = presigner.presignGetObject(presignRequest)
+            presignedRequest.url().toString()
+        } catch (ex: Exception) {
+            logger.error("Failed to generate presigned URL for: $filePath", ex)
+            ""
         }
     }
     

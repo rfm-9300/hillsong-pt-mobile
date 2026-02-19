@@ -14,9 +14,9 @@ data class CheckInRequest(
     @field:NotNull(message = "Attendance type is required")
     val attendanceType: AttendanceType,
     
-    val eventId: Long? = null,
-    val serviceId: Long? = null,
-    val kidsServiceId: Long? = null,
+    val eventId: String? = null,
+    val serviceId: String? = null,
+    val kidsServiceId: String? = null,
     
     val notes: String? = null,
     val checkedInBy: String? = null
@@ -40,7 +40,7 @@ data class CheckInRequest(
  */
 data class CheckOutRequest(
     @field:NotNull(message = "Attendance ID is required")
-    val attendanceId: Long,
+    val attendanceId: String,
     
     val notes: String? = null,
     val checkedOutBy: String? = null
@@ -50,7 +50,7 @@ data class CheckOutRequest(
  * Response DTO for attendance records
  */
 data class AttendanceResponse(
-    val id: Long,
+    val id: String,
     val user: UserResponse,
     val attendanceType: AttendanceType,
     val status: AttendanceStatus,
@@ -77,8 +77,8 @@ data class AttendanceResponse(
  * Simplified attendance response for list views
  */
 data class AttendanceSummaryResponse(
-    val id: Long,
-    val userId: Long,
+    val id: String,
+    val userId: String,
     val userName: String,
     val attendanceType: AttendanceType,
     val status: AttendanceStatus,
@@ -93,7 +93,7 @@ data class AttendanceSummaryResponse(
     val isCheckedOut: Boolean,
     
     val entityName: String, // Name of the event, service, or kids service
-    val entityId: Long
+    val entityId: String
 )
 
 /**
@@ -108,10 +108,10 @@ data class AttendanceReportRequest(
     
     val attendanceType: AttendanceType? = null,
     val status: AttendanceStatus? = null,
-    val eventId: Long? = null,
-    val serviceId: Long? = null,
-    val kidsServiceId: Long? = null,
-    val userId: Long? = null
+    val eventId: String? = null,
+    val serviceId: String? = null,
+    val kidsServiceId: String? = null,
+    val userId: String? = null
 ) {
     init {
         require(startDate.isBefore(endDate)) { "Start date must be before end date" }
@@ -157,7 +157,7 @@ data class FrequentAttendeesResponse(
  * Response DTO for service information (simplified)
  */
 data class ServiceResponse(
-    val id: Long,
+    val id: String,
     val name: String,
     val serviceType: String,
     val dayOfWeek: String,
@@ -173,7 +173,7 @@ data class ServiceResponse(
  * Response DTO for kids service information (simplified)
  */
 data class KidsServiceResponse(
-    val id: Long,
+    val id: String,
     val name: String,
     val dayOfWeek: String,
     
@@ -196,14 +196,14 @@ data class KidsServiceResponse(
  */
 data class BulkCheckInRequest(
     @field:NotEmpty(message = "User IDs list cannot be empty")
-    val userIds: List<Long>,
+    val userIds: List<String>,
     
     @field:NotNull(message = "Attendance type is required")
     val attendanceType: AttendanceType,
     
-    val eventId: Long? = null,
-    val serviceId: Long? = null,
-    val kidsServiceId: Long? = null,
+    val eventId: String? = null,
+    val serviceId: String? = null,
+    val kidsServiceId: String? = null,
     
     val notes: String? = null,
     val checkedInBy: String? = null
@@ -237,6 +237,6 @@ data class BulkAttendanceResponse(
  * Error information for bulk operations
  */
 data class BulkAttendanceError(
-    val userId: Long,
+    val userId: String,
     val error: String
 )

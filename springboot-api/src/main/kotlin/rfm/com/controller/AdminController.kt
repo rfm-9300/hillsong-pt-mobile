@@ -86,103 +86,7 @@ class AdminController(
         )
     }
     
-    /**
-     * Grant STAFF role to a user
-     * POST /api/admin/users/{userId}/roles/staff
-     * Requires ADMIN role
-     */
-    @PostMapping("/users/{userId}/roles/staff")
-    @PreAuthorize("hasRole('ADMIN')")
-    fun grantStaffRole(
-        @PathVariable userId: Long,
-        authentication: Authentication
-    ): ResponseEntity<ApiResponse<String>> {
-        return try {
-            val adminUserId = authentication.name.toLong()
-            logger.info("Admin user $adminUserId granting STAFF role to user $userId")
-            
-            val response = userService.grantStaffRole(userId, adminUserId)
-            
-            if (response.success) {
-                ResponseEntity.ok(response)
-            } else {
-                ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response)
-            }
-        } catch (ex: Exception) {
-            logger.error("Error granting STAFF role to user $userId", ex)
-            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(
-                    ApiResponse(
-                        success = false,
-                        message = "An error occurred while granting STAFF role: ${ex.message}"
-                    )
-                )
-        }
-    }
-    
-    /**
-     * Revoke STAFF role from a user
-     * DELETE /api/admin/users/{userId}/roles/staff
-     * Requires ADMIN role
-     */
-    @DeleteMapping("/users/{userId}/roles/staff")
-    @PreAuthorize("hasRole('ADMIN')")
-    fun revokeStaffRole(
-        @PathVariable userId: Long,
-        authentication: Authentication
-    ): ResponseEntity<ApiResponse<String>> {
-        return try {
-            val adminUserId = authentication.name.toLong()
-            logger.info("Admin user $adminUserId revoking STAFF role from user $userId")
-            
-            val response = userService.revokeStaffRole(userId)
-            
-            if (response.success) {
-                ResponseEntity.ok(response)
-            } else {
-                ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response)
-            }
-        } catch (ex: Exception) {
-            logger.error("Error revoking STAFF role from user $userId", ex)
-            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(
-                    ApiResponse(
-                        success = false,
-                        message = "An error occurred while revoking STAFF role: ${ex.message}"
-                    )
-                )
-        }
-    }
-    
-    /**
-     * Get all users with STAFF role
-     * GET /api/admin/users/staff
-     * Requires ADMIN role
-     */
-    @GetMapping("/users/staff")
-    @PreAuthorize("hasRole('ADMIN')")
-    fun getStaffUsers(authentication: Authentication): ResponseEntity<ApiResponse<List<UserProfileResponse>>> {
-        return try {
-            logger.info("Admin user ${authentication.name} retrieving staff users")
-            
-            val response = userService.getStaffUsers()
-            
-            if (response.success) {
-                ResponseEntity.ok(response)
-            } else {
-                ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response)
-            }
-        } catch (ex: Exception) {
-            logger.error("Error retrieving staff users", ex)
-            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(
-                    ApiResponse(
-                        success = false,
-                        message = "An error occurred while retrieving staff users: ${ex.message}"
-                    )
-                )
-        }
-    }
+
     
     /**
      * Get all roles for a specific user
@@ -192,7 +96,7 @@ class AdminController(
     @GetMapping("/users/{userId}/roles")
     @PreAuthorize("hasRole('ADMIN')")
     fun getUserRoles(
-        @PathVariable userId: Long,
+        @PathVariable userId: String,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<List<String>>> {
         return try {

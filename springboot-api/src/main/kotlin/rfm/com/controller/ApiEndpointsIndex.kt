@@ -11,41 +11,7 @@ package rfm.com.controller
  */
 object ApiEndpointsIndex {
 
-    /**
-     * Authentication Endpoints
-     * Base Path: /api/auth
-     */
-    object Auth {
-        /** POST /api/auth/login - User login with email and password */
-        val login = AuthController::login
-        
-        /** POST /api/auth/signup - User registration */
-        val signup = AuthController::signup
-        
-        /** POST /api/auth/verify - Email verification with token */
-        val verify = AuthController::verify
-        
-        /** GET /api/auth/verify - Email verification via GET (for email links) */
-        val verifyByToken = AuthController::verifyByToken
-        
-        /** POST /api/auth/forgot-password - Request password reset */
-        val forgotPassword = AuthController::forgotPassword
-        
-        /** POST /api/auth/reset-password - Reset password with token */
-        val resetPassword = AuthController::resetPassword
-        
-        /** POST /api/auth/google-login - Google OAuth2 authentication */
-        val googleLogin = AuthController::googleLogin
-        
-        /** POST /api/auth/facebook-login - Facebook OAuth2 authentication */
-        val facebookLogin = AuthController::facebookLogin
-        
-        /** POST /api/auth/refresh - Refresh JWT token (placeholder) */
-        val refreshToken = AuthController::refreshToken
-        
-        /** POST /api/auth/logout - User logout (placeholder) */
-        val logout = AuthController::logout
-    }
+    // Note: Authentication endpoints are handled by the auth-service (port 8081)
 
     /**
      * Attendance Endpoints
@@ -324,17 +290,7 @@ object ApiEndpointsIndex {
      * All Endpoints - Flat list for easy searching
      */
     object All {
-        // Authentication
-        val authLogin = Auth.login
-        val authSignup = Auth.signup
-        val authVerify = Auth.verify
-        val authVerifyByToken = Auth.verifyByToken
-        val authForgotPassword = Auth.forgotPassword
-        val authResetPassword = Auth.resetPassword
-        val authGoogleLogin = Auth.googleLogin
-        val authFacebookLogin = Auth.facebookLogin
-        val authRefreshToken = Auth.refreshToken
-        val authLogout = Auth.logout
+        // Note: Authentication endpoints are handled by the auth-service (port 8081)
 
         // Attendance
         val attendanceCheckIn = Attendance.checkIn
@@ -432,8 +388,7 @@ object ApiEndpointsIndex {
      * Endpoint Statistics
      */
     object Stats {
-        const val TOTAL_ENDPOINTS = 77
-        const val AUTH_ENDPOINTS = 10
+        const val TOTAL_ENDPOINTS = 67
         const val ATTENDANCE_ENDPOINTS = 14
         const val EVENT_ENDPOINTS = 14
         const val FILE_ENDPOINTS = 3

@@ -81,7 +81,7 @@ class EncounterController(
      * Get encounter by ID
      */
     @GetMapping("/{id}")
-    fun getEncounterById(@PathVariable id: Long): ResponseEntity<ApiResponse<EncounterResponse>> = runBlocking {
+    fun getEncounterById(@PathVariable id: String): ResponseEntity<ApiResponse<EncounterResponse>> = runBlocking {
         logger.debug("Fetching encounter by id: $id")
         
         val encounter = encounterService.getEncounterById(id)
@@ -123,7 +123,7 @@ class EncounterController(
      */
     @PutMapping("/{id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun updateEncounter(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         @Valid @RequestPart("encounter") updateEncounterRequest: UpdateEncounterRequest,
         @RequestPart("image", required = false) image: MultipartFile?,
         authentication: Authentication
@@ -147,7 +147,7 @@ class EncounterController(
      */
     @DeleteMapping("/{id}")
     fun deleteEncounter(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<String>> = runBlocking {
         val userId = authentication.getCurrentUserId()

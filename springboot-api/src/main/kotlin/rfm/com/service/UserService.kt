@@ -1,326 +1,49 @@
 package rfm.com.service
 
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.security.authentication.BadCredentialsException
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import rfm.com.dto.*
 import rfm.com.entity.*
 import rfm.com.repository.UserRepository
-import rfm.com.repository.UserProfileRepository
-import rfm.com.repository.RoleRepository
-import rfm.com.repository.UserRoleRepository
-import rfm.com.security.jwt.JwtTokenProvider
-import rfm.com.service.EmailService
-import java.security.SecureRandom
 import java.time.LocalDateTime
-import java.util.*
 
 @Service
-@Transactional
 class UserService(
-    private val userRepository: UserRepository,
-    private val userProfileRepository: UserProfileRepository,
-    private val roleRepository: RoleRepository,
-    private val userRoleRepository: UserRoleRepository,
-    private val passwordService: PasswordService,
-    private val jwtTokenProvider: JwtTokenProvider,
-    private val emailService: EmailService,
-    private val oAuth2Service: OAuth2Service,
-    @Value("\${app.base-url:http://localhost:8080}") private val baseUrl: String,
-    @Value("\${app.verification.token-expiry:86400000}") private val verificationTokenExpiry: Long, // 24 hours
-    @Value("\${app.reset.token-expiry:3600000}") private val resetTokenExpiry: Long // 1 hour
+    private val userRepository: UserRepository
 ) {
     
     private val logger = LoggerFactory.getLogger(UserService::class.java)
-    private val secureRandom = SecureRandom()
-    
-    /**
-     * Authenticate user with email and password
-     */
-    fun authenticateUser(authRequest: AuthRequest): ApiResponse<AuthResponse> {
-        return try {
-            logger.debug("Attempting to authenticate user with email: ${authRequest.email}")
-            
-            val user = userRepository.findByEmail(authRequest.email)
-                ?: throw UsernameNotFoundException("User not found with email: ${authRequest.email}")
-            
-            if (!user.verified) {
-                logger.warn("User attempted to login with unverified email: ${authRequest.email}")
-                return ApiResponse(
-                    success = false,
-                    message = "Please verify your email address before logging in"
-                )
-            }
-            
-            // Verify password using BCrypt
-            logger.debug("Verifying password with BCrypt")
-            val isPasswordValid = passwordService.verifyPassword(authRequest.password, user.password)
-            logger.debug("Password verification result: $isPasswordValid")
-            
-            if (!isPasswordValid) {
-                logger.warn("Invalid password attempt for user: ${authRequest.email}")
-                throw BadCredentialsException("Invalid email or password")
-            }
-            
-            // Get user ID safely
-            val userId = user.id ?: throw IllegalStateException("User ID cannot be null for authenticated user")
-            
-            // Generate JWT token
-            val token = jwtTokenProvider.generateTokenFromUserId(userId, user.email)
-            
-            logger.info("User authenticated successfully: ${authRequest.email}")
-            // Create user response
-            val userResponse = UserResponse(
-                id = userId,
-                email = user.email,
-                firstName = user.profile?.firstName ?: "",
-                lastName = user.profile?.lastName ?: "",
-                verified = user.verified,
-                createdAt = user.createdAt,
-                authProvider = user.authProvider.name
-            )
-            
-            ApiResponse(
-                success = true,
-                message = "Authentication successful",
-                data = AuthResponse(token, userResponse)
-            )
-        } catch (ex: UsernameNotFoundException) {
-            logger.error("Authentication failed - user not found: ${authRequest.email}")
-            ApiResponse(success = false, message = "Invalid email or password")
-        } catch (ex: BadCredentialsException) {
-            logger.error("Authentication failed - invalid credentials: ${authRequest.email}")
-            ApiResponse(success = false, message = "Invalid email or password")
-        } catch (ex: Exception) {
-            logger.error("Authentication failed with unexpected error", ex)
-            ApiResponse(success = false, message = "Authentication failed")
-        }
-    }
-    
-    /**
-     * Register a new user
-     */
-    fun registerUser(signUpRequest: SignUpRequest): ApiResponse<String> {
-        return try {
-            logger.debug("Attempting to register user with email: ${signUpRequest.email}")
-            
-            // Validate input
-            if (signUpRequest.password != signUpRequest.confirmPassword) {
-                return ApiResponse(success = false, message = "Passwords do not match")
-            }
-            
-            if (signUpRequest.password.length < 8) {
-                return ApiResponse(success = false, message = "Password must be at least 8 characters long")
-            }
-            
-            // Check if user already exists
-            if (userRepository.existsByEmail(signUpRequest.email)) {
-                logger.warn("Registration attempt with existing email: ${signUpRequest.email}")
-                return ApiResponse(success = false, message = "User with this email already exists")
-            }
-            
-            // Generate BCrypt hash for password
-            val hashedPassword = passwordService.encodePassword(signUpRequest.password)
-            
-            // Generate verification token
-            val verificationToken = generateSecureToken()
-            
-            // Create user entity
-            val user = User(
-                email = signUpRequest.email,
-                password = hashedPassword,
-                salt = "", // Empty salt (BCrypt handles salting internally)
-                verified = false,
-                verificationToken = verificationToken,
-                authProvider = AuthProvider.LOCAL
-            )
-            
-            val savedUser = userRepository.save(user)
-            
-            // Create user profile
-            val userProfile = UserProfile(
-                user = savedUser,
-                firstName = signUpRequest.firstName,
-                lastName = signUpRequest.lastName,
-                email = savedUser.email,
-                phone = "",
-                imagePath = "",
-                isAdmin = false
-            )
-            
-            userProfileRepository.save(userProfile)
-            
-            // Send verification email
-            sendVerificationEmail(savedUser.email, verificationToken)
-            
-            logger.info("User registered successfully: ${signUpRequest.email}")
-            ApiResponse(
-                success = true,
-                message = "Registration successful. Please check your email to verify your account."
-            )
-        } catch (ex: Exception) {
-            logger.error("Registration failed for email: ${signUpRequest.email}", ex)
-            ApiResponse(success = false, message = "Registration failed: ${ex.message}")
-        }
-    }
-    
-    /**
-     * Verify user email with verification token
-     */
-    fun verifyUser(verificationRequest: VerificationRequest): ApiResponse<String> {
-        return try {
-            logger.debug("Attempting to verify user with token")
-            
-            val user = userRepository.findByVerificationToken(verificationRequest.token)
-                ?: return ApiResponse(success = false, message = "Invalid verification token")
-            
-            if (user.verified) {
-                return ApiResponse(success = false, message = "User is already verified")
-            }
-            
-            // Update user as verified and clear verification token
-            val updatedUser = user.copy(
-                verified = true,
-                verificationToken = null
-            )
-            
-            userRepository.save(updatedUser)
-            
-            logger.info("User verified successfully: ${user.email}")
-            ApiResponse(success = true, message = "Email verified successfully")
-        } catch (ex: Exception) {
-            logger.error("Email verification failed", ex)
-            ApiResponse(success = false, message = "Email verification failed")
-        }
-    }
-    
-    /**
-     * Request password reset
-     */
-    fun requestPasswordReset(passwordResetRequest: PasswordResetRequest): ApiResponse<String> {
-        return try {
-            logger.debug("Password reset requested for email: ${passwordResetRequest.email}")
-            
-            val user = userRepository.findByEmail(passwordResetRequest.email)
-                ?: return ApiResponse(success = true, message = "If the email exists, a reset link has been sent")
-            
-            // Generate reset token and expiry
-            val resetToken = generateSecureToken()
-            val resetTokenExpiresAt = System.currentTimeMillis() + resetTokenExpiry
-            
-            // Update user with reset token
-            val updatedUser = user.copy(
-                resetToken = resetToken,
-                resetTokenExpiresAt = resetTokenExpiresAt
-            )
-            
-            userRepository.save(updatedUser)
-            
-            // Send password reset email
-            emailService.sendPasswordResetEmail(user.email, resetToken, baseUrl)
-            
-            logger.info("Password reset email sent to: ${passwordResetRequest.email}")
-            ApiResponse(
-                success = true,
-                message = "If the email exists, a reset link has been sent"
-            )
-        } catch (ex: Exception) {
-            logger.error("Password reset request failed for email: ${passwordResetRequest.email}", ex)
-            ApiResponse(success = false, message = "Password reset request failed")
-        }
-    }
-    
-    /**
-     * Reset password with token
-     */
-    fun resetPassword(resetPasswordRequest: ResetPasswordRequest): ApiResponse<String> {
-        return try {
-            logger.debug("Attempting to reset password with token")
-            
-            val user = userRepository.findByResetToken(resetPasswordRequest.token)
-                ?: return ApiResponse(success = false, message = "Invalid or expired reset token")
-            
-            // Check if token is expired
-            if (user.resetTokenExpiresAt == null || user.resetTokenExpiresAt < System.currentTimeMillis()) {
-                return ApiResponse(success = false, message = "Reset token has expired")
-            }
-            
-            if (resetPasswordRequest.newPassword.length < 8) {
-                return ApiResponse(success = false, message = "Password must be at least 8 characters long")
-            }
-            
-            // Generate new BCrypt hash for password
-            val hashedPassword = passwordService.encodePassword(resetPasswordRequest.newPassword)
-            
-            // Update user with new password and clear reset token
-            val updatedUser = user.copy(
-                password = hashedPassword,
-                salt = "", // Empty salt (BCrypt handles salting internally)
-                resetToken = null,
-                resetTokenExpiresAt = null
-            )
-            
-            userRepository.save(updatedUser)
-            
-            logger.info("Password reset successfully for user: ${user.email}")
-            ApiResponse(success = true, message = "Password reset successfully")
-        } catch (ex: Exception) {
-            logger.error("Password reset failed", ex)
-            ApiResponse(success = false, message = "Password reset failed")
-        }
-    }
-    
-    /**
-     * Authenticate user with Google OAuth2
-     */
-    fun authenticateWithGoogle(googleAuthRequest: GoogleAuthRequest): ApiResponse<AuthResponse> {
-        return oAuth2Service.authenticateWithGoogle(googleAuthRequest)
-    }
-    
-    /**
-     * Authenticate user with Facebook OAuth2
-     */
-    fun authenticateWithFacebook(facebookAuthRequest: FacebookAuthRequest): ApiResponse<AuthResponse> {
-        return oAuth2Service.authenticateWithFacebook(facebookAuthRequest)
-    }
     
     /**
      * Get user by ID
      */
-    @Transactional(readOnly = true)
-    fun getUserById(userId: Long): User? {
-        return userRepository.findByIdWithProfile(userId)
+    fun getUserById(userId: String): User? {
+        return userRepository.findById(userId).orElse(null)
     }
     
     /**
      * Get user by email
      */
-    @Transactional(readOnly = true)
     fun getUserByEmail(email: String): User? {
-        return userRepository.findByEmailWithProfile(email)
+        return userRepository.findByEmail(email)
     }
     
     /**
      * Update user profile
      */
-    fun updateUserProfile(userId: Long, firstName: String?, lastName: String?, phone: String?): ApiResponse<String> {
+    fun updateUserProfile(userId: String, firstName: String?, lastName: String?, phone: String?): ApiResponse<String> {
         return try {
-            val user = userRepository.findByIdWithProfile(userId)
+            val user = userRepository.findById(userId).orElse(null)
                 ?: return ApiResponse(success = false, message = "User not found")
             
-            val profile = user.profile
-                ?: return ApiResponse(success = false, message = "User profile not found")
-            
-            val updatedProfile = profile.copy(
-                firstName = firstName ?: profile.firstName,
-                lastName = lastName ?: profile.lastName,
-                phone = phone ?: profile.phone
+            val updatedUser = user.copy(
+                firstName = firstName ?: user.firstName,
+                lastName = lastName ?: user.lastName,
+                phone = phone ?: user.phone,
+                updatedAt = LocalDateTime.now()
             )
             
-            userProfileRepository.save(updatedProfile)
+            userRepository.save(updatedUser)
             
             logger.info("User profile updated for user ID: $userId")
             ApiResponse(success = true, message = "Profile updated successfully")
@@ -333,16 +56,16 @@ class UserService(
     /**
      * Update user profile image
      */
-    fun updateUserProfileImage(userId: Long, imagePath: String): ApiResponse<String> {
+    fun updateUserProfileImage(userId: String, imagePath: String): ApiResponse<String> {
         return try {
-            val user = userRepository.findByIdWithProfile(userId)
+            val user = userRepository.findById(userId).orElse(null)
                 ?: return ApiResponse(success = false, message = "User not found")
             
-            val profile = user.profile
-                ?: return ApiResponse(success = false, message = "User profile not found")
-            
-            val updatedProfile = profile.copy(imagePath = imagePath)
-            userProfileRepository.save(updatedProfile)
+            val updatedUser = user.copy(
+                imagePath = imagePath,
+                updatedAt = LocalDateTime.now()
+            )
+            userRepository.save(updatedUser)
             
             logger.info("User profile image updated for user ID: $userId")
             ApiResponse(success = true, message = "Profile image updated successfully")
@@ -355,26 +78,22 @@ class UserService(
     /**
      * Get user profile by user ID
      */
-    @Transactional(readOnly = true)
-    fun getUserProfile(userId: Long): ApiResponse<UserProfileResponse> {
+    fun getUserProfile(userId: String): ApiResponse<UserProfileResponse> {
         return try {
-            val user = userRepository.findByIdWithProfile(userId)
+            val user = userRepository.findById(userId).orElse(null)
                 ?: return ApiResponse(success = false, message = "User not found")
             
-            val profile = user.profile
-                ?: return ApiResponse(success = false, message = "User profile not found")
-            
             val profileResponse = UserProfileResponse(
-                id = profile.id!!,
+                id = user.id!!,
                 userId = user.id!!,
-                firstName = profile.firstName,
-                lastName = profile.lastName,
-                email = profile.email,
-                phone = profile.phone,
-                imagePath = profile.imagePath,
-                isAdmin = profile.isAdmin,
-                joinedAt = profile.joinedAt,
-                fullName = profile.fullName
+                firstName = user.firstName,
+                lastName = user.lastName,
+                email = user.email,
+                phone = user.phone,
+                imagePath = user.imagePath,
+                isAdmin = user.isAdmin,
+                joinedAt = user.joinedAt,
+                fullName = user.fullName
             )
             
             ApiResponse(success = true, message = "Profile retrieved successfully", data = profileResponse)
@@ -387,23 +106,22 @@ class UserService(
     /**
      * Get all user profiles (admin functionality)
      */
-    @Transactional(readOnly = true)
     fun getAllUserProfiles(): ApiResponse<List<UserProfileResponse>> {
         return try {
-            val profiles = userProfileRepository.findAllOrderByName()
+            val users = userRepository.findAll()
             
-            val profileResponses = profiles.map { profile ->
+            val profileResponses = users.map { user ->
                 UserProfileResponse(
-                    id = profile.id!!,
-                    userId = profile.user.id!!,
-                    firstName = profile.firstName,
-                    lastName = profile.lastName,
-                    email = profile.email,
-                    phone = profile.phone,
-                    imagePath = profile.imagePath,
-                    isAdmin = profile.isAdmin,
-                    joinedAt = profile.joinedAt,
-                    fullName = profile.fullName
+                    id = user.id!!,
+                    userId = user.id!!,
+                    firstName = user.firstName,
+                    lastName = user.lastName,
+                    email = user.email,
+                    phone = user.phone,
+                    imagePath = user.imagePath,
+                    isAdmin = user.isAdmin,
+                    joinedAt = user.joinedAt,
+                    fullName = user.fullName
                 )
             }
             
@@ -417,23 +135,30 @@ class UserService(
     /**
      * Search user profiles by name or email
      */
-    @Transactional(readOnly = true)
     fun searchUserProfiles(searchTerm: String): ApiResponse<List<UserProfileResponse>> {
         return try {
-            val profiles = userProfileRepository.searchProfiles(searchTerm)
+            val allUsers = userRepository.findAll()
+            val lowerSearch = searchTerm.lowercase()
             
-            val profileResponses = profiles.map { profile ->
+            val matchingUsers = allUsers.filter { user ->
+                user.firstName.lowercase().contains(lowerSearch) ||
+                user.lastName.lowercase().contains(lowerSearch) ||
+                user.email.lowercase().contains(lowerSearch) ||
+                user.fullName.lowercase().contains(lowerSearch)
+            }
+            
+            val profileResponses = matchingUsers.map { user ->
                 UserProfileResponse(
-                    id = profile.id!!,
-                    userId = profile.user.id!!,
-                    firstName = profile.firstName,
-                    lastName = profile.lastName,
-                    email = profile.email,
-                    phone = profile.phone,
-                    imagePath = profile.imagePath,
-                    isAdmin = profile.isAdmin,
-                    joinedAt = profile.joinedAt,
-                    fullName = profile.fullName
+                    id = user.id!!,
+                    userId = user.id!!,
+                    firstName = user.firstName,
+                    lastName = user.lastName,
+                    email = user.email,
+                    phone = user.phone,
+                    imagePath = user.imagePath,
+                    isAdmin = user.isAdmin,
+                    joinedAt = user.joinedAt,
+                    fullName = user.fullName
                 )
             }
             
@@ -447,16 +172,16 @@ class UserService(
     /**
      * Update user admin status (admin functionality)
      */
-    fun updateUserAdminStatus(userId: Long, isAdmin: Boolean): ApiResponse<String> {
+    fun updateUserAdminStatus(userId: String, isAdmin: Boolean): ApiResponse<String> {
         return try {
-            val user = userRepository.findByIdWithProfile(userId)
+            val user = userRepository.findById(userId).orElse(null)
                 ?: return ApiResponse(success = false, message = "User not found")
             
-            val profile = user.profile
-                ?: return ApiResponse(success = false, message = "User profile not found")
-            
-            val updatedProfile = profile.copy(isAdmin = isAdmin)
-            userProfileRepository.save(updatedProfile)
+            val updatedUser = user.copy(
+                isAdmin = isAdmin,
+                updatedAt = LocalDateTime.now()
+            )
+            userRepository.save(updatedUser)
             
             val action = if (isAdmin) "granted" else "revoked"
             logger.info("Admin privileges $action for user ID: $userId")
@@ -470,23 +195,22 @@ class UserService(
     /**
      * Get admin user profiles
      */
-    @Transactional(readOnly = true)
     fun getAdminProfiles(): ApiResponse<List<UserProfileResponse>> {
         return try {
-            val profiles = userProfileRepository.findAdminProfiles()
+            val adminUsers = userRepository.findByIsAdminTrue()
             
-            val profileResponses = profiles.map { profile ->
+            val profileResponses = adminUsers.map { user ->
                 UserProfileResponse(
-                    id = profile.id!!,
-                    userId = profile.user.id!!,
-                    firstName = profile.firstName,
-                    lastName = profile.lastName,
-                    email = profile.email,
-                    phone = profile.phone,
-                    imagePath = profile.imagePath,
-                    isAdmin = profile.isAdmin,
-                    joinedAt = profile.joinedAt,
-                    fullName = profile.fullName
+                    id = user.id!!,
+                    userId = user.id!!,
+                    firstName = user.firstName,
+                    lastName = user.lastName,
+                    email = user.email,
+                    phone = user.phone,
+                    imagePath = user.imagePath,
+                    isAdmin = user.isAdmin,
+                    joinedAt = user.joinedAt,
+                    fullName = user.fullName
                 )
             }
             
@@ -500,7 +224,7 @@ class UserService(
     /**
      * Delete user account (admin functionality)
      */
-    fun deleteUser(userId: Long): ApiResponse<String> {
+    fun deleteUser(userId: String): ApiResponse<String> {
         return try {
             val user = userRepository.findById(userId)
                 .orElse(null) ?: return ApiResponse(success = false, message = "User not found")
@@ -516,182 +240,14 @@ class UserService(
     }
     
     /**
-     * Send verification email
-     */
-    private fun sendVerificationEmail(email: String, verificationToken: String) {
-        try {
-            emailService.sendVerificationEmail(email, verificationToken)
-            logger.debug("Verification email sent to: $email")
-        } catch (ex: Exception) {
-            logger.error("Failed to send verification email to: $email", ex)
-            // Don't throw exception here as user registration should still succeed
-        }
-    }
-    
-    /**
-     * Generate secure random token
-     */
-    private fun generateSecureToken(): String {
-        val bytes = ByteArray(32)
-        secureRandom.nextBytes(bytes)
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
-    }
-    
-    /**
-     * Clean up expired reset tokens (should be called periodically)
-     */
-    @Transactional
-    fun cleanupExpiredResetTokens() {
-        try {
-            val currentTime = System.currentTimeMillis()
-            val usersWithExpiredTokens = userRepository.findUsersWithExpiredResetTokens(currentTime)
-            
-            usersWithExpiredTokens.forEach { user ->
-                val updatedUser = user.copy(
-                    resetToken = null,
-                    resetTokenExpiresAt = null
-                )
-                userRepository.save(updatedUser)
-            }
-            
-            if (usersWithExpiredTokens.isNotEmpty()) {
-                logger.info("Cleaned up ${usersWithExpiredTokens.size} expired reset tokens")
-            }
-        } catch (ex: Exception) {
-            logger.error("Failed to cleanup expired reset tokens", ex)
-        }
-    }
-    
-    /**
-     * Grant STAFF role to a user
-     */
-    fun grantStaffRole(userId: Long, grantedByUserId: Long): ApiResponse<String> {
-        return try {
-            logger.debug("Attempting to grant STAFF role to user ID: $userId by user ID: $grantedByUserId")
-            
-            // Check if user exists
-            val user = userRepository.findById(userId)
-                .orElse(null) ?: return ApiResponse(success = false, message = "User not found")
-            
-            // Get STAFF role
-            val staffRole = roleRepository.findByName(RoleNames.STAFF)
-                ?: return ApiResponse(success = false, message = "STAFF role not found in system")
-            
-            // Check if user already has STAFF role
-            if (userRoleRepository.existsByUserIdAndRoleId(userId, staffRole.id!!)) {
-                return ApiResponse(success = false, message = "User already has STAFF role")
-            }
-            
-            // Grant STAFF role
-            val userRole = UserRole(
-                userId = userId,
-                roleId = staffRole.id,
-                grantedBy = grantedByUserId
-            )
-            
-            userRoleRepository.save(userRole)
-            
-            logger.info("STAFF role granted to user ID: $userId by user ID: $grantedByUserId")
-            ApiResponse(success = true, message = "STAFF role granted successfully")
-        } catch (ex: Exception) {
-            logger.error("Failed to grant STAFF role to user ID: $userId", ex)
-            ApiResponse(success = false, message = "Failed to grant STAFF role: ${ex.message}")
-        }
-    }
-    
-    /**
-     * Revoke STAFF role from a user
-     */
-    fun revokeStaffRole(userId: Long): ApiResponse<String> {
-        return try {
-            logger.debug("Attempting to revoke STAFF role from user ID: $userId")
-            
-            // Check if user exists
-            val user = userRepository.findById(userId)
-                .orElse(null) ?: return ApiResponse(success = false, message = "User not found")
-            
-            // Get STAFF role
-            val staffRole = roleRepository.findByName(RoleNames.STAFF)
-                ?: return ApiResponse(success = false, message = "STAFF role not found in system")
-            
-            // Check if user has STAFF role
-            if (!userRoleRepository.existsByUserIdAndRoleId(userId, staffRole.id!!)) {
-                return ApiResponse(success = false, message = "User does not have STAFF role")
-            }
-            
-            // Revoke STAFF role
-            userRoleRepository.deleteByUserIdAndRoleId(userId, staffRole.id)
-            
-            logger.info("STAFF role revoked from user ID: $userId")
-            ApiResponse(success = true, message = "STAFF role revoked successfully")
-        } catch (ex: Exception) {
-            logger.error("Failed to revoke STAFF role from user ID: $userId", ex)
-            ApiResponse(success = false, message = "Failed to revoke STAFF role: ${ex.message}")
-        }
-    }
-    
-    /**
-     * Get all users with STAFF role
-     */
-    @Transactional(readOnly = true)
-    fun getStaffUsers(): ApiResponse<List<UserProfileResponse>> {
-        return try {
-            val staffRole = roleRepository.findByName(RoleNames.STAFF)
-                ?: return ApiResponse(success = false, message = "STAFF role not found in system")
-            
-            val userRoles = userRoleRepository.findByRoleId(staffRole.id!!)
-            val staffUserIds = userRoles.map { it.userId }.toSet()
-            
-            val profiles = userProfileRepository.findAll()
-                .filter { it.user.id in staffUserIds }
-            
-            val profileResponses = profiles.map { profile ->
-                UserProfileResponse(
-                    id = profile.id!!,
-                    userId = profile.user.id!!,
-                    firstName = profile.firstName,
-                    lastName = profile.lastName,
-                    email = profile.email,
-                    phone = profile.phone,
-                    imagePath = profile.imagePath,
-                    isAdmin = profile.isAdmin,
-                    joinedAt = profile.joinedAt,
-                    fullName = profile.fullName
-                )
-            }
-            
-            ApiResponse(success = true, message = "Staff users retrieved successfully", data = profileResponses)
-        } catch (ex: Exception) {
-            logger.error("Failed to get staff users", ex)
-            ApiResponse(success = false, message = "Failed to retrieve staff users")
-        }
-    }
-    
-    /**
-     * Check if user has STAFF role
-     */
-    @Transactional(readOnly = true)
-    fun hasStaffRole(userId: Long): Boolean {
-        return try {
-            val staffRole = roleRepository.findByName(RoleNames.STAFF) ?: return false
-            userRoleRepository.existsByUserIdAndRoleId(userId, staffRole.id!!)
-        } catch (ex: Exception) {
-            logger.error("Failed to check STAFF role for user ID: $userId", ex)
-            false
-        }
-    }
-    
-    /**
      * Get all roles for a user
      */
-    @Transactional(readOnly = true)
-    fun getUserRoles(userId: Long): ApiResponse<List<String>> {
+    fun getUserRoles(userId: String): ApiResponse<List<String>> {
         return try {
             val user = userRepository.findById(userId)
                 .orElse(null) ?: return ApiResponse(success = false, message = "User not found")
             
-            val roleNames = user.getRoleNames().toList()
-            
+            val roleNames = user.roles.map { it.name }
             ApiResponse(success = true, message = "User roles retrieved successfully", data = roleNames)
         } catch (ex: Exception) {
             logger.error("Failed to get roles for user ID: $userId", ex)
@@ -700,46 +256,27 @@ class UserService(
     }
     
     /**
-     * Create user by Admin (pre-verified)
+     * Create user profile by Admin (profile-only, credentials managed by auth-service)
      */
     fun createUserByAdmin(request: CreateUserRequest): ApiResponse<String> {
         return try {
-            logger.debug("Admin creating user with email: ${request.email}")
+            logger.debug("Admin creating user profile with email: ${request.email}")
             
-            // Check if user already exists
             if (userRepository.existsByEmail(request.email)) {
                 return ApiResponse(success = false, message = "User with this email already exists")
             }
             
-            // Generate BCrypt hash for password
-            val hashedPassword = passwordService.encodePassword(request.password)
-            
-            // Create user entity (Verified by default since Admin created it)
             val user = User(
                 email = request.email,
-                password = hashedPassword,
-                salt = "",
-                verified = true,
-                verificationToken = null,
-                authProvider = AuthProvider.LOCAL
-            )
-            
-            val savedUser = userRepository.save(user)
-            
-            // Create user profile
-            val userProfile = UserProfile(
-                user = savedUser,
                 firstName = request.firstName,
                 lastName = request.lastName,
-                email = savedUser.email,
                 phone = request.phone ?: "",
-                imagePath = "",
                 isAdmin = request.isAdmin
             )
             
-            userProfileRepository.save(userProfile)
+            userRepository.save(user)
             
-            logger.info("User created by admin successfully: ${request.email}")
+            logger.info("User profile created by admin successfully: ${request.email}")
             ApiResponse(success = true, message = "User created successfully")
         } catch (ex: Exception) {
             logger.error("Failed to create user by admin: ${request.email}", ex)
@@ -750,22 +287,20 @@ class UserService(
     /**
      * Update user by Admin (Full update)
      */
-    fun updateUserByAdmin(userId: Long, request: AdminUpdateUserRequest): ApiResponse<String> {
+    fun updateUserByAdmin(userId: String, request: AdminUpdateUserRequest): ApiResponse<String> {
         return try {
-            val user = userRepository.findByIdWithProfile(userId)
+            val user = userRepository.findById(userId).orElse(null)
                 ?: return ApiResponse(success = false, message = "User not found")
             
-            val profile = user.profile
-                ?: return ApiResponse(success = false, message = "User profile not found")
-            
-            val updatedProfile = profile.copy(
-                firstName = request.firstName ?: profile.firstName,
-                lastName = request.lastName ?: profile.lastName,
-                phone = request.phone ?: profile.phone,
-                isAdmin = request.isAdmin ?: profile.isAdmin
+            val updatedUser = user.copy(
+                firstName = request.firstName ?: user.firstName,
+                lastName = request.lastName ?: user.lastName,
+                phone = request.phone ?: user.phone,
+                isAdmin = request.isAdmin ?: user.isAdmin,
+                updatedAt = LocalDateTime.now()
             )
             
-            userProfileRepository.save(updatedProfile)
+            userRepository.save(updatedUser)
             
             logger.info("User updated by admin for user ID: $userId")
             ApiResponse(success = true, message = "User updated successfully")

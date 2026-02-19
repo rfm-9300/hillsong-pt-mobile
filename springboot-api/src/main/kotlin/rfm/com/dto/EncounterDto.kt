@@ -44,14 +44,14 @@ data class UpdateEncounterRequest(
  * Response DTO for encounter details
  */
 data class EncounterResponse(
-    val id: Long,
+    val id: String,
     val title: String,
     val description: String,
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     val date: LocalDateTime,
     val location: String,
     val organizerName: String,
-    val organizerId: Long,
+    val organizerId: String,
     val imagePath: String?,
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     val createdAt: LocalDateTime

@@ -21,7 +21,7 @@ object JwtUtils {
     /**
      * Get current authenticated user ID
      */
-    fun getCurrentUserId(): Long? {
+    fun getCurrentUserId(): String? {
         return getCurrentUserPrincipal()?.id
     }
     

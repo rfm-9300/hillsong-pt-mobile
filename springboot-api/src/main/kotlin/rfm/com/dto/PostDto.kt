@@ -44,7 +44,7 @@ data class CreateCommentRequest(
  * Response DTO for post information
  */
 data class PostResponse(
-    val id: Long,
+    val id: String,
     val title: String,
     val content: String,
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -60,7 +60,7 @@ data class PostResponse(
  * Response DTO for post comment information
  */
 data class CommentResponse(
-    val id: Long,
+    val id: String,
     val content: String,
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     val date: LocalDateTime,
@@ -71,7 +71,7 @@ data class CommentResponse(
  * Response DTO for author information in posts and comments
  */
 data class AuthorResponse(
-    val id: Long,
+    val id: String,
     val fullName: String,
     val email: String,
     val imagePath: String?
@@ -118,7 +118,7 @@ data class PostStatsResponse(
 data class PostSearchRequest(
     val title: String? = null,
     val content: String? = null,
-    val authorId: Long? = null,
+    val authorId: String? = null,
     val fromDate: LocalDateTime? = null,
     val toDate: LocalDateTime? = null,
     val minLikes: Int? = null,

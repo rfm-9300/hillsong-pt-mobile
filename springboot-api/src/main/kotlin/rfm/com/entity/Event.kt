@@ -1,97 +1,75 @@
 package rfm.com.entity
 
-import jakarta.persistence.*
-import org.hibernate.annotations.CreationTimestamp
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.index.Indexed
+import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDateTime
 
-@Entity
-@Table(name = "event")
+@Document(collection = "events")
 data class Event(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
-    
-    @Column(nullable = false, length = 255)
+    val id: String? = null,
+
     val title: String,
-    
-    @Column(columnDefinition = "TEXT", nullable = false)
+
     val description: String,
-    
-    @Column(nullable = false)
+
     val date: LocalDateTime,
-    
-    @Column(nullable = false, length = 255)
+
     val location: String,
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organizer_id", nullable = false)
-    val organizer: UserProfile,
-    
-    @Column(name = "header_image_path", length = 255, nullable = false)
+
+    val organizerId: String,
+
     val headerImagePath: String = "",
-    
-    @Column(name = "max_attendees", nullable = false)
+
     val maxAttendees: Int,
-    
-    @Column(name = "needs_approval", nullable = false)
+
     val needsApproval: Boolean = false,
-    
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+
+    @CreatedDate
     val createdAt: LocalDateTime = LocalDateTime.now(),
-    
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "event_attendee",
-        joinColumns = [JoinColumn(name = "event_id")],
-        inverseJoinColumns = [JoinColumn(name = "user_id")]
-    )
-    val attendees: MutableSet<User> = mutableSetOf(),
-    
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "event_waiting_list",
-        joinColumns = [JoinColumn(name = "event_id")],
-        inverseJoinColumns = [JoinColumn(name = "user_id")]
-    )
-    val waitingListUsers: MutableSet<User> = mutableSetOf()
+
+    val attendeeIds: MutableList<String> = mutableListOf(),
+
+    val waitingListIds: MutableList<String> = mutableListOf()
 ) {
     val attendeeCount: Int
-        get() = attendees.size
-    
+        get() = attendeeIds.size
+
     val isAtCapacity: Boolean
         get() = attendeeCount >= maxAttendees
-    
+
     val availableSpots: Int
         get() = maxOf(0, maxAttendees - attendeeCount)
-    
-    fun addAttendee(user: User): Boolean {
-        return if (!isAtCapacity && !attendees.contains(user)) {
-            attendees.add(user)
-            waitingListUsers.remove(user) // Remove from waiting list if they were there
+
+    fun addAttendee(userId: String): Boolean {
+        return if (!isAtCapacity && !attendeeIds.contains(userId)) {
+            attendeeIds.add(userId)
+            waitingListIds.remove(userId)
             true
         } else {
             false
         }
     }
-    
-    fun addToWaitingList(user: User): Boolean {
-        return if (!attendees.contains(user) && !waitingListUsers.contains(user)) {
-            waitingListUsers.add(user)
+
+    fun addToWaitingList(userId: String): Boolean {
+        return if (!attendeeIds.contains(userId) && !waitingListIds.contains(userId)) {
+            waitingListIds.add(userId)
             true
         } else {
             false
         }
     }
-    
-    fun removeAttendee(user: User): Boolean {
-        return attendees.remove(user)
+
+    fun removeAttendee(userId: String): Boolean {
+        return attendeeIds.remove(userId)
     }
-    
-    fun removeFromWaitingList(user: User): Boolean {
-        return waitingListUsers.remove(user)
+
+    fun removeFromWaitingList(userId: String): Boolean {
+        return waitingListIds.remove(userId)
     }
-    
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -100,6 +78,6 @@ data class Event(
     }
 
     override fun hashCode(): Int = id?.hashCode() ?: 0
-    
+
     override fun toString(): String = "Event(id=$id, title='$title', date=$date, location='$location')"
 }

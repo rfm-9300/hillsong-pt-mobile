@@ -83,7 +83,7 @@ class EventController(
      */
     @GetMapping("/{id}")
     fun getEventById(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         @RequestParam(defaultValue = "false") includeAttendees: Boolean
     ): ResponseEntity<ApiResponse<EventResponse>> = runBlocking {
         logger.debug("Fetching event by id: $id, includeAttendees: $includeAttendees")
@@ -127,7 +127,7 @@ class EventController(
      */
     @PutMapping("/{id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun updateEvent(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         @Valid @RequestPart("event") updateEventRequest: UpdateEventRequest,
         @RequestPart("image", required = false) headerImage: MultipartFile?,
         authentication: Authentication
@@ -151,7 +151,7 @@ class EventController(
      */
     @DeleteMapping("/{id}")
     fun deleteEvent(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<String>> = runBlocking {
         val userId = authentication.getCurrentUserId()
@@ -173,7 +173,7 @@ class EventController(
      */
     @PostMapping("/{id}/join")
     fun joinEvent(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<EventActionResponse>> = runBlocking {
         val userId = authentication.getCurrentUserId()
@@ -197,7 +197,7 @@ class EventController(
      */
     @PostMapping("/{id}/leave")
     fun leaveEvent(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<EventActionResponse>> = runBlocking {
         val userId = authentication.getCurrentUserId()
@@ -221,8 +221,8 @@ class EventController(
      */
     @PostMapping("/{eventId}/approve/{userId}")
     fun approveUserForEvent(
-        @PathVariable eventId: Long,
-        @PathVariable userId: Long,
+        @PathVariable eventId: String,
+        @PathVariable userId: String,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<EventActionResponse>> = runBlocking {
         val organizerId = authentication.getCurrentUserId()
@@ -246,7 +246,7 @@ class EventController(
      */
     @GetMapping("/{id}/status")
     fun getUserEventStatus(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<UserEventStatusResponse>> = runBlocking {
         val userId = authentication.getCurrentUserId()

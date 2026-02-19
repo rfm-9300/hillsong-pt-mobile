@@ -1,9 +1,8 @@
 package rfm.com.service
 
-import org.springframework.data.repository.findByIdOrNull
+import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import rfm.com.dto.*
 import rfm.com.entity.*
 import rfm.com.repository.*
@@ -22,15 +21,16 @@ import java.time.LocalDateTime
  * - Expiring old requests automatically
  */
 @Service
-@Transactional
 class CheckInRequestService(
     private val checkInRequestRepository: CheckInRequestRepository,
     private val kidRepository: KidRepository,
     private val kidsServiceRepository: KidsServiceRepository,
-    private val userProfileRepository: UserProfileRepository,
+    private val userRepository: UserRepository,
     private val kidAttendanceRepository: KidAttendanceRepository,
     private val webSocketService: WebSocketService
 ) {
+    
+    private val logger = LoggerFactory.getLogger(CheckInRequestService::class.java)
     
     companion object {
         const val TOKEN_EXPIRATION_MINUTES = 15L
@@ -38,39 +38,26 @@ class CheckInRequestService(
     
     /**
      * Creates a new check-in request for a child.
-     * 
-     * Validates:
-     * - Parent owns the child
-     * - Service is accepting check-ins
-     * - Child is eligible for service (age requirements)
-     * - No existing pending request for same child and service
-     * 
-     * @param parentId The ID of the parent creating the request
-     * @param request The check-in request details
-     * @return CheckInRequestResponse with token and QR code data
-     * @throws IllegalArgumentException if validation fails
-     * @throws SecurityException if parent doesn't own the child
-     * @throws IllegalStateException if service is not accepting check-ins
      */
     fun createCheckInRequest(
-        parentId: Long,
+        parentId: String,
         request: CreateCheckInRequestDto
     ): CheckInRequestResponse {
         // Validate parent exists
-        val parent = userProfileRepository.findByIdOrNull(parentId)
+        val parent = userRepository.findById(parentId).orElse(null)
             ?: throw IllegalArgumentException("Parent not found with ID: $parentId")
         
         // Validate child exists
-        val child = kidRepository.findByIdOrNull(request.childId)
+        val child = kidRepository.findById(request.childId).orElse(null)
             ?: throw IllegalArgumentException("Child not found with ID: ${request.childId}")
         
         // Validate parent owns the child
-        if (!child.hasParent(parent)) {
+        if (!child.hasParent(parentId)) {
             throw SecurityException("Access denied: You are not authorized to create check-in requests for this child")
         }
         
         // Validate service exists
-        val service = kidsServiceRepository.findByIdOrNull(request.serviceId)
+        val service = kidsServiceRepository.findById(request.serviceId).orElse(null)
             ?: throw IllegalArgumentException("Kids service not found with ID: ${request.serviceId}")
         
         // Validate service is active
@@ -84,20 +71,21 @@ class CheckInRequestService(
         }
         
         // Validate child is eligible for service (age requirements)
-        if (!child.isEligibleForService(service)) {
+        val childAge = child.age
+        if (childAge < service.minAge || childAge > service.maxAge) {
             throw IllegalArgumentException("Child does not meet age requirements for this service. Service accepts ages ${service.minAge}-${service.maxAge}.")
         }
         
         // Check for existing pending request for same child and service
-        val existingRequest = checkInRequestRepository.findByKidAndKidsServiceAndStatus(
-            child,
-            service,
+        val existingRequest = checkInRequestRepository.findByKidIdAndKidsServiceIdAndStatus(
+            child.id!!,
+            service.id!!,
             CheckInRequestStatus.PENDING
         )
         
         if (existingRequest != null && !existingRequest.isExpired()) {
             // Return existing request instead of creating a duplicate
-            return mapToCheckInRequestResponse(existingRequest)
+            return mapToCheckInRequestResponse(existingRequest, child, service, parent)
         }
         
         // Generate secure token
@@ -106,9 +94,9 @@ class CheckInRequestService(
         
         // Create check-in request
         val checkInRequest = rfm.com.entity.CheckInRequest(
-            kid = child,
-            kidsService = service,
-            requestedBy = parent,
+            kidId = child.id,
+            kidsServiceId = service.id,
+            requestedById = parentId,
             token = token,
             expiresAt = expiresAt,
             notes = request.notes
@@ -116,18 +104,29 @@ class CheckInRequestService(
         
         val savedRequest = checkInRequestRepository.save(checkInRequest)
         
-        return mapToCheckInRequestResponse(savedRequest)
+        return mapToCheckInRequestResponse(savedRequest, child, service, parent)
     }
     
     // Mapping function for CheckInRequestResponse
-    private fun mapToCheckInRequestResponse(request: rfm.com.entity.CheckInRequest): CheckInRequestResponse {
+    private fun mapToCheckInRequestResponse(
+        request: rfm.com.entity.CheckInRequest,
+        child: Kid? = null,
+        service: rfm.com.entity.KidsService? = null,
+        parent: User? = null
+    ): CheckInRequestResponse {
+        val resolvedChild = child ?: kidRepository.findById(request.kidId).orElse(null)
+        val resolvedService = service ?: kidsServiceRepository.findById(request.kidsServiceId).orElse(null)
+        val resolvedParent = parent ?: userRepository.findById(request.requestedById).orElse(null)
+        
         return CheckInRequestResponse(
             id = request.id!!,
             token = request.token,
-            qrCodeData = request.token, // Token is the QR code data
-            child = mapToChildSummaryResponse(request.kid),
-            service = mapToKidsServiceResponse(request.kidsService),
-            requestedBy = mapToParentResponse(request.requestedBy),
+            qrCodeData = request.token,
+            child = resolvedChild?.let { mapToChildSummaryResponse(it) }
+                ?: ChildSummaryResponse(id = request.kidId, firstName = "Unknown", lastName = "", fullName = "Unknown", age = 0, ageGroup = "UNKNOWN", isActive = false),
+            service = resolvedService?.let { mapToKidsServiceResponse(it) }
+                ?: throw IllegalStateException("Service not found"),
+            requestedBy = mapToParentResponse(request.requestedById, resolvedParent),
             status = request.status.name,
             createdAt = request.createdAt,
             expiresAt = request.expiresAt,
@@ -149,6 +148,7 @@ class CheckInRequestService(
     }
     
     private fun mapToKidsServiceResponse(service: rfm.com.entity.KidsService): KidsServiceResponse {
+        val leader = service.leaderId?.let { userRepository.findById(it).orElse(null) }
         return KidsServiceResponse(
             id = service.id!!,
             name = service.name,
@@ -157,7 +157,7 @@ class CheckInRequestService(
             startTime = service.startTime.toString(),
             endTime = service.endTime.toString(),
             location = service.location,
-            leaderName = service.leader?.let { "${it.firstName} ${it.lastName}" },
+            leaderName = leader?.fullName,
             maxCapacity = service.maxCapacity,
             minAge = service.minAge,
             maxAge = service.maxAge,
@@ -168,18 +168,10 @@ class CheckInRequestService(
     
     /**
      * Approves a check-in request and creates an attendance record.
-     * Used by staff after verifying the child's identity and information.
-     * 
-     * @param token The token from the scanned QR code
-     * @param staffUserId The ID of the staff member approving the request
-     * @param notes Optional notes from staff
-     * @return CheckInApprovalResponse with attendance details
-     * @throws IllegalArgumentException if token not found or staff not found
-     * @throws IllegalStateException if token is expired, service at capacity, or duplicate check-in
      */
     fun approveCheckInRequest(
         token: String,
-        staffUserId: Long,
+        staffUserId: String,
         notes: String?
     ): CheckInApprovalResponse {
         // Validate token exists
@@ -196,11 +188,13 @@ class CheckInRequestService(
         }
         
         // Validate staff exists
-        val staff = userProfileRepository.findByIdOrNull(staffUserId)
+        val staff = userRepository.findById(staffUserId).orElse(null)
             ?: throw IllegalArgumentException("Staff member not found with ID: $staffUserId")
         
-        val child = request.kid
-        val service = request.kidsService
+        val child = kidRepository.findById(request.kidId).orElse(null)
+            ?: throw IllegalArgumentException("Child not found")
+        val service = kidsServiceRepository.findById(request.kidsServiceId).orElse(null)
+            ?: throw IllegalArgumentException("Service not found")
         
         // Check service capacity
         if (service.isAtCapacity) {
@@ -208,13 +202,13 @@ class CheckInRequestService(
         }
         
         // Check for duplicate check-in (child already checked in to this service today)
-        val existingCheckIn = kidAttendanceRepository.findByKidAndCheckInTimeBetween(
-            child,
-            LocalDateTime.now().toLocalDate().atStartOfDay(),
-            LocalDateTime.now().toLocalDate().atTime(23, 59, 59)
-        ).firstOrNull { 
+        val todayStart = LocalDateTime.now().toLocalDate().atStartOfDay()
+        val todayEnd = LocalDateTime.now().toLocalDate().atTime(23, 59, 59)
+        val todayAttendances = kidAttendanceRepository.findByCheckInTimeBetween(todayStart, todayEnd)
+        val existingCheckIn = todayAttendances.firstOrNull { 
+            it.kidId == request.kidId &&
             it.status == AttendanceStatus.CHECKED_IN && 
-            it.kidsService.id == service.id 
+            it.kidsServiceId == request.kidsServiceId
         }
         
         if (existingCheckIn != null) {
@@ -222,15 +216,16 @@ class CheckInRequestService(
         }
         
         val checkInTime = LocalDateTime.now()
+        val requestedByUser = userRepository.findById(request.requestedById).orElse(null)
         
         // Create KidAttendance record with reference to CheckInRequest
         val attendance = KidAttendance(
-            kid = child,
-            kidsService = service,
-            checkedInBy = request.requestedBy.fullName,
+            kidId = request.kidId,
+            kidsServiceId = request.kidsServiceId,
+            checkedInBy = requestedByUser?.fullName ?: "Unknown",
             notes = notes ?: request.notes,
             status = AttendanceStatus.CHECKED_IN,
-            checkInRequest = request,
+            checkInRequestId = request.id,
             approvedByStaff = staff.fullName
         )
         
@@ -239,23 +234,26 @@ class CheckInRequestService(
         // Update CheckInRequest status to APPROVED
         val updatedRequest = request.copy(
             status = CheckInRequestStatus.APPROVED,
-            processedBy = staff,
-            processedAt = checkInTime
+            processedById = staffUserId,
+            processedAt = checkInTime,
+            attendanceId = savedAttendance.id
         )
         
         checkInRequestRepository.save(updatedRequest)
         
         // Send real-time notification to parent via WebSocket
         webSocketService.notifyCheckInApproved(
-            parentUserId = request.requestedBy.id!!,
-            request = updatedRequest,
+            parentUserId = request.requestedById,
+            requestId = request.id!!,
+            kidId = request.kidId,
+            kidsServiceId = request.kidsServiceId,
             approvedBy = staff.fullName,
             attendanceId = savedAttendance.id!!
         )
         
         return CheckInApprovalResponse(
-            requestId = request.id!!,
-            attendanceId = savedAttendance.id!!,
+            requestId = request.id,
+            attendanceId = savedAttendance.id,
             child = mapToChildSummaryResponse(child),
             service = mapToKidsServiceResponse(service),
             checkInTime = checkInTime,
@@ -266,18 +264,10 @@ class CheckInRequestService(
     
     /**
      * Rejects a check-in request with a reason.
-     * Used by staff when they cannot approve a check-in.
-     * 
-     * @param token The token from the scanned QR code
-     * @param staffUserId The ID of the staff member rejecting the request
-     * @param reason The reason for rejection
-     * @return CheckInRejectionResponse with rejection details
-     * @throws IllegalArgumentException if token not found or staff not found
-     * @throws IllegalStateException if token is expired or already processed
      */
     fun rejectCheckInRequest(
         token: String,
-        staffUserId: Long,
+        staffUserId: String,
         reason: String
     ): CheckInRejectionResponse {
         // Validate token exists
@@ -294,17 +284,17 @@ class CheckInRequestService(
         }
         
         // Validate staff exists
-        val staff = userProfileRepository.findByIdOrNull(staffUserId)
+        val staff = userRepository.findById(staffUserId).orElse(null)
             ?: throw IllegalArgumentException("Staff member not found with ID: $staffUserId")
         
-        val child = request.kid
-        val service = request.kidsService
+        val child = kidRepository.findById(request.kidId).orElse(null)
+        val service = kidsServiceRepository.findById(request.kidsServiceId).orElse(null)
         val rejectionTime = LocalDateTime.now()
         
         // Update CheckInRequest status to REJECTED
         val updatedRequest = request.copy(
             status = CheckInRequestStatus.REJECTED,
-            processedBy = staff,
+            processedById = staffUserId,
             processedAt = rejectionTime,
             rejectionReason = reason
         )
@@ -313,16 +303,20 @@ class CheckInRequestService(
         
         // Send real-time notification to parent with reason via WebSocket
         webSocketService.notifyCheckInRejected(
-            parentUserId = request.requestedBy.id!!,
-            request = updatedRequest,
+            parentUserId = request.requestedById,
+            requestId = request.id!!,
+            kidId = request.kidId,
+            kidsServiceId = request.kidsServiceId,
             rejectedBy = staff.fullName,
             reason = reason
         )
         
         return CheckInRejectionResponse(
-            requestId = request.id!!,
-            child = mapToChildSummaryResponse(child),
-            service = mapToKidsServiceResponse(service),
+            requestId = request.id,
+            child = child?.let { mapToChildSummaryResponse(it) }
+                ?: ChildSummaryResponse(id = request.kidId, firstName = "Unknown", lastName = "", fullName = "Unknown", age = 0, ageGroup = "UNKNOWN", isActive = false),
+            service = service?.let { mapToKidsServiceResponse(it) }
+                ?: throw IllegalStateException("Service not found"),
             rejectedBy = staff.fullName,
             reason = reason,
             message = "Check-in request has been rejected"
@@ -331,25 +325,15 @@ class CheckInRequestService(
     
     /**
      * Cancels a pending check-in request.
-     * Used by parents when they no longer need the check-in request.
-     * 
-     * @param requestId The ID of the check-in request to cancel
-     * @param parentId The ID of the parent cancelling the request
-     * @throws IllegalArgumentException if request not found or parent not found
-     * @throws SecurityException if parent doesn't own the child
-     * @throws IllegalStateException if request is not in PENDING status
      */
-    fun cancelCheckInRequest(requestId: Long, parentId: Long) {
+    fun cancelCheckInRequest(requestId: String, parentId: String) {
         // Validate request exists
-        val request = checkInRequestRepository.findByIdOrNull(requestId)
+        val request = checkInRequestRepository.findById(requestId).orElse(null)
             ?: throw IllegalArgumentException("Check-in request not found with ID: $requestId")
         
-        // Validate parent exists
-        val parent = userProfileRepository.findByIdOrNull(parentId)
-            ?: throw IllegalArgumentException("Parent not found with ID: $parentId")
-        
         // Validate parent owns the child
-        if (!request.kid.hasParent(parent)) {
+        val child = kidRepository.findById(request.kidId).orElse(null)
+        if (child != null && !child.hasParent(parentId)) {
             throw SecurityException("Access denied: You are not authorized to cancel this check-in request")
         }
         
@@ -370,21 +354,17 @@ class CheckInRequestService(
     /**
      * Scheduled job to expire old check-in requests.
      * Runs every 5 minutes to mark PENDING requests that have passed their expiration time as EXPIRED.
-     * 
-     * This ensures that expired QR codes cannot be used for check-in.
      */
     @Scheduled(fixedRate = 300000) // 5 minutes in milliseconds
     fun expireOldRequests() {
         val now = LocalDateTime.now()
         
-        // Query all PENDING requests with expires_at before current time
         val expiredRequests = checkInRequestRepository.findByStatusAndExpiresAtBefore(
             CheckInRequestStatus.PENDING,
             now
         )
         
         if (expiredRequests.isNotEmpty()) {
-            // Update status to EXPIRED
             val updatedRequests = expiredRequests.map { request ->
                 request.copy(
                     status = CheckInRequestStatus.EXPIRED,
@@ -393,33 +373,22 @@ class CheckInRequestService(
             }
             
             checkInRequestRepository.saveAll(updatedRequests)
-            
-            // Log the number of expired requests
-            println("Expired ${expiredRequests.size} check-in requests at $now")
+            logger.info("Expired ${expiredRequests.size} check-in requests at $now")
         }
     }
     
     /**
      * Retrieves all active (PENDING) check-in requests for a parent's children.
-     * Used by parents to view their pending check-in requests.
-     * 
-     * @param parentId The ID of the parent
-     * @return List of CheckInRequestResponse for all pending requests
-     * @throws IllegalArgumentException if parent not found
      */
-    @Transactional(readOnly = true)
-    fun getActiveRequestsForParent(parentId: Long): List<CheckInRequestResponse> {
-        // Validate parent exists
-        val parent = userProfileRepository.findByIdOrNull(parentId)
+    fun getActiveRequestsForParent(parentId: String): List<CheckInRequestResponse> {
+        userRepository.findById(parentId).orElse(null)
             ?: throw IllegalArgumentException("Parent not found with ID: $parentId")
         
-        // Query all PENDING requests for parent's children
-        val activeRequests = checkInRequestRepository.findByRequestedByAndStatusIn(
-            parent,
+        val activeRequests = checkInRequestRepository.findByRequestedByIdAndStatusInOrderByCreatedAtDesc(
+            parentId,
             listOf(CheckInRequestStatus.PENDING)
         )
         
-        // Filter out expired requests and map to response
         return activeRequests
             .filter { !it.isExpired() }
             .map { mapToCheckInRequestResponse(it) }
@@ -428,19 +397,11 @@ class CheckInRequestService(
     /**
      * Retrieves check-in request details by token.
      * Used by staff when scanning a QR code.
-     * 
-     * @param token The token from the scanned QR code
-     * @return CheckInRequestDetailsResponse with child medical information
-     * @throws IllegalArgumentException if token not found
-     * @throws IllegalStateException if token is expired
      */
-    @Transactional(readOnly = true)
     fun getCheckInRequestByToken(token: String): CheckInRequestDetailsResponse {
-        // Validate token exists
         val request = checkInRequestRepository.findByToken(token)
             ?: throw IllegalArgumentException("Invalid check-in request token")
         
-        // Check if token is expired
         if (request.isExpired()) {
             throw IllegalStateException("Check-in request has expired. Please generate a new QR code.")
         }
@@ -449,22 +410,26 @@ class CheckInRequestService(
     }
     
     private fun mapToCheckInRequestDetailsResponse(request: rfm.com.entity.CheckInRequest): CheckInRequestDetailsResponse {
-        val child = request.kid
+        val child = kidRepository.findById(request.kidId).orElse(null)
+        val service = kidsServiceRepository.findById(request.kidsServiceId).orElse(null)
+        val parent = userRepository.findById(request.requestedById).orElse(null)
         
         return CheckInRequestDetailsResponse(
             id = request.id!!,
-            child = mapToChildDetailedResponse(child),
-            service = mapToKidsServiceResponse(request.kidsService),
-            requestedBy = mapToParentResponse(request.requestedBy),
+            child = child?.let { mapToChildDetailedResponse(it) }
+                ?: ChildDetailedResponse(id = request.kidId, firstName = "Unknown", lastName = "", fullName = "Unknown", age = 0, ageGroup = "UNKNOWN", gender = null, emergencyContactName = null, emergencyContactPhone = null, medicalNotes = null, allergies = null, specialNeeds = null, pickupAuthorization = null),
+            service = service?.let { mapToKidsServiceResponse(it) }
+                ?: throw IllegalStateException("Service not found"),
+            requestedBy = mapToParentResponse(request.requestedById, parent),
             status = request.status.name,
             createdAt = request.createdAt,
             expiresAt = request.expiresAt,
             notes = request.notes,
             isExpired = request.isExpired(),
             canBeProcessed = request.canBeProcessed(),
-            hasMedicalAlerts = !child.medicalNotes.isNullOrBlank(),
-            hasAllergies = !child.allergies.isNullOrBlank(),
-            hasSpecialNeeds = !child.specialNeeds.isNullOrBlank()
+            hasMedicalAlerts = child?.medicalNotes?.isNotBlank() == true,
+            hasAllergies = child?.allergies?.isNotBlank() == true,
+            hasSpecialNeeds = child?.specialNeeds?.isNotBlank() == true
         )
     }
     
@@ -486,14 +451,14 @@ class CheckInRequestService(
         )
     }
     
-    private fun mapToParentResponse(parent: UserProfile): ParentResponse {
+    private fun mapToParentResponse(parentId: String, user: User?): ParentResponse {
         return ParentResponse(
-            id = parent.id!!,
-            firstName = parent.firstName,
-            lastName = parent.lastName,
-            fullName = parent.fullName,
-            email = parent.email,
-            phone = parent.phone
+            id = parentId,
+            firstName = user?.firstName ?: "Unknown",
+            lastName = user?.lastName ?: "",
+            fullName = user?.fullName ?: "Unknown",
+            email = user?.email,
+            phone = user?.phone
         )
     }
 }

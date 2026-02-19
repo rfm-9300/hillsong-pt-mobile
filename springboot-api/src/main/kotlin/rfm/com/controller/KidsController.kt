@@ -47,7 +47,7 @@ class KidsController(private val kidsService: KidsService) {
     /** Get a specific kids service */
     @GetMapping("/services/{serviceId}")
     @PreAuthorize("hasRole('USER')")
-    fun getService(@PathVariable serviceId: Long): ResponseEntity<ApiResponse<KidsServiceResponse>> {
+    fun getService(@PathVariable serviceId: String): ResponseEntity<ApiResponse<KidsServiceResponse>> {
         return try {
             val service = kidsService.getService(serviceId)
             
@@ -140,7 +140,7 @@ class KidsController(private val kidsService: KidsService) {
     @GetMapping("/children/parent/{parentId}")
     @PreAuthorize("hasRole('USER')")
     fun getChildrenByParent(
-        @PathVariable parentId: Long,
+        @PathVariable parentId: String,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") pageSize: Int,
         authentication: Authentication
@@ -177,7 +177,7 @@ class KidsController(private val kidsService: KidsService) {
     @GetMapping("/children/{childId}")
     @PreAuthorize("hasRole('USER')")
     fun getChild(
-        @PathVariable childId: Long,
+        @PathVariable childId: String,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<ChildResponse>> {
         return try {
@@ -212,7 +212,7 @@ class KidsController(private val kidsService: KidsService) {
     @PutMapping("/children/{childId}")
     @PreAuthorize("hasRole('USER')")
     fun updateChild(
-        @PathVariable childId: Long,
+        @PathVariable childId: String,
         @Valid @RequestBody request: ChildUpdateRequest,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<ChildResponse>> {
@@ -248,7 +248,7 @@ class KidsController(private val kidsService: KidsService) {
     @DeleteMapping("/children/{childId}")
     @PreAuthorize("hasRole('USER')")
     fun deleteChild(
-        @PathVariable childId: Long,
+        @PathVariable childId: String,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<Unit>> {
         return try {
@@ -371,7 +371,7 @@ class KidsController(private val kidsService: KidsService) {
     @GetMapping("/checkins/current")
     @PreAuthorize("hasRole('USER')")
     fun getCurrentCheckIns(
-        @RequestParam(required = false) serviceId: Long?
+        @RequestParam(required = false) serviceId: String?
     ): ResponseEntity<ApiResponse<List<KidsCheckInResponse>>> {
         return try {
             val checkIns = kidsService.getCurrentCheckIns(serviceId)
@@ -398,8 +398,8 @@ class KidsController(private val kidsService: KidsService) {
     @GetMapping("/checkins/history")
     @PreAuthorize("hasRole('USER')")
     fun getCheckInHistory(
-        @RequestParam(required = false) childId: Long?,
-        @RequestParam(required = false) serviceId: Long?,
+        @RequestParam(required = false) childId: String?,
+        @RequestParam(required = false) serviceId: String?,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") pageSize: Int,
         authentication: Authentication

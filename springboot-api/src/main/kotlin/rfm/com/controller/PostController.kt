@@ -95,7 +95,7 @@ class PostController(
      */
     @GetMapping("/{id}")
     fun getPostById(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         authentication: Authentication?
     ): ResponseEntity<ApiResponse<PostResponse>> {
         return try {
@@ -135,7 +135,7 @@ class PostController(
      */
     @PutMapping("/{id}")
     fun updatePost(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         @Valid @RequestPart("post") updatePostRequest: UpdatePostRequest,
         @RequestPart("image", required = false) headerImage: MultipartFile?,
         authentication: Authentication
@@ -185,7 +185,7 @@ class PostController(
      */
     @DeleteMapping("/{id}")
     fun deletePost(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<String>> {
         return try {
@@ -233,7 +233,7 @@ class PostController(
      */
     @PostMapping("/{id}/like")
     fun togglePostLike(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<PostResponse>> {
         return try {
@@ -273,7 +273,7 @@ class PostController(
      */
     @GetMapping("/author/{authorId}")
     fun getPostsByAuthor(
-        @PathVariable authorId: Long,
+        @PathVariable authorId: String,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
         authentication: Authentication?
@@ -347,7 +347,7 @@ class PostController(
      */
     @PostMapping("/{id}/comments")
     fun addComment(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         @Valid @RequestBody createCommentRequest: CreateCommentRequest,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<CommentResponse>> {
@@ -388,7 +388,7 @@ class PostController(
      */
     @GetMapping("/{id}/comments")
     fun getPostComments(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int
     ): ResponseEntity<ApiResponse<CommentPageResponse>> {
@@ -426,16 +426,17 @@ class PostController(
     /**
      * Delete a comment
      */
-    @DeleteMapping("/comments/{commentId}")
+    @DeleteMapping("/{postId}/comments/{commentId}")
     fun deleteComment(
-        @PathVariable commentId: Long,
+        @PathVariable postId: String,
+        @PathVariable commentId: String,
         authentication: Authentication
     ): ResponseEntity<ApiResponse<String>> {
         return try {
             val userId = authentication.getCurrentUserId()
-            logger.info("Deleting comment ID: $commentId by user ID: $userId")
+            logger.info("Deleting comment ID: $commentId from post ID: $postId by user ID: $userId")
             
-            postService.deleteComment(commentId, userId)
+            postService.deleteComment(postId, commentId, userId)
             
             ResponseEntity.ok(
                 ApiResponse(

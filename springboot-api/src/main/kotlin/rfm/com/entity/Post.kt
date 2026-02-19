@@ -1,66 +1,65 @@
 package rfm.com.entity
 
-import jakarta.persistence.*
-import org.hibernate.annotations.CreationTimestamp
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDateTime
 
-@Entity
-@Table(name = "post")
+/**
+ * Embedded comment within a Post document.
+ */
+data class PostComment(
+    val id: String? = null,
+    val userId: String,
+    val content: String,
+    val date: LocalDateTime = LocalDateTime.now()
+)
+
+@Document(collection = "posts")
 data class Post(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
-    
-    @Column(nullable = false, length = 255)
+    val id: String? = null,
+
     val title: String,
-    
-    @Column(columnDefinition = "TEXT", nullable = false)
+
     val content: String,
-    
-    @CreationTimestamp
-    @Column(nullable = false)
+
+    @CreatedDate
     val date: LocalDateTime = LocalDateTime.now(),
-    
-    @Column(name = "header_image_path", length = 255, nullable = false)
+
     val headerImagePath: String = "default-header.jpg",
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    val author: User,
-    
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "post_like",
-        joinColumns = [JoinColumn(name = "post_id")],
-        inverseJoinColumns = [JoinColumn(name = "user_id")]
-    )
-    val likedByUsers: MutableSet<User> = mutableSetOf(),
-    
-    @OneToMany(mappedBy = "post", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    val comments: MutableSet<PostComment> = mutableSetOf()
+
+    val authorId: String,
+
+    val likedByUserIds: MutableList<String> = mutableListOf(),
+
+    val comments: MutableList<PostComment> = mutableListOf()
 ) {
     val likeCount: Int
-        get() = likedByUsers.size
-    
+        get() = likedByUserIds.size
+
     val commentCount: Int
         get() = comments.size
-    
-    fun addLike(user: User): Boolean {
-        return likedByUsers.add(user)
+
+    fun addLike(userId: String): Boolean {
+        return if (!likedByUserIds.contains(userId)) {
+            likedByUserIds.add(userId)
+            true
+        } else false
     }
-    
-    fun removeLike(user: User): Boolean {
-        return likedByUsers.remove(user)
+
+    fun removeLike(userId: String): Boolean {
+        return likedByUserIds.remove(userId)
     }
-    
-    fun isLikedBy(user: User): Boolean {
-        return likedByUsers.contains(user)
+
+    fun isLikedBy(userId: String): Boolean {
+        return likedByUserIds.contains(userId)
     }
-    
+
     fun addComment(comment: PostComment): Boolean {
         return comments.add(comment)
     }
-    
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -69,6 +68,6 @@ data class Post(
     }
 
     override fun hashCode(): Int = id?.hashCode() ?: 0
-    
-    override fun toString(): String = "Post(id=$id, title='$title', author=${author.email}, likes=$likeCount)"
+
+    override fun toString(): String = "Post(id=$id, title='$title', authorId=$authorId, likes=$likeCount)"
 }

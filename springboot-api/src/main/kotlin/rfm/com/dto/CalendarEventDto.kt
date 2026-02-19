@@ -62,7 +62,7 @@ data class UpdateCalendarEventRequest(
 // Response DTOs
 
 data class CalendarEventResponse(
-    val id: Long,
+    val id: String,
     val title: String,
     val description: String?,
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -93,7 +93,7 @@ data class CalendarEventDetailResponse(
 
 // Summary response for month view (lighter payload)
 data class CalendarEventSummary(
-    val id: Long,
+    val id: String,
     val title: String,
     @JsonFormat(pattern = "yyyy-MM-dd")
     val date: String,

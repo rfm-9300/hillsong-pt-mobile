@@ -1,17 +1,15 @@
 package rfm.com.controller
 
 import org.slf4j.LoggerFactory
-import org.springframework.core.io.Resource
-import org.springframework.core.io.UrlResource
 import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import rfm.com.service.FileStorageService
-import java.nio.file.Files
+import java.net.URI
 
 /**
- * Controller for serving uploaded files
+ * Controller for serving uploaded files via S3/MinIO redirects
  */
 @RestController
 @RequestMapping("/api/files")
@@ -22,85 +20,61 @@ class FileController(
     private val logger = LoggerFactory.getLogger(FileController::class.java)
     
     /**
-     * Serve uploaded files
+     * Serve uploaded files (Redirect to MinIO)
      */
     @GetMapping("/{subDirectory}/{fileName:.+}")
     fun serveFile(
         @PathVariable subDirectory: String,
         @PathVariable fileName: String
-    ): ResponseEntity<Resource> {
+    ): ResponseEntity<Void> {
         return try {
             val filePath = "$subDirectory/$fileName"
-            logger.debug("Serving file: $filePath")
+            logger.debug("Redirecting to file: $filePath")
             
             if (!fileStorageService.fileExists(filePath)) {
-                logger.warn("File not found: $filePath")
+                logger.warn("File not found in S3: $filePath")
                 return ResponseEntity.notFound().build()
             }
             
-            val file = fileStorageService.getFilePath(filePath)
-            val resource: Resource = UrlResource(file.toUri())
-            
-            if (!resource.exists() || !resource.isReadable) {
-                logger.warn("File not readable: $filePath")
+            val presignedUrl = fileStorageService.getPresignedUrl(filePath)
+            if (presignedUrl.isBlank()) {
                 return ResponseEntity.notFound().build()
             }
             
-            // Determine content type
-            val contentType = try {
-                Files.probeContentType(file) ?: "application/octet-stream"
-            } catch (ex: Exception) {
-                logger.warn("Could not determine file type for: $filePath", ex)
-                "application/octet-stream"
-            }
-            
-            ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"$fileName\"")
-                .body(resource)
+            ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(presignedUrl))
+                .build()
                 
         } catch (ex: Exception) {
-            logger.error("Error serving file: $subDirectory/$fileName", ex)
+            logger.error("Error redirecting to file: $subDirectory/$fileName", ex)
             ResponseEntity.internalServerError().build()
         }
     }
     
     /**
-     * Serve files directly from root upload directory (for backward compatibility)
+     * Serve files directly from root (Redirect to MinIO)
      */
     @GetMapping("/{fileName:.+}")
-    fun serveRootFile(@PathVariable fileName: String): ResponseEntity<Resource> {
+    fun serveRootFile(@PathVariable fileName: String): ResponseEntity<Void> {
         return try {
-            logger.debug("Serving root file: $fileName")
+            logger.debug("Redirecting to root file: $fileName")
             
             if (!fileStorageService.fileExists(fileName)) {
-                logger.warn("Root file not found: $fileName")
+                logger.warn("Root file not found in S3: $fileName")
                 return ResponseEntity.notFound().build()
             }
             
-            val file = fileStorageService.getFilePath(fileName)
-            val resource: Resource = UrlResource(file.toUri())
-            
-            if (!resource.exists() || !resource.isReadable) {
-                logger.warn("Root file not readable: $fileName")
+            val presignedUrl = fileStorageService.getPresignedUrl(fileName)
+            if (presignedUrl.isBlank()) {
                 return ResponseEntity.notFound().build()
             }
             
-            // Determine content type
-            val contentType = try {
-                Files.probeContentType(file) ?: "application/octet-stream"
-            } catch (ex: Exception) {
-                logger.warn("Could not determine file type for: $fileName", ex)
-                "application/octet-stream"
-            }
-            
-            ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"$fileName\"")
-                .body(resource)
+            ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(presignedUrl))
+                .build()
                 
         } catch (ex: Exception) {
-            logger.error("Error serving root file: $fileName", ex)
+            logger.error("Error redirecting to root file: $fileName", ex)
             ResponseEntity.internalServerError().build()
         }
     }
@@ -120,15 +94,12 @@ class FileController(
                 return ResponseEntity.notFound().build()
             }
             
-            val file = fileStorageService.getFilePath(filePath)
-            val size = fileStorageService.getFileSize(filePath)
-            val contentType = Files.probeContentType(file) ?: "application/octet-stream"
+            val presignedUrl = fileStorageService.getPresignedUrl(filePath)
             
             val fileInfo = mapOf(
                 "fileName" to fileName,
                 "filePath" to filePath,
-                "size" to size,
-                "contentType" to contentType,
+                "url" to presignedUrl,
                 "exists" to true
             )
             
