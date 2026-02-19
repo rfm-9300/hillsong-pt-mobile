@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const KTOR_BASE_URL = 'http://localhost:8080';
+const AUTH_SERVICE_URL = 'http://localhost:8081';
 
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        console.log('🔄 Proxy: Forwarding login request to Ktor server', { body });
+        console.log('🔄 Proxy: Forwarding login request to Auth Service', { body });
 
-        const response = await fetch(`${KTOR_BASE_URL}/api/auth/login`, {
+        const response = await fetch(`${AUTH_SERVICE_URL}/api/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
         });
 
         const data = await response.json();
-        console.log(`📨 Proxy: Ktor server responded with status ${response.status}`, { data });
+        console.log(`📨 Proxy: Auth Service responded with status ${response.status}`, { data });
 
         return NextResponse.json(data, {
             status: response.status,

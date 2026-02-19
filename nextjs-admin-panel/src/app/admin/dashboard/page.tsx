@@ -25,7 +25,7 @@ interface DashboardData extends Record<string, unknown> {
 }
 
 export default function DashboardPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
   const { showSuccess } = useErrorContext();
   const [hasExecuted, setHasExecuted] = useState(false);
@@ -55,6 +55,8 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
+    if (authLoading) return; // Wait until auth state is resolved from localStorage
+
     if (!isAuthenticated) {
       router.push('/login');
       return;
@@ -65,7 +67,7 @@ export default function DashboardPage() {
       setHasExecuted(true);
       executeAll();
     }
-  }, [isAuthenticated, router, hasExecuted, executeAll]);
+  }, [isAuthenticated, authLoading, router, hasExecuted, executeAll]);
 
   // Show loading skeleton while data is being fetched
   if (globalLoading && !data.posts && !data.events && !data.users) {
@@ -117,7 +119,7 @@ export default function DashboardPage() {
             title="Admin Dashboard"
             subtitle="Welcome back! Here's what's happening with your community."
           />
-          
+
           {/* Backend Status Notice - Only show if there are actual errors */}
           {(errors.posts || errors.events || errors.users) && (
             <Card className="p-4 border-yellow-200 bg-yellow-50 mb-6">
@@ -237,74 +239,74 @@ export default function DashboardPage() {
           <div className="animate-in fade-in slide-in-from-left" style={{ animationDelay: '400ms', animationDuration: '400ms' }}>
             <QuickActions />
           </div>
-          
+
           <div className="animate-in fade-in slide-in-from-right" style={{ animationDelay: '500ms', animationDuration: '400ms' }}>
             <Card className="p-4 sm:p-6">
               <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">System Status</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">API Status</span>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  Operational
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Database</span>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  Connected
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Last Backup</span>
-                <span className="text-sm text-gray-900">2 hours ago</span>
-              </div>
-              {(errors.posts || errors.events || errors.users) && (
-                <div className="pt-4 border-t border-gray-200">
-                  <div className="space-y-2">
-                    {errors.posts && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-red-600">Posts failed to load</span>
-                        <RetryButton
-                          onRetry={() => retry('posts')}
-                          size="sm"
-                          variant="ghost"
-                          className="text-xs"
-                        >
-                          Retry
-                        </RetryButton>
-                      </div>
-                    )}
-                    {errors.events && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-red-600">Events failed to load</span>
-                        <RetryButton
-                          onRetry={() => retry('events')}
-                          size="sm"
-                          variant="ghost"
-                          className="text-xs"
-                        >
-                          Retry
-                        </RetryButton>
-                      </div>
-                    )}
-                    {errors.users && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-red-600">Users failed to load</span>
-                        <RetryButton
-                          onRetry={() => retry('users')}
-                          size="sm"
-                          variant="ghost"
-                          className="text-xs"
-                        >
-                          Retry
-                        </RetryButton>
-                      </div>
-                    )}
-                  </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">API Status</span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Operational
+                  </span>
                 </div>
-              )}
-            </div>
-          </Card>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Database</span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Connected
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Last Backup</span>
+                  <span className="text-sm text-gray-900">2 hours ago</span>
+                </div>
+                {(errors.posts || errors.events || errors.users) && (
+                  <div className="pt-4 border-t border-gray-200">
+                    <div className="space-y-2">
+                      {errors.posts && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-red-600">Posts failed to load</span>
+                          <RetryButton
+                            onRetry={() => retry('posts')}
+                            size="sm"
+                            variant="ghost"
+                            className="text-xs"
+                          >
+                            Retry
+                          </RetryButton>
+                        </div>
+                      )}
+                      {errors.events && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-red-600">Events failed to load</span>
+                          <RetryButton
+                            onRetry={() => retry('events')}
+                            size="sm"
+                            variant="ghost"
+                            className="text-xs"
+                          >
+                            Retry
+                          </RetryButton>
+                        </div>
+                      )}
+                      {errors.users && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-red-600">Users failed to load</span>
+                          <RetryButton
+                            onRetry={() => retry('users')}
+                            size="sm"
+                            variant="ghost"
+                            className="text-xs"
+                          >
+                            Retry
+                          </RetryButton>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Card>
           </div>
         </div>
       </div>
