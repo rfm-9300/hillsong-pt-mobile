@@ -6,6 +6,7 @@ import { Button, Alert, LoadingOverlay, NavigationHeader, LoadingSkeleton } from
 import { FormContainer, Input, Textarea, ImageUpload } from '@/app/components/forms';
 import { api, ENDPOINTS } from '@/lib/api';
 import { Encounter } from '@/lib/types';
+import { getImageUrl } from '@/lib/utils';
 
 export default function EditEncounterPage() {
   const router = useRouter();
@@ -44,7 +45,7 @@ export default function EditEncounterPage() {
             date: dateStr,
             location: encounter.location,
             imageFile: null,
-            currentImagePath: encounter.imagePath
+            currentImagePath: encounter.imagePath ? getImageUrl(encounter.imagePath) : ''
           });
         }
       } catch (error) {

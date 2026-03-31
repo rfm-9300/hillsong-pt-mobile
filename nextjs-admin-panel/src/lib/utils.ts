@@ -62,6 +62,21 @@ export function getUserInitials(user: {
   return user.email[0].toUpperCase();
 }
 
+// Image URL formatter for S3/MinIO stored images
+export function getImageUrl(path: string | null | undefined): string {
+  if (!path) return '';
+  // If it's already a full URL, return it
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  // If it starts with a slash, we assume it's already formatted or an absolute path on the host
+  if (path.startsWith('/')) {
+    return path.startsWith('/api/') ? path : `/api/files${path}`;
+  }
+  // Otherwise, prepend the API file endpoint
+  return `/api/files/${path}`;
+}
+
 // Avatar color generation based on name
 export function getAvatarColor(name: string): string {
   const colors = [

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, Button, DeleteConfirmationModal } from './ui';
 import { Encounter } from '@/lib/types';
+import { getImageUrl } from '@/lib/utils';
 import { api, ENDPOINTS } from '@/lib/api';
 
 interface EncounterCardProps {
@@ -56,7 +57,7 @@ export default function EncounterCard({ encounter, onDelete }: EncounterCardProp
         <div className="relative h-48 bg-gradient-to-br from-blue-500 to-purple-600 rounded-t-lg overflow-hidden">
           {encounter.imagePath ? (
             <img
-              src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/files/${encounter.imagePath}`}
+              src={getImageUrl(encounter.imagePath)}
               alt={encounter.title}
               className="w-full h-full object-cover"
               onError={(e) => {

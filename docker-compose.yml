@@ -70,7 +70,7 @@ services:
       - ./springboot-api/logs:/app/logs
     restart: always
     ports:
-      - "8081:8081"
+      - "8080:8080"
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/church_management_db
       - JWT_SECRET=5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437

@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { api, ENDPOINTS } from '@/lib/api';
 import { Post } from '@/lib/types';
 import { FormContainer, Input, Textarea, ImageUpload } from '@/app/components/forms';
+import { getImageUrl } from '@/lib/utils';
 import { Button, Alert, LoadingOverlay, NavigationHeader } from '@/app/components/ui';
 
 export default function EditPostPage() {
@@ -33,8 +34,9 @@ export default function EditPostPage() {
             title: fetchedPost.title,
             content: fetchedPost.content,
           });
-          if (fetchedPost.imageUrl) {
-            setCurrentImageUrl(fetchedPost.imageUrl);
+          const imagePath = fetchedPost.headerImagePath || fetchedPost.imageUrl;
+          if (imagePath) {
+            setCurrentImageUrl(getImageUrl(imagePath));
           }
         }
       } catch (error) {
@@ -78,7 +80,7 @@ export default function EditPostPage() {
         formDataToSend.append('image', image);
       }
 
-      await api.postForm(ENDPOINTS.POST_UPDATE, formDataToSend);
+      await api.postForm(ENDPOINTS.POST_UPDATE(postId), formDataToSend);
       
       setAlert({
         type: 'success',

@@ -26,6 +26,20 @@ const nextConfig: NextConfig = {
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'http',
+        hostname: 'minio',
+      },
+      {
+        protocol: 'https',
+        hostname: '**',
+      }
+    ],
   },
 
   // Enable compression
@@ -57,6 +71,28 @@ const nextConfig: NextConfig = {
     }
 
     return config;
+  },
+
+  // Proxy /api/* to Spring Boot (except /api/auth/* which are handled by Next.js)
+  async rewrites() {
+    return [
+      {
+        source: '/api/auth/login',
+        destination: '/api/auth/login', // handled by Next.js route
+      },
+      {
+        source: '/api/auth/signup',
+        destination: '/api/auth/signup', // handled by Next.js route
+      },
+      {
+        source: '/api/files/:path*',
+        destination: 'http://localhost:9000/church-files/:path*',
+      },
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:8080/api/:path*',
+      },
+    ];
   },
 
   // Headers for caching

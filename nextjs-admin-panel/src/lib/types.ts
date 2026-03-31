@@ -5,10 +5,18 @@ export interface Post {
   title: string;
   description: string;
   content: string;
-  imageUrl?: string;
-  createdAt: string;
+  imageUrl?: string; // Legacy
+  headerImagePath?: string; // New from Spring Boot
+  createdAt: string; // Legacy
+  date: string; // New from Spring Boot
   updatedAt: string;
   authorId: string;
+  author?: {
+    id: string;
+    fullName: string;
+    email: string;
+    imagePath?: string;
+  }
 }
 
 export interface Event {

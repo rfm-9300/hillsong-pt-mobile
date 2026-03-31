@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Card, Button, DeleteConfirmationModal } from './ui';
 import { Event } from '@/lib/types';
-import { formatDate, formatTime, truncateText } from '@/lib/utils';
+import { formatDate, formatTime, truncateText, getImageUrl } from '@/lib/utils';
 import { api, ENDPOINTS } from '@/lib/api';
 
 interface EventCardProps {
@@ -44,8 +44,8 @@ export default function EventCard({ event, onDelete }: EventCardProps) {
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      await api.delete(ENDPOINTS.EVENT_DELETE, { id: event.id });
-      onDelete?.(event.id);
+      await api.delete(ENDPOINTS.EVENT_DELETE(event.id.toString()));
+      onDelete?.(event.id.toString());
       setShowDeleteModal(false);
     } catch (error) {
       console.error('Error deleting event:', error);
@@ -67,7 +67,7 @@ export default function EventCard({ event, onDelete }: EventCardProps) {
           <div className={`h-32 bg-gradient-to-r ${gradient} relative`}>
             {(event.imageUrl || event.headerImagePath) && event.headerImagePath !== '' && (
               <Image
-                src={event.imageUrl || (event.headerImagePath ? `/${event.headerImagePath}` : '')}
+                src={getImageUrl(event.imageUrl || event.headerImagePath)}
                 alt={event.title}
                 fill
                 className="object-cover"

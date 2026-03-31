@@ -12,10 +12,14 @@ version = file("version.txt").readText().trim()
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
-kotlin {
-    jvmToolchain(17)
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        freeCompilerArgs += "-Xjsr305=strict"
+        jvmTarget = "17"
+    }
 }
 
 sourceSets {
@@ -121,5 +125,6 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("com.ninja-squad:springmockk:4.0.2")
+    implementation(kotlin("stdlib-jdk8"))
 }
 

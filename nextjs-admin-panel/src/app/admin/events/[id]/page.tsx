@@ -6,6 +6,7 @@ import { PageHeader, Button, Alert, LoadingOverlay, NavigationHeader } from '@/a
 import { FormContainer, Input, Textarea, ImageUpload, Checkbox } from '@/app/components/forms';
 import { api, ENDPOINTS } from '@/lib/api';
 import { Event } from '@/lib/types';
+import { getImageUrl } from '@/lib/utils';
 
 export default function EditEventPage() {
   const router = useRouter();
@@ -55,7 +56,7 @@ export default function EditEventPage() {
             maxAttendees: event.maxAttendees || 50,
             needsApproval: event.needsApproval || false,
             imageFile: null,
-            currentImageUrl: event.headerImagePath || ''
+            currentImageUrl: event.headerImagePath ? getImageUrl(event.headerImagePath) : ''
           });
         }
       } catch (error) {
@@ -247,8 +248,6 @@ export default function EditEventPage() {
               onChange={(value) => setFormData(prev => ({ ...prev, maxAttendees: parseInt(value) || 1 }))}
               error={errors.maxAttendees}
               placeholder="Enter maximum number of attendees"
-              min="1"
-              max="10000"
               required
               disabled={loading}
             />

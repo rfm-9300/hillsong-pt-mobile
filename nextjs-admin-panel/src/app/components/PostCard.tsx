@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { Post } from '@/lib/types';
+import { getImageUrl } from '@/lib/utils';
 
 interface PostCardProps {
   post: Post;
@@ -19,16 +20,10 @@ export default function PostCard({ post, onEdit, onDelete }: PostCardProps) {
     });
   };
 
-  const getImageUrl = (imagePath?: string) => {
-    if (!imagePath) return null;
-    // Handle both full URLs and relative paths
-    if (imagePath.startsWith('http')) {
-      return imagePath;
-    }
-    return `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'}/resources/uploads/images/${imagePath}`;
-  };
 
-  const imageUrl = getImageUrl(post.imageUrl);
+
+  const imagePath = post.headerImagePath || post.imageUrl;
+  const imageUrl = getImageUrl(imagePath);
 
   return (
     <div 
@@ -88,7 +83,7 @@ export default function PostCard({ post, onEdit, onDelete }: PostCardProps) {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              {formatDate(post.createdAt)}
+              {formatDate(post.date || post.createdAt)}
             </div>
           </div>
           
