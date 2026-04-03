@@ -18,7 +18,7 @@ fun NavGraphBuilder.kidsGraph(
     staffDashboard: @Composable AnimatedContentScope.() -> Unit,
     qrCodeScanner: @Composable AnimatedContentScope.() -> Unit,
     checkInVerification: @Composable AnimatedContentScope.(token: String) -> Unit,
-    qrCodeDisplay: @Composable AnimatedContentScope.(childId: Long, serviceId: Long) -> Unit,
+    qrCodeDisplay: @Composable AnimatedContentScope.(childId: String, serviceId: String) -> Unit,
 ) {
     navigation<KidsGraph>(startDestination = KidsNav.Management) {
         composable<KidsNav.Management> {
@@ -104,5 +104,5 @@ sealed class KidsNav {
 
     // Parent QR Check-in Route
     @Serializable
-    data class QRCodeDisplay(val childId: Long, val serviceId: Long) : KidsNav()
+    data class QRCodeDisplay(val childId: String, val serviceId: String) : KidsNav()
 }

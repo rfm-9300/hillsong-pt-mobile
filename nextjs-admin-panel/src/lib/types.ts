@@ -49,6 +49,18 @@ export interface Encounter {
   createdAt: string;
 }
 
+export interface YouTubeVideo {
+  id: string;
+  title: string;
+  description?: string;
+  videoUrl: string;
+  thumbnailUrl: string;
+  displayOrder: number;
+  active: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export interface User {
   id: string;
   email: string;

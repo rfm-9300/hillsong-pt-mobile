@@ -45,7 +45,7 @@ class ChildRegistrationViewModel(
     private fun loadCurrentUser() {
         viewModelScope.launch {
             try {
-                val user = authRepository.getUserById(1) // Assuming user ID 1 is logged in
+                val user = authRepository.getUserById("1") // Assuming user ID 1 is logged in
                 currentParentId = user?.id?.toString() ?: ""
             } catch (e: Exception) {
                 // Handle error silently for now

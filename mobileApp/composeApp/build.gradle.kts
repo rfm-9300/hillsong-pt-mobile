@@ -130,7 +130,7 @@ android {
     }
     buildTypes {
         getByName("debug") {
-            buildConfigField("String", "API_BASE_URL", "\"http://192.168.1.141:8080\"")
+            buildConfigField("String", "API_BASE_URL", "\"http://192.168.1.220:8080\"")
             buildConfigField("String", "BUILD_TYPE", "\"debug\"")
             isDebuggable = true
         }

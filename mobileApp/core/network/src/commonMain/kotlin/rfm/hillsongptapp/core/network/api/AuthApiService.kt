@@ -60,7 +60,7 @@ class AuthApiServiceImpl(
     }
     
     override suspend fun requestPasswordReset(request: PasswordResetRequest): NetworkResult<PasswordResetResponse> {
-        return safePost("api/auth/request-password-reset", request)
+        return safePost("api/auth/forgot-password", request)
     }
     
     override suspend fun resetPassword(request: ResetPasswordRequest): NetworkResult<PasswordResetResponse> {

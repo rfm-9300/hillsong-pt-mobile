@@ -433,7 +433,7 @@ class KidsManagementViewModel(
     }
     
     /** Cancel a pending check-in request */
-    fun cancelCheckInRequest(requestId: Long) {
+    fun cancelCheckInRequest(requestId: String) {
         viewModelScope.launch {
             try {
                 when (val result = checkInRequestApiService.cancelRequest(requestId)) {

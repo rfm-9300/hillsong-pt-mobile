@@ -11,7 +11,7 @@ import rfm.hillsongptapp.core.network.result.NetworkResult
  */
 interface CalendarApiService {
     suspend fun getEventsForMonth(month: Int, year: Int): NetworkResult<CalendarEventsResponse>
-    suspend fun getEventById(eventId: Long): NetworkResult<CalendarEventResponse>
+    suspend fun getEventById(eventId: String): NetworkResult<CalendarEventResponse>
 
     // Reactive streams
     fun getEventsForMonthStream(month: Int, year: Int): Flow<NetworkResult<CalendarEventsResponse>>
@@ -34,7 +34,7 @@ class CalendarApiServiceImpl(
         }
     }
 
-    override suspend fun getEventById(eventId: Long): NetworkResult<CalendarEventResponse> {
+    override suspend fun getEventById(eventId: String): NetworkResult<CalendarEventResponse> {
         return safeGet("api/calendar/$eventId")
     }
 

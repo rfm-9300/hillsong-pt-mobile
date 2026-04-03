@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Post(
-    val id: Long,
+    val id: String,
     val title: String,
     val content: String,
     val date: String,
@@ -17,7 +17,7 @@ data class Post(
 
 @Serializable
 data class Author(
-    val id: Long,
+    val id: String,
     val fullName: String,
     val email: String,
     val imagePath: String?

@@ -423,12 +423,12 @@ private fun LoadingMoreIndicator() {
 private fun FeedScreenPreview() {
     val feedItems = (1..5).map { index ->
         FeedItem(
-            id = index.toLong(),
+            id = index.toString(),
             title = "Sample Post Title $index",
             content = "This is a sample post content that demonstrates how the feed item will look in the app. It contains some text that might be longer and will be truncated.",
             imageUrl = "https://picsum.photos/seed/$index/400/200",
             author = AuthorInfo(
-                id = index.toLong(),
+                id = index.toString(),
                 fullName = "John Doe $index",
                 email = "john$index@example.com",
                 avatarUrl = "https://picsum.photos/seed/avatar$index/100/100"

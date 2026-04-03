@@ -203,15 +203,15 @@ fun KidsManagementScreen(
             childName = selectedChildForQR!!.name,
             onServiceSelected = { service ->
                 LoggerHelper.logDebug("=== ENTERED onServiceSelected CALLBACK ===", "KidsManagementScreen")
-                // Convert String IDs to Long for the API call
+                // Use String IDs directly
                 LoggerHelper.logDebug("Raw child ID string: '${selectedChildForQR!!.id}'", "KidsManagementScreen")
                 LoggerHelper.logDebug("Raw service ID string: '${service.id}'", "KidsManagementScreen")
-                val childId = selectedChildForQR!!.id.toLongOrNull() ?: 0L
-                val serviceId = service.id.toLongOrNull() ?: 0L
+                val childId = selectedChildForQR!!.id
+                val serviceId = service.id
                 LoggerHelper.logDebug("Converted IDs - childId=$childId, serviceId=$serviceId", "KidsManagementScreen")
                 
-                if (childId == 0L || serviceId == 0L) {
-                    LoggerHelper.logDebug("ERROR: ID conversion failed! childId=$childId, serviceId=$serviceId", "KidsManagementScreen")
+                if (childId.isEmpty() || serviceId.isEmpty()) {
+                    LoggerHelper.logDebug("ERROR: IDs are empty! childId=$childId, serviceId=$serviceId", "KidsManagementScreen")
                 } else {
                     LoggerHelper.logDebug("Calling navController.navigateToQRCodeDisplay", "KidsManagementScreen")
                     navController.navigateToQRCodeDisplay(childId, serviceId)
@@ -301,7 +301,7 @@ private fun ChildrenListContent(
         onRegisterClick: () -> Unit,
         onRetryConnection: () -> Unit,
         onQRCheckInClick: (Child) -> Unit,
-        onCancelCheckInRequest: (Long) -> Unit
+        onCancelCheckInRequest: (String) -> Unit
 ) {
     LazyColumn(
             modifier = Modifier.fillMaxSize(),

@@ -53,7 +53,7 @@ interface CheckInRequestApiService {
      * @param requestId The ID of the check-in request to cancel
      * @return NetworkResult containing success response
      */
-    suspend fun cancelRequest(requestId: Long): NetworkResult<CheckInRequestApiResponse>
+    suspend fun cancelRequest(requestId: String): NetworkResult<CheckInRequestApiResponse>
     
     /**
      * Get all active (pending) check-in requests for the current user's children
@@ -86,7 +86,7 @@ class CheckInRequestApiServiceImpl(
         return safePost("api/kids/checkin-requests/token/$token/reject", request)
     }
     
-    override suspend fun cancelRequest(requestId: Long): NetworkResult<CheckInRequestApiResponse> {
+    override suspend fun cancelRequest(requestId: String): NetworkResult<CheckInRequestApiResponse> {
         return safeDelete("api/kids/checkin-requests/$requestId")
     }
     

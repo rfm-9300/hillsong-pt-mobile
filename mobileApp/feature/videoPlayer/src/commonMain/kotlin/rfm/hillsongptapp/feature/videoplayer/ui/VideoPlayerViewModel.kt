@@ -25,7 +25,7 @@ data class VideoPlayerUiState(
  * Handles fetching video details and tracking video views
  */
 class VideoPlayerViewModel(
-    private val videoId: Long,
+    private val videoId: String,
     private val videoUrl: String,
     private val youtubeVideosApiService: YouTubeVideosApiService
 ) : ViewModel() {

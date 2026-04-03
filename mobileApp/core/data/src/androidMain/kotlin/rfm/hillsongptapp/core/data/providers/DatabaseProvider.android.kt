@@ -10,5 +10,6 @@ actual fun databaseInstance(): AppDatabase {
         AppDatabase::class.java,
         dbFileName,
     ).addMigrations(MIGRATION_2_3)
+        .fallbackToDestructiveMigration(true)
         .build()
 }

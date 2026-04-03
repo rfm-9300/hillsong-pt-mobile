@@ -19,7 +19,7 @@ sealed class CalendarUiEvent {
     data object PreviousMonth : CalendarUiEvent()
     data object NextMonth : CalendarUiEvent()
     data class SelectDate(val date: String) : CalendarUiEvent()
-    data class SelectEvent(val eventId: Long) : CalendarUiEvent()
+    data class SelectEvent(val eventId: String) : CalendarUiEvent()
     data object DismissEventSheet : CalendarUiEvent()
     data object DismissError : CalendarUiEvent()
     data object Refresh : CalendarUiEvent()

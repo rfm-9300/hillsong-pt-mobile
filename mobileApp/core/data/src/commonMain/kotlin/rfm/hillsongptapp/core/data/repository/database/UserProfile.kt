@@ -9,8 +9,8 @@ import androidx.room.Delete
 
 @Entity(tableName = "userprofile")
 data class UserProfile(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val userId: Long,
+    @PrimaryKey val id: String = "",
+    val userId: String,
     val firstName: String,
     val lastName: String,
     val email: String,
@@ -26,7 +26,7 @@ interface UserProfileDao {
     suspend fun insertUserProfile(profile: UserProfile)
 
     @Query("SELECT * FROM userprofile WHERE userId = :userId")
-    suspend fun getUserProfileByUserId(userId: Long): UserProfile?
+    suspend fun getUserProfileByUserId(userId: String): UserProfile?
 
     @Delete
     suspend fun deleteUserProfile(profile: UserProfile)

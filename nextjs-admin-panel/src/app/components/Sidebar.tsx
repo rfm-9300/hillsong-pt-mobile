@@ -36,6 +36,11 @@ const navItems: NavItem[] = [
     icon: '🤝',
   },
   {
+    label: 'Videos',
+    href: '/admin/videos',
+    icon: '▶️',
+  },
+  {
     label: 'Calendar',
     href: '/admin/calendar',
     icon: '📅',

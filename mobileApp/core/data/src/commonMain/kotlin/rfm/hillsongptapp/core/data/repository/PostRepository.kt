@@ -62,7 +62,7 @@ class PostRepository(
     /**
      * Get a specific post by ID
      */
-    suspend fun getPostById(postId: Int): PostResult<PostResponse> {
+    suspend fun getPostById(postId: String): PostResult<PostResponse> {
         return when (val result = apiClient.posts.getPost(postId)) {
             is NetworkResult.Success -> {
                 PostResult.Success(result.data.toPostResponse())
@@ -79,7 +79,7 @@ class PostRepository(
     /**
      * Like or unlike a post
      */
-    suspend fun togglePostLike(postId: Int): PostResult<Unit> {
+    suspend fun togglePostLike(postId: String): PostResult<Unit> {
         return when (val result = apiClient.posts.likePost(postId)) {
             is NetworkResult.Success -> {
                 PostResult.Success(Unit)
@@ -117,7 +117,7 @@ class PostRepository(
     /**
      * Delete a post
      */
-    suspend fun deletePost(postId: Int): PostResult<Unit> {
+    suspend fun deletePost(postId: String): PostResult<Unit> {
         return when (val result = apiClient.posts.deletePost(postId)) {
             is NetworkResult.Success -> {
                 PostResult.Success(Unit)
@@ -176,7 +176,7 @@ sealed class PostResult<out T> {
  */
 @kotlinx.serialization.Serializable
 data class PostResponse(
-    val id: Long,
+    val id: String,
     val title: String,
     val content: String,
     val date: String, // ISO date string
@@ -189,7 +189,7 @@ data class PostResponse(
 
 @kotlinx.serialization.Serializable
 data class AuthorResponse(
-    val id: Long,
+    val id: String,
     val fullName: String,
     val email: String,
     val imagePath: String?
@@ -207,7 +207,7 @@ data class PostPageResponse(
 
 @kotlinx.serialization.Serializable
 data class CommentResponse(
-    val id: Long,
+    val id: String,
     val content: String,
     val date: String,
     val author: AuthorResponse

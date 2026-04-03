@@ -17,7 +17,7 @@ import rfm.hillsongptapp.logging.LoggerHelper
  * UI model for feed items with additional computed properties
  */
 data class FeedItem(
-    val id: Long,
+    val id: String,
     val title: String,
     val content: String,
     val imageUrl: String?,
@@ -30,7 +30,7 @@ data class FeedItem(
 )
 
 data class AuthorInfo(
-    val id: Long,
+    val id: String,
     val fullName: String,
     val email: String,
     val avatarUrl: String?
@@ -231,7 +231,7 @@ class FeedViewModel(
         }
     }
 
-    private fun togglePostLike(postId: Long) {
+    private fun togglePostLike(postId: String) {
         viewModelScope.launch {
             // Optimistically update UI
             _uiState.update { state ->
@@ -249,7 +249,7 @@ class FeedViewModel(
             }
             
             // Make API call
-            when (val result = postRepository.togglePostLike(postId.toInt())) {
+            when (val result = postRepository.togglePostLike(postId)) {
                 is PostResult.Error, is PostResult.NetworkError -> {
                     // Revert optimistic update on error
                     _uiState.update { state ->
@@ -393,7 +393,7 @@ class FeedViewModel(
 sealed class FeedEvent {
     data object Refresh : FeedEvent()
     data object LoadMore : FeedEvent()
-    data class LikePost(val postId: Long) : FeedEvent()
+    data class LikePost(val postId: String) : FeedEvent()
     data class Search(val query: String) : FeedEvent()
     data object ClearSearch : FeedEvent()
     data object RetryLoad : FeedEvent()

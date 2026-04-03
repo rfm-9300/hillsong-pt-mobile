@@ -23,7 +23,7 @@ import rfm.hillsongptapp.core.data.repository.database.KidsServiceDao
         CheckInRecordEntity::class, 
         KidsServiceEntity::class
     ], 
-    version = 3
+    version = 4
 )
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase: RoomDatabase() {

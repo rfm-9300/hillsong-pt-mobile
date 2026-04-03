@@ -30,7 +30,7 @@ class AuthRepository(
         userDao.insertUser(user)
     }
 
-    suspend fun getUserById(userId: Long): User? {
+    suspend fun getUserById(userId: String): User? {
         return userDao.getUserById(userId)
     }
 
@@ -227,7 +227,7 @@ class AuthRepository(
         userProfileDao.insertUserProfile(profile)
     }
 
-    suspend fun getUserProfileByUserId(userId: Long): UserProfile? {
+    suspend fun getUserProfileByUserId(userId: String): UserProfile? {
         return userProfileDao.getUserProfileByUserId(userId)
     }
 

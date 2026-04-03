@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CalendarEvent(
-    val id: Long,
+    val id: String,
     val title: String,
     val description: String? = null,
     val date: String,               // YYYY-MM-DD

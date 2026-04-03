@@ -15,7 +15,7 @@ data class EmergencyContactResponse(
 
 @Serializable
 data class ChildResponse(
-    val id: Long,
+    val id: String,
     val firstName: String,
     val lastName: String,
     val fullName: String,
@@ -39,7 +39,7 @@ data class ChildResponse(
 
 @Serializable
 data class ParentResponse(
-    val id: Long,
+    val id: String,
     val firstName: String,
     val lastName: String,
     val fullName: String,
@@ -51,14 +51,14 @@ data class ParentResponse(
 data class CheckInStatusResponse(
     val isCheckedIn: Boolean,
     val serviceName: String? = null,
-    val serviceId: Long? = null,
+    val serviceId: String? = null,
     val checkInTime: String? = null, // ISO format string
     val checkedInBy: String? = null
 )
 
 @Serializable
 data class ServiceResponse(
-    val id: Long,
+    val id: String,
     val name: String,
     val dayOfWeek: String,
     val startTime: String,

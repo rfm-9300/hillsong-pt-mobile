@@ -10,7 +10,7 @@ import androidx.room.Upsert
 
 @Entity
 data class User(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey val id: String = "",
     val email: String,
     val token: String? = null,
     val expiryAt: Long? = null, // Store as epoch millis
@@ -25,7 +25,7 @@ interface UserDao {
     suspend fun insertUser(user: User)
 
     @Query("SELECT * FROM user WHERE id = :userId")
-    suspend fun getUserById(userId: Long): User?
+    suspend fun getUserById(userId: String): User?
 
     @Query("SELECT * FROM user ORDER BY lastLoginAt DESC LIMIT 1")
     suspend fun getCurrentUser(): User?

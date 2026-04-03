@@ -15,12 +15,12 @@ import rfm.hillsongptapp.core.network.result.NetworkResult
  */
 interface PostsApiService {
     suspend fun getPosts(): NetworkResult<ApiResponse<PostsDataResponse>>
-    suspend fun getPost(postId: Int): NetworkResult<Post>
+    suspend fun getPost(postId: String): NetworkResult<Post>
     suspend fun createPost(title: String, content: String, headerImagePath: String?): NetworkResult<Post>
-    suspend fun updatePost(postId: Int, title: String, content: String): NetworkResult<Post>
-    suspend fun deletePost(postId: Int): NetworkResult<Unit>
-    suspend fun likePost(postId: Int): NetworkResult<Unit>
-    suspend fun unlikePost(postId: Int): NetworkResult<Unit>
+    suspend fun updatePost(postId: String, title: String, content: String): NetworkResult<Post>
+    suspend fun deletePost(postId: String): NetworkResult<Unit>
+    suspend fun likePost(postId: String): NetworkResult<Unit>
+    suspend fun unlikePost(postId: String): NetworkResult<Unit>
     
     // Reactive streams for real-time updates
     fun getPostsStream(): Flow<NetworkResult<ApiResponse<PostsDataResponse>>>
@@ -38,7 +38,7 @@ class PostsApiServiceImpl(
         return safeGet("api/posts")
     }
     
-    override suspend fun getPost(postId: Int): NetworkResult<Post> {
+    override suspend fun getPost(postId: String): NetworkResult<Post> {
         return safeGet("api/posts/$postId")
     }
     
@@ -56,7 +56,7 @@ class PostsApiServiceImpl(
     }
     
     override suspend fun updatePost(
-        postId: Int, 
+        postId: String, 
         title: String, 
         content: String
     ): NetworkResult<Post> {
@@ -67,15 +67,15 @@ class PostsApiServiceImpl(
         return safePut("api/posts/$postId", requestBody)
     }
     
-    override suspend fun deletePost(postId: Int): NetworkResult<Unit> {
+    override suspend fun deletePost(postId: String): NetworkResult<Unit> {
         return safeDelete("api/posts/$postId")
     }
     
-    override suspend fun likePost(postId: Int): NetworkResult<Unit> {
+    override suspend fun likePost(postId: String): NetworkResult<Unit> {
         return safePost("api/posts/$postId/like")
     }
     
-    override suspend fun unlikePost(postId: Int): NetworkResult<Unit> {
+    override suspend fun unlikePost(postId: String): NetworkResult<Unit> {
         return safeDelete("api/posts/$postId/like")
     }
     

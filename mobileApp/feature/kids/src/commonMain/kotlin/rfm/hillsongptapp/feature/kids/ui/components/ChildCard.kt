@@ -31,7 +31,7 @@ fun ChildCard(
         onEditClick: (Child) -> Unit,
         onViewServicesClick: ((Child) -> Unit)? = null,
         onQRCheckInClick: ((Child) -> Unit)? = null,
-        onCancelCheckInRequest: ((Long) -> Unit)? = null,
+        onCancelCheckInRequest: ((String) -> Unit)? = null,
         modifier: Modifier = Modifier
 ) {
     Card(

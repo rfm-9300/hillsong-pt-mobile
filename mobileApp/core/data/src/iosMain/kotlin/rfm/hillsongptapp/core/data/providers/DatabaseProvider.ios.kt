@@ -31,5 +31,6 @@ actual fun databaseInstance(): AppDatabase {
     ).setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .addMigrations(MIGRATION_2_3)
+        .fallbackToDestructiveMigration(true)
         .build()
 }

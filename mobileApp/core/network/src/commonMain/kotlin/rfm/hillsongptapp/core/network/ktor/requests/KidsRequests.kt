@@ -14,7 +14,7 @@ data class ChildRegistrationRequest(
     val lastName: String,
     val dateOfBirth: String, // Will be parsed as LocalDate on backend
     val gender: String? = null,
-    val secondaryParentId: Long? = null,
+    val secondaryParentId: String? = null,
     val emergencyContactName: String? = null,
     val emergencyContactPhone: String? = null,
     val medicalNotes: String? = null,
@@ -29,7 +29,7 @@ data class ChildUpdateRequest(
     val lastName: String? = null,
     val dateOfBirth: String? = null, // Will be parsed as LocalDate on backend
     val gender: String? = null,
-    val secondaryParentId: Long? = null,
+    val secondaryParentId: String? = null,
     val emergencyContactName: String? = null,
     val emergencyContactPhone: String? = null,
     val medicalNotes: String? = null,
@@ -78,8 +78,8 @@ data class AttendanceReportRequest(
 // Check-in Request DTOs
 @Serializable
 data class CreateCheckInRequestDto(
-    val childId: Long,
-    val serviceId: Long,
+    val childId: String,
+    val serviceId: String,
     val notes: String? = null
 )
 

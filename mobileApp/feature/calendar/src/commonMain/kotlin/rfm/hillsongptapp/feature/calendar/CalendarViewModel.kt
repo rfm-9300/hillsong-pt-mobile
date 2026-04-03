@@ -100,7 +100,7 @@ class CalendarViewModel(
         )
     }
 
-    private fun selectEvent(eventId: Long) {
+    private fun selectEvent(eventId: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoadingEvent = true)
 

@@ -16,7 +16,7 @@ class UserAuthTokenProvider(
         return try {
             // Get the current user (assuming user ID 1 is the logged-in user)
             // In a real app, you'd have a proper session management system
-            val user = userDao.getUserById(1)
+            val user = userDao.getUserById("1")
             user?.token
         } catch (e: Exception) {
             // Log error and return null for graceful degradation
@@ -26,7 +26,7 @@ class UserAuthTokenProvider(
     
     override suspend fun isAuthenticated(): Boolean {
         return try {
-            val user = userDao.getUserById(1)
+            val user = userDao.getUserById("1")
             user?.token != null && user.expiryAt?.let { it > Clock.System.now().toEpochMilliseconds() } ?: true
         } catch (e: Exception) {
             false

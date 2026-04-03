@@ -354,7 +354,7 @@ private fun CalendarDayCell(
 private fun SelectedDayEvents(
     date: String,
     events: List<CalendarEvent>,
-    onEventClick: (Long) -> Unit
+    onEventClick: (String) -> Unit
 ) {
     Column(
         modifier = Modifier

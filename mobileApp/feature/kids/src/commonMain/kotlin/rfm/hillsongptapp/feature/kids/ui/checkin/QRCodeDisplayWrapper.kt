@@ -17,10 +17,10 @@ import rfm.hillsongptapp.logging.LoggerHelper
  */
 @Composable
 fun QRCodeDisplayWrapper(
-    childId: Long,
-    serviceId: Long,
+    childId: String,
+    serviceId: String,
     onNavigateBack: () -> Unit,
-    onGenerateNewCode: (Long, Long) -> Unit,
+    onGenerateNewCode: (String, String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CheckInRequestViewModel = koinViewModel()
 ) {

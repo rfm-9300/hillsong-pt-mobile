@@ -25,7 +25,7 @@ fun NavGraphBuilder.homeGraph(
     events: @Composable AnimatedContentScope.() -> Unit,
     calendar: @Composable AnimatedContentScope.() -> Unit,
     homeScreen: @Composable AnimatedContentScope.() -> Unit,
-    youtubeVideoScreen: @Composable AnimatedContentScope.(videoId: Long, videoUrl: String) -> Unit,
+    youtubeVideoScreen: @Composable AnimatedContentScope.(videoId: String, videoUrl: String) -> Unit,
     youtubePlayerFullScreen: @Composable AnimatedContentScope.(videoId: String) -> Unit,
 ){
     navigation<HomeGraph>(startDestination = HomeNav.HomeScreen) {
@@ -127,7 +127,7 @@ sealed class HomeNav {
     @Serializable
     object CalendarScreen : HomeNav()
     @Serializable
-    data class YouTubeVideoScreen(val videoId: Long, val videoUrl: String) : HomeNav()
+    data class YouTubeVideoScreen(val videoId: String, val videoUrl: String) : HomeNav()
     @Serializable
     data class YouTubePlayerFullScreen(val videoId: String) : HomeNav()
 }

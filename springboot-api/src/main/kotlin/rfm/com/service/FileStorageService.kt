@@ -13,6 +13,11 @@ import java.net.URI
 import java.time.Duration
 import java.util.*
 
+data class FileDownload(
+    val bytes: ByteArray,
+    val contentType: String
+)
+
 /**
  * Service for handling file storage operations using S3/MinIO
  */
@@ -204,6 +209,32 @@ class FileStorageService(
         } catch (ex: Exception) {
             logger.error("Failed to generate presigned URL for: $filePath", ex)
             ""
+        }
+    }
+
+    /**
+     * Download a file directly from S3/MinIO and return its bytes.
+     * Used to proxy content to clients that cannot reach MinIO directly.
+     */
+    fun downloadFile(filePath: String): FileDownload? {
+        if (filePath.isBlank()) return null
+
+        return try {
+            val getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(filePath)
+                .build()
+
+            val response = s3Client.getObject(getObjectRequest)
+            val contentType = response.response().contentType() ?: "application/octet-stream"
+            val bytes = response.readAllBytes()
+            FileDownload(bytes, contentType)
+        } catch (ex: NoSuchKeyException) {
+            logger.warn("File not found in S3: $filePath")
+            null
+        } catch (ex: Exception) {
+            logger.error("Failed to download file from S3: $filePath", ex)
+            null
         }
     }
     

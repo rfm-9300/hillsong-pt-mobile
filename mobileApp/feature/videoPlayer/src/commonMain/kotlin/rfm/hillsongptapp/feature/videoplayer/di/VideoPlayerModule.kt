@@ -5,7 +5,7 @@ import org.koin.dsl.lazyModule
 import rfm.hillsongptapp.feature.videoplayer.ui.VideoPlayerViewModel
 
 val videoPlayerModule = lazyModule {
-    viewModel { (videoId: Long, videoUrl: String) ->
+    viewModel { (videoId: String, videoUrl: String) ->
         VideoPlayerViewModel(
             videoId = videoId,
             videoUrl = videoUrl,

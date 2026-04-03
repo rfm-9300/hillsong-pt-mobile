@@ -10,7 +10,7 @@ import rfm.hillsongptapp.core.network.result.NetworkResult
  */
 @kotlinx.serialization.Serializable
 data class YouTubeVideo(
-    val id: Long,
+    val id: String,
     val title: String,
     val description: String?,
     val videoUrl: String,
@@ -26,7 +26,7 @@ data class YouTubeVideo(
  */
 interface YouTubeVideosApiService {
     suspend fun getActiveVideos(): NetworkResult<List<YouTubeVideo>>
-    suspend fun getVideoById(id: Long): NetworkResult<YouTubeVideo>
+    suspend fun getVideoById(id: String): NetworkResult<YouTubeVideo>
 }
 
 /**
@@ -50,7 +50,7 @@ class YouTubeVideosApiServiceImpl(
         }
     }
 
-    override suspend fun getVideoById(id: Long): NetworkResult<YouTubeVideo> {
+    override suspend fun getVideoById(id: String): NetworkResult<YouTubeVideo> {
         return safeGet<ApiResponse<YouTubeVideo>>("api/youtube-videos/$id").let { result ->
             when (result) {
                 is NetworkResult.Success -> {

@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ChildSummaryResponse(
-    val id: Long,
+    val id: String,
     val firstName: String,
     val lastName: String,
     val fullName: String,
@@ -18,7 +18,7 @@ data class ChildSummaryResponse(
 
 @Serializable
 data class ChildDetailedResponse(
-    val id: Long,
+    val id: String,
     val firstName: String,
     val lastName: String,
     val fullName: String,
@@ -35,7 +35,7 @@ data class ChildDetailedResponse(
 
 @Serializable
 data class KidsServiceResponse(
-    val id: Long,
+    val id: String,
     val name: String,
     val dayOfWeek: String,
     val startTime: String,
@@ -45,7 +45,7 @@ data class KidsServiceResponse(
 
 @Serializable
 data class ParentSummaryResponse(
-    val id: Long,
+    val id: String,
     val firstName: String,
     val lastName: String,
     val fullName: String,
@@ -56,7 +56,7 @@ data class ParentSummaryResponse(
 
 @Serializable
 data class CheckInRequestResponse(
-    val id: Long,
+    val id: String,
     val token: String,
     val qrCodeData: String,
     val child: ChildSummaryResponse,
@@ -71,7 +71,7 @@ data class CheckInRequestResponse(
 
 @Serializable
 data class CheckInRequestDetailsResponse(
-    val id: Long,
+    val id: String,
     val child: ChildDetailedResponse,
     val service: KidsServiceResponse,
     val requestedBy: ParentSummaryResponse,
@@ -88,8 +88,8 @@ data class CheckInRequestDetailsResponse(
 
 @Serializable
 data class CheckInApprovalResponse(
-    val requestId: Long,
-    val attendanceId: Long,
+    val requestId: String,
+    val attendanceId: String,
     val child: ChildSummaryResponse,
     val service: KidsServiceResponse,
     val checkInTime: String,
@@ -99,7 +99,7 @@ data class CheckInApprovalResponse(
 
 @Serializable
 data class CheckInRejectionResponse(
-    val requestId: Long,
+    val requestId: String,
     val child: ChildSummaryResponse,
     val service: KidsServiceResponse,
     val rejectedBy: String,
@@ -109,9 +109,9 @@ data class CheckInRejectionResponse(
 
 @Serializable
 data class CheckInStatusNotification(
-    val requestId: Long,
-    val childId: Long,
-    val serviceId: Long,
+    val requestId: String,
+    val childId: String,
+    val serviceId: String,
     val status: String,
     val timestamp: String
 )

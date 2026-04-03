@@ -95,6 +95,15 @@ export const ENDPOINTS = {
     CALENDAR_UPCOMING: '/calendar/upcoming',
     CALENDAR_BY_ID: (id: string) => `/calendar/${id}`,
     CALENDAR_SEARCH: '/calendar/search',
+
+    // YouTube Videos - /api/youtube-videos/*
+    YOUTUBE_VIDEOS: '/youtube-videos',
+    YOUTUBE_VIDEO_BY_ID: (id: string) => `/youtube-videos/${id}`,
+    YOUTUBE_VIDEO_CREATE: '/youtube-videos',
+    YOUTUBE_VIDEO_UPDATE: (id: string) => `/youtube-videos/${id}`,
+    YOUTUBE_VIDEO_DELETE: (id: string) => `/youtube-videos/${id}`,
+    YOUTUBE_VIDEO_ACTIVE: '/youtube-videos/active',
+    YOUTUBE_VIDEO_TOGGLE_ACTIVE: (id: string) => `/youtube-videos/${id}/toggle-active`,
 };
 
 interface RequestOptions {
@@ -315,5 +324,15 @@ export const api = {
         delete: async (id: number) => {
             return client.request(`/calendar/${id}`, { method: 'DELETE' });
         }
+    },
+    // YouTube Videos API functions
+    youtubeVideos: {
+        getAll: async () => client.request('/youtube-videos', { method: 'GET' }),
+        getActive: async () => client.request('/youtube-videos/active', { method: 'GET' }),
+        getById: async (id: string) => client.request(`/youtube-videos/${id}`, { method: 'GET' }),
+        create: async (data: unknown) => client.request('/youtube-videos', { method: 'POST', body: data }),
+        update: async (id: string, data: unknown) => client.request(`/youtube-videos/${id}`, { method: 'PUT', body: data }),
+        delete: async (id: string) => client.request(`/youtube-videos/${id}`, { method: 'DELETE' }),
+        toggleActive: async (id: string) => client.request(`/youtube-videos/${id}/toggle-active`, { method: 'PATCH' }),
     }
 };

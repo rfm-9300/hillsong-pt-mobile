@@ -79,7 +79,7 @@ class AuthTokenManager(
         val expiryTime = expiryTimeMillis ?: (currentTimeMillis + DEFAULT_TOKEN_VALIDITY_MS)
         
         val user = User(
-            id = 1, // Single user app, or generate proper ID
+            id = "1", // Single user app, or generate proper ID
             email = email,
             token = token,
             expiryAt = expiryTime,

@@ -12,13 +12,13 @@ import rfm.hillsongptapp.core.network.result.NetworkResult
  */
 @kotlinx.serialization.Serializable
 data class Encounter(
-    val id: Long,
+    val id: String,
     val title: String,
     val description: String,
     val date: String,
     val location: String,
     val organizerName: String,
-    val organizerId: Long,
+    val organizerId: String,
     val imagePath: String? = null,
     val createdAt: String
 )
@@ -44,7 +44,7 @@ data class ApiResponse<T>(
  */
 interface EncountersApiService {
     suspend fun getEncounters(page: Int = 0, size: Int = 20, sortBy: String = "date", sortDir: String = "asc"): NetworkResult<EncountersPageResponse>
-    suspend fun getEncounter(encounterId: Long): NetworkResult<Encounter>
+    suspend fun getEncounter(encounterId: String): NetworkResult<Encounter>
     suspend fun getUpcomingEncounters(): NetworkResult<List<Encounter>>
     suspend fun getMyEncounters(page: Int = 0, size: Int = 20): NetworkResult<EncountersPageResponse>
     suspend fun searchEncounters(query: String): NetworkResult<List<Encounter>>
@@ -81,7 +81,7 @@ class EncountersApiServiceImpl(
         }
     }
     
-    override suspend fun getEncounter(encounterId: Long): NetworkResult<Encounter> {
+    override suspend fun getEncounter(encounterId: String): NetworkResult<Encounter> {
         return safeGet<ApiResponse<Encounter>>("api/encounters/$encounterId").let { result ->
             when (result) {
                 is NetworkResult.Success -> {

@@ -29,7 +29,7 @@ import rfm.hillsongptapp.core.network.ktor.responses.CheckInRequestResponse
 fun QRCodeDisplayScreen(
         checkInRequest: CheckInRequestResponse,
         onNavigateBack: () -> Unit,
-        onGenerateNewCode: (childId: Long, serviceId: Long) -> Unit,
+        onGenerateNewCode: (childId: String, serviceId: String) -> Unit,
         modifier: Modifier = Modifier,
         viewModel: CheckInRequestViewModel = koinViewModel()
 ) {

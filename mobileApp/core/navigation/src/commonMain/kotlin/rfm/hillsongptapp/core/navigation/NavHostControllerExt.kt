@@ -51,7 +51,7 @@ fun NavHostController.navigateToCalendar() {
     navigate(HomeNav.CalendarScreen)
 }
 
-fun NavHostController.navigateToYouTubeVideo(videoId: Long, videoUrl: String) {
+fun NavHostController.navigateToYouTubeVideo(videoId: String, videoUrl: String) {
     navigate(HomeNav.YouTubeVideoScreen(videoId, videoUrl))
 }
 
@@ -105,7 +105,7 @@ fun NavHostController.navigateToCheckInVerification(token: String) {
     navigate(KidsNav.CheckInVerification(token))
 }
 
-fun NavHostController.navigateToQRCodeDisplay(childId: Long, serviceId: Long) {
+fun NavHostController.navigateToQRCodeDisplay(childId: String, serviceId: String) {
     navigate(KidsNav.QRCodeDisplay(childId, serviceId))
 }
 

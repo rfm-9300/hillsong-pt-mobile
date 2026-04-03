@@ -58,7 +58,7 @@ class CheckInWebSocketClient(
     val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
     
     private var onStatusUpdateCallback: ((CheckInStatusNotification) -> Unit)? = null
-    private var currentUserId: Long? = null
+    private var currentUserId: String? = null
     
     private var reconnectAttempts = 0
     private val maxReconnectAttempts = 5
@@ -70,7 +70,7 @@ class CheckInWebSocketClient(
      * @param userId The user ID to subscribe to notifications for
      * @param onStatusUpdate Callback invoked when a status update is received
      */
-    fun connect(userId: Long, onStatusUpdate: (CheckInStatusNotification) -> Unit) {
+    fun connect(userId: String, onStatusUpdate: (CheckInStatusNotification) -> Unit) {
         LoggerHelper.logDebug("Connecting to WebSocket for user $userId", "CheckInWebSocket")
         
         currentUserId = userId
@@ -109,7 +109,7 @@ class CheckInWebSocketClient(
         scope.cancel()
     }
     
-    private suspend fun connectInternal(userId: Long) {
+    private suspend fun connectInternal(userId: String) {
         try {
             _connectionState.value = ConnectionState.Connecting
             
@@ -229,7 +229,7 @@ class CheckInWebSocketClient(
         }
     }
     
-    private fun scheduleReconnect(userId: Long) {
+    private fun scheduleReconnect(userId: String) {
         reconnectAttempts++
         val delay = calculateReconnectDelay()
         

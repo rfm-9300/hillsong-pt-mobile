@@ -19,7 +19,7 @@ import org.koin.core.parameter.parametersOf
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VideoPlayerScreen(
-    videoId: Long,
+    videoId: String,
     videoUrl: String,
     navController: NavHostController,
     viewModel: VideoPlayerViewModel = koinViewModel { parametersOf(videoId, videoUrl) }

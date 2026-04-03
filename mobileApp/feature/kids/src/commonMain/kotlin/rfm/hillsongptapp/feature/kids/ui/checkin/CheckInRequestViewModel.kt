@@ -39,7 +39,7 @@ class CheckInRequestViewModel(
      * @param serviceId The ID of the service to check in to
      * @param notes Optional notes for the check-in request
      */
-    fun createCheckInRequest(childId: Long, serviceId: Long, notes: String? = null) {
+    fun createCheckInRequest(childId: String, serviceId: String, notes: String? = null) {
         LoggerHelper.logDebug("createCheckInRequest called with childId=$childId, serviceId=$serviceId", "CheckInRequestViewModel")
         
         viewModelScope.launch {
@@ -98,7 +98,7 @@ class CheckInRequestViewModel(
      * 
      * @param requestId The ID of the request to cancel
      */
-    fun cancelRequest(requestId: Long) {
+    fun cancelRequest(requestId: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             
@@ -178,7 +178,7 @@ class CheckInRequestViewModel(
     /**
      * Update the current request (e.g., when status changes via WebSocket)
      */
-    fun updateRequestStatus(requestId: Long, newStatus: String) {
+    fun updateRequestStatus(requestId: String, newStatus: String) {
         _uiState.update { currentState ->
             val updatedRequests = currentState.activeRequests.map { request ->
                 if (request.id == requestId) {
