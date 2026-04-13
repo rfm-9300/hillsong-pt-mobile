@@ -7,8 +7,8 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import rfm.com.dto.ApiResponse
-import rfm.com.dto.UserProfileResponse
 import rfm.com.job.KidsServiceJob
+import rfm.com.config.AdminProperties
 import rfm.com.service.AdminAuthService
 import rfm.com.service.UserService
 
@@ -21,7 +21,8 @@ import rfm.com.service.UserService
 class AdminController(
     private val kidsServiceJob: KidsServiceJob,
     private val adminAuthService: AdminAuthService,
-    private val userService: UserService
+    private val userService: UserService,
+    private val adminProperties: AdminProperties
 ) {
     
     private val logger = LoggerFactory.getLogger(AdminController::class.java)
@@ -77,6 +78,16 @@ class AdminController(
      */
     @GetMapping("/token")
     fun getAdminToken(): ResponseEntity<ApiResponse<String>> {
+        if (!adminProperties.exposeTokenEndpoint) {
+            logger.warn("Attempt to access disabled admin token endpoint")
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                ApiResponse(
+                    success = false,
+                    message = "Not found"
+                )
+            )
+        }
+
         return ResponseEntity.ok(
             ApiResponse(
                 success = true,

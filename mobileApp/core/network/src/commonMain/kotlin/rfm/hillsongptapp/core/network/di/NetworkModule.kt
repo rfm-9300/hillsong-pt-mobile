@@ -48,11 +48,11 @@ val networkModule =
         
         // Base URL configuration
         single<String>(qualifier = org.koin.core.qualifier.named("baseUrl")) {
-            getProperty("API_BASE_URL", "https://activehive.pt:443")
+            getProperty("API_BASE_URL", "http://172.233.96.224:8080")
         }
         
         single<String>(qualifier = org.koin.core.qualifier.named("authBaseUrl")) {
-            getProperty("AUTH_BASE_URL", "https://activehive.pt:443")
+            getProperty("AUTH_BASE_URL", getProperty("API_BASE_URL", "http://172.233.96.224:8080"))
         }
         
         // HTTP Client configuration

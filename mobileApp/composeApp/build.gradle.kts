@@ -11,6 +11,11 @@ plugins {
     kotlin("native.cocoapods") version "2.0.0"
 }
 
+val apiBaseUrlDebug = providers.gradleProperty("API_BASE_URL_DEBUG").getOrElse("http://172.233.96.224:8080")
+val apiBaseUrlRelease = providers.gradleProperty("API_BASE_URL_RELEASE").getOrElse(apiBaseUrlDebug)
+val authBaseUrlDebug = providers.gradleProperty("AUTH_BASE_URL_DEBUG").getOrElse(apiBaseUrlDebug)
+val authBaseUrlRelease = providers.gradleProperty("AUTH_BASE_URL_RELEASE").getOrElse(apiBaseUrlRelease)
+
 kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -130,12 +135,14 @@ android {
     }
     buildTypes {
         getByName("debug") {
-            buildConfigField("String", "API_BASE_URL", "\"http://192.168.1.220:8080\"")
+            buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrlDebug\"")
+            buildConfigField("String", "AUTH_BASE_URL", "\"$authBaseUrlDebug\"")
             buildConfigField("String", "BUILD_TYPE", "\"debug\"")
             isDebuggable = true
         }
         getByName("release") {
-            buildConfigField("String", "API_BASE_URL", "\"https://activehive.pt:443\"")
+            buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrlRelease\"")
+            buildConfigField("String", "AUTH_BASE_URL", "\"$authBaseUrlRelease\"")
             buildConfigField("String", "BUILD_TYPE", "\"release\"")
             isMinifyEnabled = false
         }
@@ -152,4 +159,3 @@ android {
 dependencies {
     debugImplementation(compose.uiTooling)
 }
-

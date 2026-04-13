@@ -5,6 +5,9 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
 
+const backendApiUrl = process.env.API_BASE_URL || 'http://springboot-api:8080/api';
+const fileProxyUrl = process.env.FILE_PROXY_URL || 'http://minio:9000/church-files';
+
 const nextConfig: NextConfig = {
   // Enable experimental features for better performance
   experimental: {
@@ -86,11 +89,11 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/api/files/:path*',
-        destination: 'http://localhost:9000/church-files/:path*',
+        destination: `${fileProxyUrl}/:path*`,
       },
       {
         source: '/api/:path*',
-        destination: 'http://localhost:8080/api/:path*',
+        destination: `${backendApiUrl}/:path*`,
       },
     ];
   },

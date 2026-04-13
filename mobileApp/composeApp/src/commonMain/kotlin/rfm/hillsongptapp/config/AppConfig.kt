@@ -14,7 +14,7 @@ interface AppConfig {
  * Default configuration for platforms that don't have build config
  */
 class DefaultAppConfig : AppConfig {
-    override val apiBaseUrl: String = "https://activehive.pt:443"
+    override val apiBaseUrl: String = "http://172.233.96.224:8080"
     override val buildType: String = "release"
     override val isDebug: Boolean = false
 }

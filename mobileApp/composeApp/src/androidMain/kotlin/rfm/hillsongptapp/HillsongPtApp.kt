@@ -14,7 +14,8 @@ class HillsongPtApp: Application() {
             // Override API base URL with BuildConfig value for Android
             properties(
                 mapOf(
-                    "API_BASE_URL" to BuildConfig.API_BASE_URL
+                    "API_BASE_URL" to BuildConfig.API_BASE_URL,
+                    "AUTH_BASE_URL" to BuildConfig.AUTH_BASE_URL
                 )
             )
         }

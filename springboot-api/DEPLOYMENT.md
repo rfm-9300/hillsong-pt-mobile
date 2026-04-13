@@ -1,85 +1,131 @@
-# Backend Deployment Guide (Container Registry)
+# Backend Deployment Guide
 
-This guide helps you deploy the Spring Boot API to your VPS by building the image locally, pushing it to a registry (Docker Hub, GitHub Container Registry, etc.), and pulling it on the VPS.
+This flow builds the Spring Boot API image locally, pushes it to a registry, and keeps the VPS limited to `docker compose pull` plus `docker compose up -d`.
 
 ## Prerequisites
 
-1.  **Local Machine**: Docker installed and logged in to your registry.
-2.  **VPS**: Docker and Docker Compose installed.
+Local machine:
+- Docker installed
+- Logged in to your registry
 
-## 1. Build and Push (Local Machine)
+Server:
+- Docker Engine installed
+- Docker Compose v2 available as `docker compose`
 
-First, choose your image name (e.g., `yourusername/church-api`).
+## 1. Build and Push
+
+Pick an image name, for example `youruser/hillsong-pt-api`, and tag each release explicitly.
 
 ```bash
-# Navigate to the API directory
 cd springboot-api
 
-# 1. Login to your registry (if needed)
-docker login
+export IMAGE_NAME=youruser/hillsong-pt-api
+export IMAGE_TAG=0.0.86
 
-# 2. Build the image for linux/amd64 (standard VPS architecture)
-# Change 'yourusername/church-api' to your actual image name
-docker build --platform linux/amd64 -t yourusername/church-api:latest .
-
-# 3. Push the image
-docker push yourusername/church-api:latest
+docker build --platform linux/amd64 -t "$IMAGE_NAME:$IMAGE_TAG" -t "$IMAGE_NAME:latest" .
+docker push "$IMAGE_NAME:$IMAGE_TAG"
+docker push "$IMAGE_NAME:latest"
 ```
 
-## 2. Prepare VPS
+The image already includes the app jar and bundled static files under `/app/files`.
 
-You only need a few files on the VPS now. Create a directory (e.g., `~/church-api`) and upload:
+## 2. Prepare the Server
 
-1.  `docker-compose.yml`
-2.  `.env` (Configure this based on `.env.example`)
+Copy only these files to the server:
+- `springboot-api/docker-compose.yml`
+- `springboot-api/.env.example` as the starting point for `.env`
 
-You can copy `docker-compose.yml` via SCP:
+Example:
 
 ```bash
-scp springboot-api/docker-compose.yml user@your-vps-ip:~/church-api/
+scp springboot-api/docker-compose.yml user@your-server:~/hillsong-api/
+scp springboot-api/.env.example user@your-server:~/hillsong-api/.env
 ```
 
-## 3. Configure Environment
+## 3. Configure `.env` on the Server
 
-On your VPS, create/edit the `.env` file:
-
-```bash
-cd ~/church-api
-nano .env
-```
-
-Add your configuration AND the image name:
+Edit `~/hillsong-api/.env` and set at minimum:
 
 ```properties
-# ... other config ...
-DOCKER_IMAGE_NAME=yourusername/church-api:latest
+DOCKER_IMAGE_NAME=youruser/hillsong-pt-api:0.0.86
+PORT=8080
+SPRING_PROFILES_ACTIVE=prod
+IS_PRODUCTION=true
+BASE_URL=https://api.your-domain.com
+
+JWT_SECRET=replace_with_a_long_random_secret
+JWT_ISSUER=https://api.your-domain.com
+JWT_AUDIENCE=users
+
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+SMTP_FROM=noreply@your-domain.com
+
+ADMIN_TOKEN=replace_with_a_long_random_admin_token
+
+MINIO_ACCESS_KEY=replace_me
+MINIO_SECRET_KEY=replace_me
+MINIO_BUCKET=church-files
 ```
 
-## 4. Deploy
+If you want to expose MinIO on different public ports, also set `MINIO_API_PORT` and `MINIO_CONSOLE_PORT`.
 
-Run Docker Compose. It will automatically pull the image specified in `.env`.
+## 4. Deploy on the Server
 
 ```bash
-# Pull the latest image
-docker-compose pull
-
-# Start services
-docker-compose up -d
+cd ~/hillsong-api
+docker compose pull
+docker compose up -d
+docker compose ps
 ```
 
-## 5. Updating the App
+The API container will start from the registry image, and MinIO plus the bucket bootstrap container will be created locally on the server.
 
-To update the application in the future:
+## 5. Update to a New Release
 
-1.  **Local**: Build and push a new image tag.
-2.  **VPS**:
-    ```bash
-    docker-compose pull
-    docker-compose up -d
-    ```
-    This will recreate the container with the new image.
+For each release:
+
+```bash
+cd springboot-api
+
+export IMAGE_NAME=youruser/hillsong-pt-api
+export IMAGE_TAG=0.0.87
+
+docker build --platform linux/amd64 -t "$IMAGE_NAME:$IMAGE_TAG" -t "$IMAGE_NAME:latest" .
+docker push "$IMAGE_NAME:$IMAGE_TAG"
+docker push "$IMAGE_NAME:latest"
+```
+
+Then on the server update `DOCKER_IMAGE_NAME` if you want the pinned tag, and redeploy:
+
+```bash
+cd ~/hillsong-api
+docker compose pull
+docker compose up -d
+```
 
 ## Persistence
 
--   **Database**: Stored in `pg-volume` (Docker volume).
--   **Uploads**: Stored in `./uploads` on the VPS.
+- App logs are stored in `./logs` on the server.
+- File uploads are stored in `./uploads` on the server.
+- MinIO object data is stored in the `minio_data` Docker volume.
+
+## Direct Run Alternative
+
+If you do not want Compose, you can still run the API image directly after pushing it:
+
+```bash
+docker pull youruser/hillsong-pt-api:0.0.86
+docker run -d \
+  --name backend-springboot \
+  --restart unless-stopped \
+  --env-file .env \
+  -e SPRING_PROFILES_ACTIVE=prod \
+  -e UPLOAD_PATH=/app/uploads \
+  -p 8080:8080 \
+  -v "$(pwd)/logs:/app/logs" \
+  -v "$(pwd)/uploads:/app/uploads" \
+  youruser/hillsong-pt-api:0.0.86
+```

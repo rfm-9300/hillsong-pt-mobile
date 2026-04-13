@@ -80,7 +80,8 @@ app:
     token-expiry: 3600000 # 1 hour
   
   admin:
-    token: ${ADMIN_TOKEN:admin-secret-token-12345}
+    token: ${ADMIN_TOKEN:}
+    expose-token-endpoint: ${ADMIN_EXPOSE_TOKEN_ENDPOINT:false}
 
 management:
   endpoints:

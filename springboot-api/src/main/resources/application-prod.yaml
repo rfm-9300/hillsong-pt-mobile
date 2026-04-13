@@ -1,7 +1,4 @@
 spring:
-  profiles:
-    active: prod
-  
   jpa:
     show-sql: false
     properties:

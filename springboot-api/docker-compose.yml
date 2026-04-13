@@ -1,19 +1,20 @@
 services:
   app:
-    image: ${DOCKER_IMAGE_NAME:-rfm9300/spring-boot-central:latest}
+    image: ${DOCKER_IMAGE_NAME:?Set DOCKER_IMAGE_NAME in .env}
     platform: linux/amd64
     container_name: backend-springboot
-    volumes:
-      - ./app/files:/app/files
-      - ./logs:/app/logs
-      - ./uploads:/app/uploads
-    restart: always
+    restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "${PORT:-8080}:8080"
     env_file:
       - .env
     environment:
-      - MINIO_ENDPOINT=http://minio:9000
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      UPLOAD_PATH: /app/uploads
+      MINIO_ENDPOINT: http://minio:9000
+    volumes:
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
     depends_on:
       minio:
         condition: service_healthy
@@ -21,37 +22,35 @@ services:
   minio:
     image: minio/minio:latest
     container_name: backend-minio
+    restart: unless-stopped
     ports:
-      - "9000:9000"
-      - "9001:9001"
-    volumes:
-      - minio_data:/data
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
     command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
       timeout: 20s
       retries: 3
-    restart: always
 
   createbuckets:
     image: minio/mc
     depends_on:
       minio:
         condition: service_healthy
-    entrypoint: >
-      /bin/sh -c "
-      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ACCESS_KEY:-minioadmin} ${MINIO_SECRET_KEY:-minioadmin};
-      /usr/bin/mc mb --ignore-existing myminio/${MINIO_BUCKET:-church-files};
-      /usr/bin/mc anonymous set download myminio/${MINIO_BUCKET:-church-files};
-      exit 0;
-      "
-
-      exit 0;
-      "
+    restart: "no"
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        /usr/bin/mc alias set myminio http://minio:9000 "${MINIO_ACCESS_KEY:-minioadmin}" "${MINIO_SECRET_KEY:-minioadmin}"
+        /usr/bin/mc mb --ignore-existing "myminio/${MINIO_BUCKET:-church-files}"
+        /usr/bin/mc anonymous set download "myminio/${MINIO_BUCKET:-church-files}"
 
 volumes:
-  minio_data: {}
+  minio_data:
