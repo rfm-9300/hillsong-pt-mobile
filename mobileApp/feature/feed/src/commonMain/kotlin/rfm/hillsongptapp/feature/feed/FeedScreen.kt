@@ -1,451 +1,399 @@
 package rfm.hillsongptapp.feature.feed
 
+import AppFonts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
+import rfm.hillsongptapp.core.designsystem.theme.HillsongColors
 import rfm.hillsongptapp.util.media.AsyncImage
 
 @Composable
 fun FeedScreen(
     navController: NavHostController,
-    viewModel: FeedViewModel = koinInject()
+    viewModel: FeedViewModel = koinInject(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
     FeedScreenContent(
         uiState = uiState,
         onEvent = viewModel::onEvent,
-        onBackClick = { navController.popBackStack() }
+        onBackClick = { navController.popBackStack() },
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FeedScreenContent(
     uiState: FeedUiState,
     onEvent: (FeedEvent) -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
 ) {
     val listState = rememberLazyListState()
-    var searchQuery by remember { mutableStateOf(uiState.searchQuery) }
-    var isSearchExpanded by remember { mutableStateOf(false) }
+    var selectedFilter by remember { mutableStateOf("All") }
+    val filters = listOf("All", "Devotional", "Community", "Music", "Teaching")
 
-    // Handle pull-to-refresh (simplified for compatibility)
-    LaunchedEffect(uiState.isRefreshing) {
-        // Handle refresh state changes
-    }
-
-    // Handle infinite scroll
     LaunchedEffect(listState) {
         snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
-            .collect { lastVisibleIndex ->
-                if (lastVisibleIndex != null && 
-                    lastVisibleIndex >= uiState.feedItems.size - 3 && 
-                    uiState.hasMorePages && 
-                    !uiState.isLoading) {
+            .collect { lastVisible ->
+                if (lastVisible != null &&
+                    lastVisible >= uiState.feedItems.size - 3 &&
+                    uiState.hasMorePages &&
+                    !uiState.isLoading
+                ) {
                     onEvent(FeedEvent.LoadMore)
                 }
             }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { 
-                    if (isSearchExpanded) {
-                        OutlinedTextField(
-                            value = searchQuery,
-                            onValueChange = { searchQuery = it },
-                            placeholder = { Text("Search posts...") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            trailingIcon = {
-                                IconButton(
-                                    onClick = {
-                                        if (searchQuery.isNotBlank()) {
-                                            onEvent(FeedEvent.Search(searchQuery))
-                                        }
-                                    }
+    Scaffold(containerColor = MaterialTheme.colorScheme.background) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            when {
+                uiState.isLoading && uiState.feedItems.isEmpty() -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = HillsongColors.Gold)
+                    }
+                }
+                uiState.feedItems.isEmpty() && !uiState.isLoading -> {
+                    FeedEmptyState(
+                        isSearching = uiState.searchQuery.isNotBlank(),
+                        onRetry = { onEvent(FeedEvent.RetryLoad) },
+                        onBackClick = onBackClick,
+                    )
+                }
+                else -> {
+                    LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+                        item {
+                            FeedHeader(
+                                onBackClick = onBackClick,
+                                onSearchClick = { onEvent(FeedEvent.Refresh) },
+                            )
+                        }
+                        item {
+                            FilterChips(
+                                filters = filters,
+                                selected = selectedFilter,
+                                onSelect = { selectedFilter = it },
+                            )
+                        }
+                        items(uiState.feedItems, key = { it.id }) { item ->
+                            FeedItemCard(
+                                item = item,
+                                onLikeClick = { onEvent(FeedEvent.LikePost(item.id)) },
+                                modifier = Modifier.animateItem(),
+                            )
+                            Spacer(Modifier.height(24.dp))
+                        }
+                        if (uiState.hasMorePages) {
+                            item {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
+                                    contentAlignment = Alignment.Center,
                                 ) {
-                                    Icon(Icons.Default.Search, contentDescription = "Search")
-                                }
-                            }
-                        )
-                    } else {
-                        Text(text = uiState.title)
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                actions = {
-                    if (!isSearchExpanded) {
-                        IconButton(
-                            onClick = { isSearchExpanded = true }
-                        ) {
-                            Icon(Icons.Default.Search, contentDescription = "Search")
-                        }
-                    } else {
-                        IconButton(
-                            onClick = {
-                                isSearchExpanded = false
-                                searchQuery = ""
-                                onEvent(FeedEvent.ClearSearch)
-                            }
-                        ) {
-                            Icon(Icons.Default.Close, contentDescription = "Close search")
-                        }
-                    }
-                    
-                    IconButton(
-                        onClick = { onEvent(FeedEvent.Refresh) }
-                    ) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                when {
-                    uiState.isLoading && uiState.feedItems.isEmpty() -> {
-                        LoadingContent()
-                    }
-                    uiState.feedItems.isEmpty() && !uiState.isLoading -> {
-                        EmptyContent(
-                            isSearching = uiState.searchQuery.isNotBlank(),
-                            onRetry = { onEvent(FeedEvent.RetryLoad) }
-                        )
-                    }
-                    else -> {
-                        LazyColumn(
-                            state = listState,
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(vertical = 8.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            items(
-                                items = uiState.feedItems,
-                                key = { it.id }
-                            ) { item ->
-                                FeedItemCard(
-                                    item = item,
-                                    onLikeClick = { onEvent(FeedEvent.LikePost(item.id)) },
-                                    modifier = Modifier.animateItem()
-                                )
-                            }
-                            
-                            if (uiState.hasMorePages) {
-                                item {
-                                    LoadingMoreIndicator()
+                                    Box(
+                                        modifier = Modifier
+                                            .width(60.dp)
+                                            .height(2.dp)
+                                            .background(HillsongColors.Gold.copy(alpha = 0.7f)),
+                                    )
                                 }
                             }
                         }
+                        item { Spacer(Modifier.height(60.dp)) }
                     }
                 }
             }
-
-            // Error Snackbar
-            uiState.errorMessage?.let { errorMessage ->
-                LaunchedEffect(errorMessage) {
-                    // Show snackbar or handle error display
-                }
-            }
         }
     }
 }
 
 @Composable
-private fun FeedItemCard(
-    item: FeedItem,
-    onLikeClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column {
-            // Author header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Author avatar
-                AsyncImage(
-                    imageUrl = item.author.avatarUrl ?: "",
-                    contentDescription = "Author avatar",
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentScale = ContentScale.Crop
-                )
-                
-                Spacer(modifier = Modifier.width(12.dp))
-                
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = item.author.fullName,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = item.timeAgo,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                
-                IconButton(onClick = { /* TODO: More options */ }) {
-                    Icon(
-                        Icons.Default.MoreVert,
-                        contentDescription = "More options",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-            
-            // Post content
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp)
-            ) {
-                Text(
-                    text = item.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Text(
-                    text = item.content,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            
-            // Post image
-            item.imageUrl?.let { imageUrl ->
-                Spacer(modifier = Modifier.height(12.dp))
-                AsyncImage(
-                    imageUrl = imageUrl,
-                    contentDescription = item.title,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .padding(horizontal = 16.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop
-                )
-            }
-            
-            // Action buttons
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onLikeClick) {
-                        Icon(
-                            imageVector = if (item.isLikedByCurrentUser) 
-                                Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                            contentDescription = "Like",
-                            tint = if (item.isLikedByCurrentUser) 
-                                Color.Red else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    
-                    Text(
-                        text = item.likeCount.toString(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    
-                    Spacer(modifier = Modifier.width(16.dp))
-                    
-                    IconButton(onClick = { /* TODO: Comments */ }) {
-                        Icon(
-                            Icons.Default.Info,
-                            contentDescription = "Comments",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    
-                    Text(
-                        text = item.commentCount.toString(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                
-                IconButton(onClick = { /* TODO: Share */ }) {
-                    Icon(
-                        Icons.Default.Share,
-                        contentDescription = "Share",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun LoadingContent() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            CircularProgressIndicator()
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Loading posts...",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-private fun EmptyContent(
-    isSearching: Boolean,
-    onRetry: () -> Unit
-) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = if (isSearching) Icons.Default.Search else Icons.Default.List,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Text(
-                text = if (isSearching) "No posts found" else "No posts available",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = if (isSearching) 
-                    "Try adjusting your search terms" 
-                else 
-                    "Check back later for new content",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            
-            if (!isSearching) {
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Button(onClick = onRetry) {
-                    Text("Retry")
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun LoadingMoreIndicator() {
-    Box(
+private fun FeedHeader(onBackClick: () -> Unit, onSearchClick: () -> Unit) {
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
+            .padding(start = 4.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+        IconButton(onClick = onBackClick) {
+            Icon(
+                Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                tint = MaterialTheme.colorScheme.onBackground,
+            )
+        }
+        Text(
+            text = "Feed",
+            style = TextStyle(
+                fontFamily = AppFonts.mogra(),
+                fontSize = 28.sp,
+                color = MaterialTheme.colorScheme.onBackground,
+                letterSpacing = (-0.5).sp,
+            ),
+            modifier = Modifier.weight(1f),
+        )
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surface)
+                .clickable(onClick = onSearchClick),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(18.dp))
+        }
     }
 }
 
-@Preview
 @Composable
-private fun FeedScreenPreview() {
-    val feedItems = (1..5).map { index ->
-        FeedItem(
-            id = index.toString(),
-            title = "Sample Post Title $index",
-            content = "This is a sample post content that demonstrates how the feed item will look in the app. It contains some text that might be longer and will be truncated.",
-            imageUrl = "https://picsum.photos/seed/$index/400/200",
-            author = AuthorInfo(
-                id = index.toString(),
-                fullName = "John Doe $index",
-                email = "john$index@example.com",
-                avatarUrl = "https://picsum.photos/seed/avatar$index/100/100"
-            ),
-            likeCount = (10..100).random(),
-            commentCount = (0..20).random(),
-            isLikedByCurrentUser = index % 2 == 0,
-            publishedDate = "2024-01-01T12:00:00Z",
-            timeAgo = "${index}h ago"
-        )
+private fun FilterChips(filters: List<String>, selected: String, onSelect: (String) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        filters.forEach { filter ->
+            val isActive = filter == selected
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(if (isActive) HillsongColors.Gold else MaterialTheme.colorScheme.surface)
+                    .clickable { onSelect(filter) }
+                    .padding(horizontal = 14.dp, vertical = 7.dp),
+            ) {
+                Text(
+                    text = filter,
+                    style = TextStyle(
+                        fontFamily = AppFonts.andika(),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                        color = if (isActive) HillsongColors.Black else MaterialTheme.colorScheme.onBackground,
+                    ),
+                )
+            }
+        }
     }
-    
-    val uiState = FeedUiState(feedItems = feedItems)
-    
-    FeedScreenContent(
-        uiState = uiState,
-        onEvent = {},
-        onBackClick = {}
-    )
+}
+
+@Composable
+private fun FeedItemCard(item: FeedItem, onLikeClick: () -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        Box(
+            modifier = Modifier.fillMaxWidth().aspectRatio(16f / 10f),
+        ) {
+            if (item.imageUrl != null) {
+                AsyncImage(
+                    imageUrl = item.imageUrl,
+                    contentDescription = item.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    onFailure = {
+                        Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface))
+                    },
+                )
+            } else {
+                Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface))
+            }
+
+            Box(
+                modifier = Modifier.fillMaxSize().background(
+                    Brush.verticalGradient(
+                        colorStops = arrayOf(
+                            0f to Color.Transparent,
+                            0.4f to Color.Transparent,
+                            1f to Color.Black.copy(alpha = 0.85f),
+                        ),
+                    ),
+                ),
+            )
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(16.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+            ) {
+                Text(
+                    text = "POST",
+                    style = TextStyle(
+                        fontFamily = AppFonts.anta(),
+                        fontSize = 10.sp,
+                        color = HillsongColors.Gold,
+                        letterSpacing = 1.5.sp,
+                    ),
+                )
+            }
+
+            Text(
+                text = item.title,
+                style = TextStyle(
+                    fontFamily = AppFonts.mogra(),
+                    fontSize = 22.sp,
+                    color = Color.White,
+                    lineHeight = 26.sp,
+                    letterSpacing = (-0.3).sp,
+                ),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+            )
+        }
+
+        Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 14.dp)) {
+            Text(
+                text = item.content,
+                style = TextStyle(
+                    fontFamily = AppFonts.andika(),
+                    fontSize = 14.sp,
+                    color = HillsongColors.Gray500,
+                    lineHeight = 21.sp,
+                ),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Spacer(Modifier.height(14.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "${item.timeAgo.uppercase()} · 3 MIN READ",
+                    style = TextStyle(
+                        fontFamily = AppFonts.andika(),
+                        fontSize = 11.sp,
+                        color = HillsongColors.Gray500,
+                        letterSpacing = 0.5.sp,
+                    ),
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    IconButton(onClick = onLikeClick, modifier = Modifier.size(28.dp)) {
+                        Icon(
+                            if (item.isLikedByCurrentUser) Icons.Filled.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Like",
+                            tint = HillsongColors.Gold,
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
+                    Text(
+                        text = item.likeCount.toString(),
+                        style = TextStyle(
+                            fontFamily = AppFonts.andika(),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onBackground,
+                        ),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FeedEmptyState(isSearching: Boolean, onRetry: () -> Unit, onBackClick: () -> Unit) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 16.dp, top = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(onClick = onBackClick) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
+            }
+            Text(
+                "Feed",
+                style = TextStyle(fontFamily = AppFonts.mogra(), fontSize = 28.sp, color = MaterialTheme.colorScheme.onBackground, letterSpacing = (-0.5).sp),
+            )
+        }
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(horizontal = 48.dp),
+            ) {
+                Text(
+                    text = if (isSearching) "No posts found" else "No posts yet",
+                    style = TextStyle(fontFamily = AppFonts.mogra(), fontSize = 22.sp, color = MaterialTheme.colorScheme.onBackground),
+                    textAlign = TextAlign.Center,
+                )
+                Text(
+                    text = if (isSearching) "Try adjusting your search" else "Check back soon for new content.",
+                    style = TextStyle(fontFamily = AppFonts.andika(), fontSize = 13.sp, color = HillsongColors.Gray500),
+                    textAlign = TextAlign.Center,
+                )
+                if (!isSearching) {
+                    Spacer(Modifier.height(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(28.dp))
+                            .background(HillsongColors.Gold)
+                            .clickable(onClick = onRetry)
+                            .padding(horizontal = 32.dp, vertical = 14.dp),
+                    ) {
+                        Text(
+                            "RETRY",
+                            style = TextStyle(fontFamily = AppFonts.andika(), fontWeight = FontWeight.Bold, fontSize = 14.sp, color = HillsongColors.Black),
+                        )
+                    }
+                }
+            }
+        }
+    }
 }

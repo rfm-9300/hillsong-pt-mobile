@@ -78,8 +78,8 @@ class EncounterService(
      */
     suspend fun getUpcomingEncounters(): List<EncounterResponse> = withContext(Dispatchers.IO) {
         logger.debug("Fetching upcoming encounters")
-        val now = LocalDateTime.now()
-        encounterRepository.findUpcomingEncounters(now)
+        val from = LocalDateTime.now().minusDays(30)
+        encounterRepository.findUpcomingEncounters(from)
             .map { mapToEncounterResponse(it) }
     }
     

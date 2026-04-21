@@ -27,6 +27,19 @@ val HillsongGold = Color(0xFFD4AF37)        // Classic gold
 val HillsongGoldLight = Color(0xFFE6C547)   // Lighter gold for containers
 val HillsongGoldDark = Color(0xFFB8941F)    // Darker gold for emphasis
 
+// Editorial dark tones (from redesign spec)
+val EditorialBg = Color(0xFF0A0A0A)
+val EditorialSurface = Color(0xFF1A1A1A)
+val EditorialSurfaceVariant = Color(0xFF252525)
+val EditorialOn = Color(0xFFF5F5F5)
+val EditorialSub = Color(0xFF9E9E9E)
+
+// Editorial light tones
+val EditorialLightBg = Color(0xFFF7F5F0)
+val EditorialLightSurface = Color(0xFFFFFFFF)
+val EditorialLightSurfaceVariant = Color(0xFFEFEBE2)
+val EditorialLightSub = Color(0xFF6B6B6B)
+
 // === NEUTRAL PALETTE ===
 val Gray50 = Color(0xFFFAFAFA)
 val Gray100 = Color(0xFFF5F5F5)
@@ -50,14 +63,14 @@ val InfoBlue = Color(0xFF1976D2)
 val InfoBlueLight = Color(0xFFE3F2FD)
 
 // === LIGHT THEME COLORS ===
-val LightPrimary = HillsongBlack
-val LightOnPrimary = HillsongWhite
-val LightPrimaryContainer = Gray100
+val LightPrimary = HillsongGold
+val LightOnPrimary = HillsongBlack
+val LightPrimaryContainer = HillsongGoldLight
 val LightOnPrimaryContainer = HillsongBlack
 
-val LightSecondary = HillsongGold
-val LightOnSecondary = HillsongBlack
-val LightSecondaryContainer = HillsongGoldLight
+val LightSecondary = HillsongBlack
+val LightOnSecondary = HillsongWhite
+val LightSecondaryContainer = Gray100
 val LightOnSecondaryContainer = HillsongBlack
 
 val LightTertiary = Gray600
@@ -70,12 +83,12 @@ val LightOnError = HillsongWhite
 val LightErrorContainer = ErrorRedLight
 val LightOnErrorContainer = ErrorRed
 
-val LightBackground = HillsongWhite
-val LightOnBackground = HillsongBlack
-val LightSurface = HillsongWhite
-val LightOnSurface = HillsongBlack
-val LightSurfaceVariant = Gray100
-val LightOnSurfaceVariant = Gray700
+val LightBackground = EditorialLightBg
+val LightOnBackground = EditorialBg
+val LightSurface = EditorialLightSurface
+val LightOnSurface = EditorialBg
+val LightSurfaceVariant = EditorialLightSurfaceVariant
+val LightOnSurfaceVariant = EditorialLightSub
 val LightOutline = Gray400
 val LightInverseOnSurface = HillsongWhite
 val LightInverseSurface = HillsongBlack
@@ -102,12 +115,12 @@ val DarkOnError = HillsongBlack
 val DarkErrorContainer = Color(0xFF93000A)
 val DarkOnErrorContainer = Color(0xFFFFDAD6)
 
-val DarkBackground = HillsongBlack
-val DarkOnBackground = HillsongWhite
-val DarkSurface = Gray900
-val DarkOnSurface = HillsongWhite
-val DarkSurfaceVariant = Gray800
-val DarkOnSurfaceVariant = Gray300
+val DarkBackground = EditorialBg
+val DarkOnBackground = EditorialOn
+val DarkSurface = EditorialSurface
+val DarkOnSurface = EditorialOn
+val DarkSurfaceVariant = EditorialSurfaceVariant
+val DarkOnSurfaceVariant = EditorialSub
 val DarkOutline = Gray600
 val DarkInverseOnSurface = HillsongBlack
 val DarkInverseSurface = HillsongWhite

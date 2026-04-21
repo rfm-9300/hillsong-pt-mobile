@@ -26,29 +26,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun DynamicColorApp(content: @Composable () -> Unit) {
-    val context = LocalContext.current
-    val isSystemInDarkTheme = isSystemInDarkTheme()
-    val hasDynamicColorsFeature = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-
-    val dynamicColorScheme =
-        if (hasDynamicColorsFeature) {
-            if (isSystemInDarkTheme) {
-                dynamicDarkColorScheme(context)
-            } else {
-                dynamicLightColorScheme(context)
-            }
-        } else {
-            null
-        }
-
-    AppTheme(
-        dynamicColorScheme = dynamicColorScheme,
-        content = content,
-    )
-}
-
 @Preview
 @Composable
 fun AppAndroidPreview() {

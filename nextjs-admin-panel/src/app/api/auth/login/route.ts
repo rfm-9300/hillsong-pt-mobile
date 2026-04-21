@@ -5,7 +5,7 @@ const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://auth-service:80
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        console.log('🔄 Proxy: Forwarding login request to Auth Service', { body });
+        console.log('🔄 Proxy: Forwarding login request to Auth Service', { body: { ...body, password: '[REDACTED]' } });
 
         const response = await fetch(`${AUTH_SERVICE_URL}/api/auth/login`, {
             method: 'POST',
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
         });
 
         const data = await response.json();
-        console.log(`📨 Proxy: Auth Service responded with status ${response.status}`, { data });
+        console.log(`📨 Proxy: Auth Service responded with status ${response.status}`);
 
         return NextResponse.json(data, {
             status: response.status,
