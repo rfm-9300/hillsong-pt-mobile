@@ -57,8 +57,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import hillsongptapp.feature.home.generated.resources.Res
-import hillsongptapp.feature.home.generated.resources.no_upcoming_encounters
 import hillsongptapp.feature.home.generated.resources.no_videos_available
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
@@ -174,14 +178,14 @@ private fun HomeBottomNav(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF0A0A0A).copy(alpha = 0.92f)),
+            .background(MaterialTheme.colorScheme.surface),
     ) {
         // Subtle top border line
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(Color.White.copy(alpha = 0.06f))
+                .background(MaterialTheme.colorScheme.outlineVariant)
                 .align(Alignment.TopCenter),
         )
 
@@ -590,10 +594,42 @@ private fun HeroSlide(
 }
 
 private fun buildHeroMeta(e: Encounter): String {
+    val formatted = formatEncounterDate(e.date)
     val parts = mutableListOf<String>()
-    if (e.date.isNotBlank()) parts += e.date.uppercase()
+    if (formatted.isNotBlank()) parts += formatted
     if (e.location.isNotBlank()) parts += e.location.uppercase()
-    return parts.joinToString(" · ")
+    return parts.joinToString(" - ")
+}
+
+private fun formatEncounterDate(raw: String): String {
+    return try {
+        // Try as Instant first (has Z), else treat as local datetime directly
+        val dt = try {
+            Instant.parse(raw).toLocalDateTime(TimeZone.of("Europe/Lisbon"))
+        } catch (_: Exception) {
+            LocalDateTime.parse(raw.substringBefore("."))
+        }
+        val weekDay = when (dt.dayOfWeek) {
+            DayOfWeek.MONDAY -> "SEGUNDA"
+            DayOfWeek.TUESDAY -> "TERÇA"
+            DayOfWeek.WEDNESDAY -> "QUARTA"
+            DayOfWeek.THURSDAY -> "QUINTA"
+            DayOfWeek.FRIDAY -> "SEXTA"
+            DayOfWeek.SATURDAY -> "SÁBADO"
+            DayOfWeek.SUNDAY -> "DOMINGO"
+            else -> ""
+        }
+        val month = when (dt.monthNumber) {
+            1 -> "JANEIRO"; 2 -> "FEVEREIRO"; 3 -> "MARÇO"; 4 -> "ABRIL"
+            5 -> "MAIO"; 6 -> "JUNHO"; 7 -> "JULHO"; 8 -> "AGOSTO"
+            9 -> "SETEMBRO"; 10 -> "OUTUBRO"; 11 -> "NOVEMBRO"; 12 -> "DEZEMBRO"
+            else -> ""
+        }
+        val time = "${dt.hour.toString().padStart(2, '0')}:${dt.minute.toString().padStart(2, '0')}"
+        "$weekDay, ${dt.dayOfMonth} $month - $time"
+    } catch (_: Exception) {
+        raw
+    }
 }
 
 // ─────────────────────────── WATCH ───────────────────────────

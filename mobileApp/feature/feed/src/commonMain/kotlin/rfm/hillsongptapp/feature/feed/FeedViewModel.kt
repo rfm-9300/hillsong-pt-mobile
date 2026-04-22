@@ -69,30 +69,8 @@ class FeedViewModel(
     
     private fun initializeAndLoadFeed() {
         viewModelScope.launch {
-            LoggerHelper.logDebug("Initializing auth state before loading feed", "FeedInit")
-            
-            // Initialize auth state first
             authRepository.initializeAuthState()
-            
-            // Wait a bit for auth state to be ready
-            kotlinx.coroutines.delay(100)
-            
-            // Check if user is authenticated
-            val isAuthenticated = authRepository.isUserAuthenticated()
-            LoggerHelper.logDebug("User authenticated: $isAuthenticated", "FeedInit")
-            
-            if (isAuthenticated) {
-                LoggerHelper.logDebug("User is authenticated, loading feed", "FeedInit")
-                loadFeed()
-            } else {
-                LoggerHelper.logDebug("User is NOT authenticated", "FeedInit")
-                _uiState.update { 
-                    it.copy(
-                        isLoading = false, 
-                        errorMessage = "Please log in to view posts"
-                    ) 
-                }
-            }
+            loadFeed()
         }
     }
 
@@ -112,11 +90,7 @@ class FeedViewModel(
         viewModelScope.launch {
             LoggerHelper.logDebug("loadFeed() called", "FeedLoad")
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            
-            // Double-check authentication before making API call
-            val isAuthenticated = authRepository.isUserAuthenticated()
-            LoggerHelper.logDebug("About to call API, authenticated: $isAuthenticated", "FeedLoad")
-            
+
             when (val result = postRepository.getPosts(page = 0, size = 20)) {
                 is PostResult.Success -> {
                     LoggerHelper.logDebug("PostRepository returned ${result.data.posts.size} posts", "FeedLoad")

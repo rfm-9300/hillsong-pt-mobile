@@ -48,6 +48,10 @@ class SecurityConfig(
                     // Public home screen endpoints
                     .requestMatchers("/api/youtube-videos/**").permitAll()
                     .requestMatchers("/api/encounters/upcoming").permitAll()
+                    // Public event read endpoints
+                    .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/events", "/api/events/upcoming", "/api/events/search", "/api/events/*").permitAll()
+                    // Public calendar read endpoints
+                    .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/calendar/**").permitAll()
                     // Admin endpoints (handled by custom token authentication)
                     .requestMatchers("/api/admin/**").permitAll()
                     // All other endpoints require authentication

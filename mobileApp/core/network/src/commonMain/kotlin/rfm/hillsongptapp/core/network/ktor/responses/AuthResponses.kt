@@ -10,8 +10,18 @@ data class ApiResponse<T>(
 )
 
 @Serializable
+data class AuthUserResponse(
+    val id: String,
+    val email: String,
+    val firstName: String? = null,
+    val lastName: String? = null,
+    val verified: Boolean = false,
+)
+
+@Serializable
 data class AuthResponse(
-    val token: String
+    val token: String,
+    val user: AuthUserResponse? = null,
 )
 
 @Serializable

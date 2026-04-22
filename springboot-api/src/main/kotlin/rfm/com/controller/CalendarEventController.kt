@@ -23,7 +23,6 @@ import java.time.format.DateTimeFormatter
 
 @RestController
 @RequestMapping("/api/calendar")
-@PreAuthorize("hasRole('USER')")
 class CalendarEventController(
     private val calendarEventService: CalendarEventService
 ) {

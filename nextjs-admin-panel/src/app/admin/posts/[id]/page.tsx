@@ -72,15 +72,13 @@ export default function EditPostPage() {
 
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append('postId', postId);
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('content', formData.content);
-      
+      formDataToSend.append('post', new Blob([JSON.stringify({ title: formData.title, content: formData.content })], { type: 'application/json' }));
+
       if (image) {
         formDataToSend.append('image', image);
       }
 
-      await api.postForm(ENDPOINTS.POST_UPDATE(postId), formDataToSend);
+      await api.putForm(ENDPOINTS.POST_UPDATE(postId), formDataToSend);
       
       setAlert({
         type: 'success',

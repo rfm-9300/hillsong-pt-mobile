@@ -28,8 +28,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import rfm.hillsongptapp.core.designsystem.theme.HillsongColors
+import rfm.hillsongptapp.core.designsystem.theme.ThemeManager
 import rfm.hillsongptapp.core.designsystem.ui.components.EditorialSectionHeader
 
 @Composable
@@ -84,6 +89,16 @@ fun SettingsScreen(navController: NavHostController) {
             Spacer(Modifier.height(16.dp))
 
             SettingsGroup {
+                val isDark by ThemeManager.isDarkMode.collectAsState()
+                SettingsToggleItem(
+                    label = "Dark Mode",
+                    checked = isDark,
+                    onCheckedChange = { ThemeManager.setDarkMode(it) },
+                )
+                HorizontalDivider(
+                    modifier = Modifier.padding(start = 60.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                )
                 SettingsItem(
                     icon = Icons.Default.Notifications,
                     label = "Notifications",
@@ -216,6 +231,62 @@ private fun SettingsItem(
             contentDescription = null,
             tint = HillsongColors.Gray500,
             modifier = Modifier.size(16.dp),
+        )
+    }
+}
+
+@Composable
+private fun SettingsToggleItem(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCheckedChange(!checked) }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(HillsongColors.Gold.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            // Crescent moon — capture surface color outside Canvas (not @Composable scope)
+            val surfaceColor = MaterialTheme.colorScheme.surface
+            androidx.compose.foundation.Canvas(modifier = Modifier.size(16.dp)) {
+                val r = size.minDimension / 2f
+                val cx = size.width / 2f
+                val cy = size.height / 2f
+                drawCircle(HillsongColors.Gold, radius = r,
+                    center = androidx.compose.ui.geometry.Offset(cx, cy))
+                drawCircle(surfaceColor, radius = r * 0.72f,
+                    center = androidx.compose.ui.geometry.Offset(cx + r * 0.35f, cy - r * 0.1f))
+            }
+        }
+        Text(
+            text = label,
+            style = TextStyle(
+                fontFamily = AppFonts.andika(),
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onBackground,
+            ),
+            modifier = Modifier.weight(1f),
+        )
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = HillsongColors.Black,
+                checkedTrackColor = HillsongColors.Gold,
+                uncheckedThumbColor = HillsongColors.Gray500,
+                uncheckedTrackColor = MaterialTheme.colorScheme.outlineVariant,
+            ),
         )
     }
 }

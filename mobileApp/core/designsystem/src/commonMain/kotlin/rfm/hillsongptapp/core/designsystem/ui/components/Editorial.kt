@@ -18,6 +18,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -161,8 +165,9 @@ fun EditorialTextField(
     light: Boolean = false,
 ) {
     var focused by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
     val surface = if (light) HillsongColors.Gray100 else MaterialTheme.colorScheme.surface
-    val textColor = if (light) HillsongColors.Black else HillsongColors.White
+    val textColor = if (light) HillsongColors.Black else MaterialTheme.colorScheme.onSurface
     val subColor = HillsongColors.Gray500
 
     val underline = when {
@@ -189,35 +194,48 @@ fun EditorialTextField(
                 )
                 .padding(horizontal = 16.dp, vertical = 10.dp),
         ) {
-            Column {
-                Text(
-                    text = label.uppercase(),
-                    style = TextStyle(
-                        fontFamily = AppFonts.andika(),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 11.sp,
-                        letterSpacing = 0.8.sp,
-                        color = labelColor,
-                    ),
-                )
-                Spacer(Modifier.height(2.dp))
-                BasicTextField(
-                    value = value,
-                    onValueChange = onValueChange,
-                    singleLine = true,
-                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = keyboardType),
-                    textStyle = TextStyle(
-                        fontFamily = AppFonts.andika(),
-                        fontSize = 15.sp,
-                        color = textColor,
-                    ),
-                    visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
-                    cursorBrush = SolidColor(HillsongColors.Gold),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .defaultMinSize(minHeight = 22.dp)
-                        .onFocusChanged { focused = it.isFocused },
-                )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = label.uppercase(),
+                        style = TextStyle(
+                            fontFamily = AppFonts.andika(),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp,
+                            letterSpacing = 0.8.sp,
+                            color = labelColor,
+                        ),
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    BasicTextField(
+                        value = value,
+                        onValueChange = onValueChange,
+                        singleLine = true,
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = keyboardType),
+                        textStyle = TextStyle(
+                            fontFamily = AppFonts.andika(),
+                            fontSize = 15.sp,
+                            color = textColor,
+                        ),
+                        visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
+                        cursorBrush = SolidColor(HillsongColors.Gold),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = 22.dp)
+                            .onFocusChanged { focused = it.isFocused },
+                    )
+                }
+                if (isPassword) {
+                    Spacer(Modifier.width(8.dp))
+                    Icon(
+                        imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                        contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                        tint = labelColor,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clickable { passwordVisible = !passwordVisible },
+                    )
+                }
             }
         }
         if (isError && errorText != null) {

@@ -63,7 +63,7 @@ export default function PostsPage() {
     setDeleteConfirmation(prev => ({ ...prev, deleting: true }));
 
     try {
-      await api.post(ENDPOINTS.POST_DELETE, { postId: deleteConfirmation.postId });
+      await api.delete(ENDPOINTS.POST_DELETE(deleteConfirmation.postId));
       setPosts(prev => prev.filter(post => post.id !== deleteConfirmation.postId));
       setAlert({
         type: 'success',

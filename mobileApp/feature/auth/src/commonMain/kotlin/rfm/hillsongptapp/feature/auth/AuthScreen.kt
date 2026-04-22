@@ -70,7 +70,7 @@ fun LoginScreen(viewModel: AuthViewModel = koinViewModel(), navigator: NavHostCo
         mutableStateOf(if (isDebugBuild()) "rodrigomartins@msn.com" else "")
     }
     val (password, setPassword) = rememberSaveable {
-        mutableStateOf(if (isDebugBuild()) "feller123" else "")
+        mutableStateOf(if (isDebugBuild()) "!Feller158" else "")
     }
     val (email, setEmail) = rememberSaveable {
         mutableStateOf(if (isDebugBuild()) "rodrigomartins@msn.com" else "")

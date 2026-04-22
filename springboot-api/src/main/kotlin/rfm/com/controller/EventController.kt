@@ -23,7 +23,6 @@ import rfm.com.util.getCurrentUserId
  */
 @RestController
 @RequestMapping("/api/events")
-@PreAuthorize("hasRole('USER')")
 class EventController(
     private val eventService: EventService
 ) {
@@ -102,6 +101,7 @@ class EventController(
     /**
      * Create a new event
      */
+    @PreAuthorize("hasRole('USER')")
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun createEvent(
         @Valid @RequestPart("event") createEventRequest: CreateEventRequest,
@@ -125,6 +125,7 @@ class EventController(
     /**
      * Update an existing event
      */
+    @PreAuthorize("hasRole('USER')")
     @PutMapping("/{id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun updateEvent(
         @PathVariable id: String,
@@ -149,6 +150,7 @@ class EventController(
     /**
      * Delete an event
      */
+    @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/{id}")
     fun deleteEvent(
         @PathVariable id: String,
@@ -171,6 +173,7 @@ class EventController(
     /**
      * Join an event
      */
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/{id}/join")
     fun joinEvent(
         @PathVariable id: String,
@@ -195,6 +198,7 @@ class EventController(
     /**
      * Leave an event
      */
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/{id}/leave")
     fun leaveEvent(
         @PathVariable id: String,
