@@ -50,6 +50,8 @@ class SecurityConfig(
                     .requestMatchers("/api/encounters/upcoming").permitAll()
                     // Public event read endpoints
                     .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/events", "/api/events/upcoming", "/api/events/search", "/api/events/*").permitAll()
+                    // Public group read endpoints
+                    .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/groups", "/api/groups/ministries", "/api/groups/*").permitAll()
                     // Public calendar read endpoints
                     .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/calendar/**").permitAll()
                     // Admin endpoints (handled by custom token authentication)

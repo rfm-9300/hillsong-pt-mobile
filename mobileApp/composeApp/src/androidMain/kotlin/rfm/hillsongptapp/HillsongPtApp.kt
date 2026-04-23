@@ -3,11 +3,13 @@ package rfm.hillsongptapp
 import android.app.Application
 import org.koin.android.ext.koin.androidContext
 import rfm.hillsongptapp.di.initKoin
+import rfm.hillsongptapp.util.platform.UrlOpener
 
 class HillsongPtApp: Application() {
 
     override fun onCreate() {
         super.onCreate()
+        UrlOpener.initialize(this)
 
         initKoin{
             androidContext(this@HillsongPtApp)

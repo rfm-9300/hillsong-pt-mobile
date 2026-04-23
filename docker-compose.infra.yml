@@ -5,7 +5,7 @@ services:
   # MongoDB
   # ==========================================
   mongodb:
-    image: mongo:latest
+    image: mongo:7.0
     container_name: hillsong-mongodb
     restart: always
     ports:

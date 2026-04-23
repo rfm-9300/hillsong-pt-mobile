@@ -71,6 +71,7 @@ kotlin {
             implementation(projects.core.test)
 
             implementation(projects.util.logging)
+            implementation(projects.util.platform)
 
 
             implementation(projects.feature.home)

@@ -67,28 +67,23 @@ class ExampleAuthRepository(
      */
     suspend fun getUserDashboardData(): NetworkResult<DashboardData> {
         return try {
-            // Get user profile
-            val profileResult = apiClient.profile.getProfile()
-            if (profileResult is NetworkResult.Error) {
-                return NetworkResult.Error(profileResult.exception)
+            val profile = when (val profileResult = apiClient.profile.getProfile()) {
+                is NetworkResult.Success -> profileResult.data
+                is NetworkResult.Error -> return NetworkResult.Error(profileResult.exception)
+                is NetworkResult.Loading -> return NetworkResult.Loading
             }
-            
-            // Get user's events
-            val eventsResult = apiClient.events.getUpcomingEvents()
-            if (eventsResult is NetworkResult.Error) {
-                return NetworkResult.Error(eventsResult.exception)
+
+            val events = when (val eventsResult = apiClient.events.getUpcomingEvents()) {
+                is NetworkResult.Success -> eventsResult.data
+                is NetworkResult.Error -> return NetworkResult.Error(eventsResult.exception)
+                is NetworkResult.Loading -> return NetworkResult.Loading
             }
-            
-            // Get user's groups
-            val groupsResult = apiClient.groups.getMyGroups()
-            if (groupsResult is NetworkResult.Error) {
-                return NetworkResult.Error(groupsResult.exception)
+
+            val groups = when (val groupsResult = apiClient.groups.getGroups()) {
+                is NetworkResult.Success -> groupsResult.data.content
+                is NetworkResult.Error -> return NetworkResult.Error(groupsResult.exception)
+                is NetworkResult.Loading -> return NetworkResult.Loading
             }
-            
-            // Combine all data
-            val profile = (profileResult as NetworkResult.Success).data
-            val events = (eventsResult as NetworkResult.Success).data
-            val groups = (groupsResult as NetworkResult.Success).data
             
             NetworkResult.Success(
                 DashboardData(
@@ -141,7 +136,7 @@ class ExampleAuthRepository(
 data class DashboardData(
     val profile: rfm.hillsongptapp.core.network.api.UserProfile,
     val upcomingEvents: List<rfm.hillsongptapp.core.network.api.Event>,
-    val myGroups: List<rfm.hillsongptapp.core.network.api.Group>
+    val myGroups: List<rfm.hillsongptapp.core.network.api.GroupSummary>
 )
 
 /**

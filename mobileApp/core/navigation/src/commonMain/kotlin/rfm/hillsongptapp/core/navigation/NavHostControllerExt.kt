@@ -35,6 +35,10 @@ fun NavHostController.navigateToGroups() {
     navigate(HomeNav.GroupsScreen)
 }
 
+fun NavHostController.navigateToGroupDetail(groupId: String) {
+    navigate(HomeNav.GroupDetailScreen(groupId))
+}
+
 fun NavHostController.navigateToGiving() {
     navigate(HomeNav.GivingScreen)
 }

@@ -116,6 +116,9 @@ services:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - API_BASE_URL=http://springboot-api:8080/api
+      - FILE_PROXY_URL=http://minio:9000/church-files
     depends_on:
       - springboot-api
     networks:

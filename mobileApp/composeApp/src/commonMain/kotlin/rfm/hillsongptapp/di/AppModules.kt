@@ -11,6 +11,7 @@ import rfm.hillsongptapp.feature.kids.di.featureKidsModule
 import rfm.hillsongptapp.feature.videoplayer.di.videoPlayerModule
 import rfm.hillsongptapp.feature.calendar.di.featureCalendarModule
 import rfm.hillsongptapp.feature.events.di.featureEventsModule
+import rfm.hillsongptapp.feature.groups.di.featureGroupsModule
 
 
 val coreModules = listOf(
@@ -26,6 +27,7 @@ val featureModules = listOf(
     videoPlayerModule,
     featureCalendarModule,
     featureEventsModule,
+    featureGroupsModule,
 )
 
 fun initKoin(config: KoinAppDeclaration? = null) {

@@ -1,224 +1,161 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/app/hooks';
-import UserAvatar from './ui/UserAvatar';
+import { useAuth as useProfileAuth } from '@/app/hooks';
+import { useAuth as useSessionAuth } from '@/app/context/AuthContext';
+import {
+  AttendanceIcon,
+  CalendarIcon,
+  ChevronDIcon,
+  DashboardIcon,
+  EncountersIcon,
+  EventsIcon,
+  GroupsIcon,
+  KidsIcon,
+  OverviewIcon,
+  PostsIcon,
+  ReportsIcon,
+  ServiceIcon,
+  SignoutIcon,
+  UsersIcon,
+  VideosIcon,
+} from './icons/Icons';
 
-interface NavItem {
-  label: string;
-  href: string;
-  icon: string;
-  subItems?: NavItem[];
-}
-
-const navItems: NavItem[] = [
-  {
-    label: 'Dashboard',
-    href: '/admin/dashboard',
-    icon: '📊',
-  },
-  {
-    label: 'Posts',
-    href: '/admin/posts',
-    icon: '📝',
-  },
-  {
-    label: 'Events',
-    href: '/admin/events',
-    icon: '🎉',
-  },
-  {
-    label: 'Encounters',
-    href: '/admin/encounters',
-    icon: '🤝',
-  },
-  {
-    label: 'Videos',
-    href: '/admin/videos',
-    icon: '▶️',
-  },
-  {
-    label: 'Calendar',
-    href: '/admin/calendar',
-    icon: '📅',
-  },
-  {
-    label: 'Users',
-    href: '/admin/users',
-    icon: '👥',
-  },
-  {
-    label: 'Attendance',
-    href: '/admin/attendance',
-    icon: '📋',
-    subItems: [
-      {
-        label: 'Overview',
-        href: '/admin/attendance',
-        icon: '📊',
-      },
-      {
-        label: 'Events',
-        href: '/admin/attendance/event',
-        icon: '🎉',
-      },
-      {
-        label: 'Services',
-        href: '/admin/attendance/service',
-        icon: '⛪',
-      },
-      {
-        label: 'Kids Services',
-        href: '/admin/attendance/kids-service',
-        icon: '👶',
-      },
-      {
-        label: 'Reports',
-        href: '/admin/attendance/reports',
-        icon: '📈',
-      },
-    ],
-  },
+const navItems = [
+  { label: 'Dashboard', href: '/admin/dashboard', icon: DashboardIcon },
+  { label: 'Posts', href: '/admin/posts', icon: PostsIcon },
+  { label: 'Events', href: '/admin/events', icon: EventsIcon },
+  { label: 'Groups', href: '/admin/groups', icon: GroupsIcon },
+  { label: 'Encounters', href: '/admin/encounters', icon: EncountersIcon },
+  { label: 'Videos', href: '/admin/videos', icon: VideosIcon },
+  { label: 'Calendar', href: '/admin/calendar', icon: CalendarIcon },
+  { label: 'Users', href: '/admin/users', icon: UsersIcon },
 ];
 
-const Sidebar: React.FC = () => {
+const attendanceItems = [
+  { label: 'Overview', href: '/admin/attendance', icon: OverviewIcon },
+  { label: 'Events', href: '/admin/attendance/event', icon: EventsIcon },
+  { label: 'Services', href: '/admin/attendance/service', icon: ServiceIcon },
+  { label: 'Kids Services', href: '/admin/attendance/kids-service', icon: KidsIcon },
+  { label: 'Reports', href: '/admin/attendance/reports', icon: ReportsIcon },
+];
+
+export default function Sidebar() {
   const pathname = usePathname();
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout: profileLogout } = useProfileAuth();
+  const { logout: sessionLogout } = useSessionAuth();
+  const [attendanceOpen, setAttendanceOpen] = useState(pathname.startsWith('/admin/attendance'));
 
-  const isActiveLink = (href: string) => {
-    if (href === '/admin/attendance') {
-      return pathname === href;
-    }
-    return pathname.startsWith(href);
-  };
-
-  const isParentActive = (item: NavItem) => {
-    if (item.subItems) {
-      return item.subItems.some(subItem => isActiveLink(subItem.href));
-    }
-    return isActiveLink(item.href);
-  };
+  const isActive = (href: string) => href === '/admin/attendance' ? pathname === href : pathname.startsWith(href);
+  const attendanceActive = pathname.startsWith('/admin/attendance');
+  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.fullName || user?.email?.split('@')[0] || 'Admin';
 
   return (
-    <aside className="w-64 bg-[#0f172a] text-white flex flex-col h-full hidden md:flex shadow-xl border-r border-[#1e293b]">
-      {/* Brand Header */}
-      <div className="p-6 border-b border-[#1e293b]/50">
+    <aside className="hidden h-screen w-[232px] shrink-0 flex-col overflow-hidden border-r border-[var(--color-sidebar-border)] bg-[var(--color-sidebar-bg)] md:flex">
+      <div className="border-b border-[var(--color-sidebar-border)] px-5 pb-4 pt-5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-            <span className="text-xl">✝️</span>
+          <div className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[rgba(201,149,42,0.3)] bg-[var(--color-accent-sub)]">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M7 1v12M4 3.5v7M10 3.5v7M1 7h12" stroke="var(--color-accent)" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
           </div>
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-white">Admin Panel</h2>
-            <p className="text-slate-400 text-xs font-medium">Hillsong PT</p>
+            <div className="font-display text-[16px] leading-none tracking-[-0.2px] text-[#F9F8F6]">Hillsong PT</div>
+            <div className="mt-0.5 text-[10px] uppercase tracking-[1.2px] text-[var(--color-sidebar-text)]">Admin Panel</div>
           </div>
         </div>
       </div>
 
-      {/* User Profile Mini-Card (Integrated Top) */}
       {!loading && user && (
-        <div className="px-4 py-6">
-          <div className="relative overflow-hidden bg-[#1e293b] rounded-xl p-4 border border-[#334155]/50 group transition-all duration-300 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-900/10">
-            {/* Gradient Glow */}
-            <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl -mr-12 -mt-12 transition-all group-hover:bg-blue-500/20"></div>
-
-            <div className="flex items-center gap-3 relative z-10">
-              <UserAvatar user={user} size="md" className="ring-2 ring-offset-2 ring-offset-[#1e293b] ring-blue-500" />
-              <div className="overflow-hidden">
-                <p className="text-sm font-semibold text-white truncate">
-                  {user.firstName || user.email.split('@')[0]}
-                </p>
-                <p className="text-xs text-slate-400 truncate">
-                  {user.isAdmin ? 'Administrator' : 'User'}
-                </p>
-              </div>
+        <div className="border-b border-[var(--color-sidebar-border)] px-[14px] py-3">
+          <div className="flex items-center gap-2.5 rounded-[8px] bg-white/[0.04] px-2 py-2.5">
+            <div className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full border border-[rgba(201,149,42,0.45)] bg-[var(--color-accent-sub)] font-display text-[13px] text-[var(--color-accent)]">
+              {fullName.charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <div className="truncate text-[12px] font-semibold text-[#F9F8F6]">{fullName}</div>
+              <div className="text-[10px] text-[var(--color-sidebar-text)]">{user.isAdmin ? 'Administrator' : 'User'}</div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-2 custom-scrollbar">
-        <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-          Menu
-        </p>
-        <ul className="space-y-1">
-          {navItems.map((item) => (
-            <li key={item.href}>
+      <nav className="flex-1 overflow-auto px-2.5 pt-2.5">
+        <SectionLabel>Navigation</SectionLabel>
+        {navItems.map(({ label, href, icon: Icon }) => (
+          <NavLink key={href} href={href} active={isActive(href)} icon={<Icon />}>{label}</NavLink>
+        ))}
+
+        <button
+          type="button"
+          className={cn(navClass(attendanceActive), 'w-full')}
+          onClick={() => setAttendanceOpen((open) => !open)}
+        >
+          <AttendanceIcon className={attendanceActive ? 'text-[var(--color-accent)]' : 'text-[var(--color-sidebar-text)]'} />
+          <span className="flex-1">Attendance</span>
+          <ChevronDIcon className={cn('transition-transform duration-150', attendanceOpen && 'rotate-180')} />
+        </button>
+        {(attendanceOpen || attendanceActive) && (
+          <div className="ml-2.5 border-l border-[var(--color-sidebar-border)] pl-[14px]">
+            {attendanceItems.map(({ label, href, icon: Icon }) => (
               <Link
-                href={item.href}
+                key={href}
+                href={href}
                 className={cn(
-                  'flex items-center px-4 py-3 rounded-xl transition-all duration-200 group',
-                  isParentActive(item)
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20 font-medium'
-                    : 'text-slate-400 hover:text-white hover:bg-[#1e293b]'
+                  'mb-px flex items-center gap-2 rounded-[6px] px-2 py-1.5 text-[12px] transition-colors duration-150',
+                  isActive(href) ? 'bg-[rgba(201,149,42,0.08)] font-semibold text-[var(--color-accent)]' : 'text-[var(--color-sidebar-text)] hover:bg-white/[0.04]'
                 )}
               >
-                <span className={cn(
-                  "mr-3 text-xl transition-colors",
-                  isParentActive(item) ? "text-white" : "text-slate-500 group-hover:text-blue-400"
-                )}>{item.icon}</span>
-                <span className="flex-1">{item.label}</span>
-                {isParentActive(item) && (
-                  <div className="w-1.5 h-1.5 bg-white rounded-full ml-2"></div>
-                )}
+                <Icon size={14} />
+                {label}
               </Link>
+            ))}
+          </div>
+        )}
 
-              {/* Sub-navigation */}
-              {item.subItems && isParentActive(item) && (
-                <ul className="mt-1 ml-4 pl-4 border-l border-[#334155] space-y-1 mb-2">
-                  {item.subItems.map((subItem) => (
-                    <li key={subItem.href}>
-                      <Link
-                        href={subItem.href}
-                        className={cn(
-                          'flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200',
-                          isActiveLink(subItem.href)
-                            ? 'text-blue-400 bg-blue-500/10 font-medium'
-                            : 'text-slate-400 hover:text-white hover:bg-[#1e293b]/50'
-                        )}
-                      >
-                        <span className="mr-2 text-xs opacity-70">{subItem.icon}</span>
-                        <span>{subItem.label}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          ))}
-        </ul>
-
-        {/* Divider */}
-        <div className="my-4 border-t border-[#1e293b]/50 mx-4"></div>
-
-        <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-          Account
-        </p>
-        <ul className="space-y-1">
-          <li>
-            {/* Logout Button as Nav Item */}
-            <button
-              onClick={logout}
-              className="w-full flex items-center px-4 py-3 rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 group"
-            >
-              <span className="mr-3 text-xl group-hover:text-red-400 transition-colors">🚪</span>
-              <span className="font-medium">Sign Out</span>
-            </button>
-          </li>
-        </ul>
+        <div className="mx-1.5 my-2.5 h-px bg-[var(--color-sidebar-border)]" />
+        <SectionLabel>Account</SectionLabel>
+        <button
+          type="button"
+          onClick={() => {
+            sessionLogout();
+            profileLogout();
+          }}
+          className={cn(navClass(false), 'w-full')}
+        >
+          <SignoutIcon className="text-[var(--color-sidebar-text)]" />
+          <span>Sign Out</span>
+        </button>
       </nav>
 
-      {/* Footer Version */}
-      <div className="p-4 text-center">
-        <p className="text-[10px] text-slate-600 font-medium opacity-50">
-          v1.0.0 • Hillsong Admin
-        </p>
+      <div className="border-t border-[var(--color-sidebar-border)] px-5 py-2.5 text-center text-[10px] text-[rgba(156,163,175,0.3)]">
+        v1.0.0 · Hillsong Admin
       </div>
     </aside>
   );
-};
+}
 
-export default Sidebar;
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return <div className="px-2.5 pb-2 pt-1.5 text-[10px] font-semibold uppercase tracking-[1.5px] text-[rgba(156,163,175,0.5)]">{children}</div>;
+}
+
+function NavLink({ href, active, icon, children }: { href: string; active: boolean; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <Link href={href} className={navClass(active)}>
+      <span className={active ? 'text-[var(--color-accent)]' : 'text-[var(--color-sidebar-text)]'}>{icon}</span>
+      <span>{children}</span>
+    </Link>
+  );
+}
+
+function navClass(active: boolean) {
+  return cn(
+    'mb-px flex items-center gap-[9px] rounded-[7px] border-l-2 px-2.5 py-[7px] text-[13px] transition-colors duration-150',
+    active
+      ? 'border-l-[var(--color-sidebar-active-border)] bg-[var(--color-sidebar-active-bg)] font-semibold text-[#F9F8F6]'
+      : 'border-l-transparent font-normal text-[var(--color-sidebar-text)] hover:bg-white/[0.04]'
+  );
+}

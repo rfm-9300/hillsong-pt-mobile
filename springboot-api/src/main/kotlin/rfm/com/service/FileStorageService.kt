@@ -141,6 +141,13 @@ class FileStorageService(
     fun storeEncounterImage(file: MultipartFile): String {
         return storeFile(file, "encounters")
     }
+
+    /**
+     * Store a connection group image
+     */
+    fun storeGroupImage(file: MultipartFile): String {
+        return storeFile(file, "groups")
+    }
     
     /**
      * Delete a file

@@ -25,6 +25,7 @@ import rfm.hillsongptapp.feature.kids.ui.reports.ReportsScreen
 import rfm.hillsongptapp.feature.kids.ui.staff.StaffDashboardScreen
 import rfm.hillsongptapp.feature.kids.ui.staff.QRCodeScannerScreen
 import rfm.hillsongptapp.feature.kids.ui.staff.CheckInVerificationScreen
+import rfm.hillsongptapp.feature.groups.GroupDetailScreen
 import rfm.hillsongptapp.feature.groups.GroupsScreen
 import rfm.hillsongptapp.feature.giving.GivingScreen
 import rfm.hillsongptapp.feature.feed.FeedScreen
@@ -55,6 +56,9 @@ fun RootNavigation() {
             ministries = { MinistriesScreen(navController = rootNavController) },
             kids = { KidsScreen(navController = rootNavController) },
             groups = { GroupsScreen(navController = rootNavController) },
+            groupDetail = { groupId ->
+                GroupDetailScreen(groupId = groupId, navController = rootNavController)
+            },
             giving = { GivingScreen(navController = rootNavController) },
             feed = { FeedScreen(navController = rootNavController) },
             events = { EventsScreen(navController = rootNavController) },

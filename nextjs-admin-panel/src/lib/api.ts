@@ -42,6 +42,16 @@ export const ENDPOINTS = {
     EVENT_WAITING_LIST: '/events/waiting-list',
     EVENT_SEARCH: '/events/search',
 
+    // Groups - /api/groups/* and /api/admin/groups/*
+    GROUPS: '/groups',
+    GROUP_BY_ID: (id: string) => `/groups/${id}`,
+    GROUP_MINISTRIES: '/groups/ministries',
+    ADMIN_GROUPS: '/admin/groups',
+    ADMIN_GROUP_BY_ID: (id: string) => `/admin/groups/${id}`,
+    ADMIN_GROUP_CREATE: '/admin/groups',
+    ADMIN_GROUP_UPDATE: (id: string) => `/admin/groups/${id}`,
+    ADMIN_GROUP_DELETE: (id: string) => `/admin/groups/${id}`,
+
     // Encounters - /api/encounters/*
     ENCOUNTERS: '/encounters',
     ENCOUNTER_BY_ID: (id: string) => `/encounters/${id}`,
@@ -189,7 +199,7 @@ class ApiClient {
                         errorMessage = 'Authentication required: Please log in again';
                         // Only redirect if we're not already on the login page
                         if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-                            console.log('🚪 Redirecting to login due to 401 error');
+                            console.log('Redirecting to login due to 401 error');
                             localStorage.removeItem('authToken');
                             window.location.href = '/login';
                         }

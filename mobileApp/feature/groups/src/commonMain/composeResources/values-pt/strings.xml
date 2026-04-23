@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <string name="groups_title">Grupos</string>
+    <string name="groups_all">Todos</string>
+    <string name="groups_city_all">Todas as cidades</string>
+    <string name="groups_search_placeholder">Pesquisar grupos, líderes ou locais</string>
+    <string name="groups_list_view">Lista</string>
+    <string name="groups_map_view">Mapa</string>
+    <string name="groups_empty">Nenhum grupo corresponde a estes filtros.</string>
+    <string name="groups_error">Não foi possível carregar os grupos agora.</string>
+    <string name="groups_contact_whatsapp">Contactar no WhatsApp</string>
+    <string name="groups_open_maps">Abrir no mapa</string>
+    <string name="groups_schedule">Horário</string>
+    <string name="groups_leader">Líder</string>
+    <string name="groups_members">Membros</string>
+    <string name="groups_ministry_sisterhood">Sisterhood</string>
+    <string name="groups_ministry_jovens">Jovens YxYa</string>
+    <string name="groups_ministry_mens">Homens</string>
+    <string name="groups_ministry_casais">Casais</string>
+    <string name="groups_ministry_thirty_plus">30+</string>
+    <string name="groups_ministry_geral">Geral</string>
+</resources>

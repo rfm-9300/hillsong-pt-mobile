@@ -49,6 +49,81 @@ export interface Encounter {
   createdAt: string;
 }
 
+export enum Ministry {
+  SISTERHOOD = 'SISTERHOOD',
+  JOVENS_YXYA = 'JOVENS_YXYA',
+  MENS = 'MENS',
+  CASAIS = 'CASAIS',
+  THIRTY_PLUS = 'THIRTY_PLUS',
+  GERAL = 'GERAL',
+}
+
+export enum MeetingFrequency {
+  WEEKLY = 'WEEKLY',
+  BIWEEKLY = 'BIWEEKLY',
+  MONTHLY = 'MONTHLY',
+}
+
+export enum GroupDayOfWeek {
+  MONDAY = 'MONDAY',
+  TUESDAY = 'TUESDAY',
+  WEDNESDAY = 'WEDNESDAY',
+  THURSDAY = 'THURSDAY',
+  FRIDAY = 'FRIDAY',
+  SATURDAY = 'SATURDAY',
+  SUNDAY = 'SUNDAY',
+}
+
+export interface GroupLocation {
+  addressLine: string;
+  city: string;
+  region?: string | null;
+  postalCode?: string | null;
+  country: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface GroupSummary {
+  id: string;
+  name: string;
+  ministry: Ministry;
+  description: string;
+  leaderName: string;
+  meetingDay: GroupDayOfWeek;
+  meetingTime: string;
+  frequency: MeetingFrequency;
+  city: string;
+  latitude: number;
+  longitude: number;
+  imagePath?: string | null;
+  currentMembers: number;
+  maxMembers?: number | null;
+  isJoinable: boolean;
+  isActive: boolean;
+}
+
+export interface Group {
+  id: string;
+  name: string;
+  ministry: Ministry;
+  description: string;
+  leaderName: string;
+  leaderContact: string;
+  meetingDay: GroupDayOfWeek;
+  meetingTime: string;
+  frequency: MeetingFrequency;
+  location: GroupLocation;
+  imagePath?: string | null;
+  maxMembers?: number | null;
+  currentMembers: number;
+  isActive: boolean;
+  isJoinable: boolean;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface YouTubeVideo {
   id: string;
   title: string;
@@ -128,12 +203,13 @@ export interface AttendanceRecord {
 // Component Props Interfaces
 
 export interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
+  icon?: React.ReactNode;
   loading?: boolean;
   disabled?: boolean;
   onClick?: (e?: React.MouseEvent<HTMLButtonElement>) => void;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
   type?: 'button' | 'submit' | 'reset';
 }

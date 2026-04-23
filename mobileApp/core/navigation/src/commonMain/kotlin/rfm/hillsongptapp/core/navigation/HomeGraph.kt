@@ -20,6 +20,7 @@ fun NavGraphBuilder.homeGraph(
     ministries: @Composable AnimatedContentScope.() -> Unit,
     kids: @Composable AnimatedContentScope.() -> Unit,
     groups: @Composable AnimatedContentScope.() -> Unit,
+    groupDetail: @Composable AnimatedContentScope.(groupId: String) -> Unit,
     giving: @Composable AnimatedContentScope.() -> Unit,
     feed: @Composable AnimatedContentScope.() -> Unit,
     events: @Composable AnimatedContentScope.() -> Unit,
@@ -75,6 +76,10 @@ fun NavGraphBuilder.homeGraph(
         composable<HomeNav.GroupsScreen> {
             groups()
         }
+        composable<HomeNav.GroupDetailScreen> { backStackEntry ->
+            val args = backStackEntry.toRoute<HomeNav.GroupDetailScreen>()
+            groupDetail(args.groupId)
+        }
         composable<HomeNav.GivingScreen> {
             giving()
         }
@@ -119,6 +124,8 @@ sealed class HomeNav {
     @Serializable
     object GroupsScreen : HomeNav()
     @Serializable
+    data class GroupDetailScreen(val groupId: String) : HomeNav()
+    @Serializable
     object GivingScreen : HomeNav()
     @Serializable
     object FeedScreen : HomeNav()
@@ -131,4 +138,3 @@ sealed class HomeNav {
     @Serializable
     data class YouTubePlayerFullScreen(val videoId: String) : HomeNav()
 }
-

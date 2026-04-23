@@ -32,8 +32,7 @@ class JwtAuthenticationFilter(
         "/actuator/",
         "/error",
         "/api/youtube-videos/active",
-        "/api/encounters/upcoming",
-        "/api/admin/"
+        "/api/encounters/upcoming"
     )
 
     override fun doFilterInternal(
