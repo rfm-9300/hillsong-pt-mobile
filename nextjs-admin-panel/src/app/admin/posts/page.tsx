@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, ENDPOINTS } from '@/lib/api';
 import { Post } from '@/lib/types';
-import { Button, Alert, DeleteConfirmationModal, NavigationHeader } from '@/app/components/ui';
+import { Button, Alert, DeleteConfirmationModal, PageHeader } from '@/app/components/ui';
 import PostsList from '@/app/components/PostsList';
+import { PlusIcon } from '@/app/components/icons/Icons';
 
 export default function PostsPage() {
   const router = useRouter();
@@ -93,24 +94,12 @@ export default function PostsPage() {
 
   return (
     <div className="space-y-6">
-      <NavigationHeader
-        title="Manage Posts"
-        subtitle="Create, edit, and manage your blog posts"
-        breadcrumbs={[
-          { label: 'Dashboard', href: '/admin/dashboard' },
-          { label: 'Posts', current: true },
-        ]}
-      >
-        <Button
-          onClick={handleCreatePost}
-          className="flex items-center gap-2"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-          </svg>
-          Create Post
-        </Button>
-      </NavigationHeader>
+      <PageHeader
+        title="Posts"
+        subtitle={`${posts.length} posts`}
+        breadcrumbs={['Admin', 'Posts']}
+        actions={<Button size="sm" icon={<PlusIcon />} onClick={handleCreatePost}>New Post</Button>}
+      />
 
       {alert && (
         <Alert

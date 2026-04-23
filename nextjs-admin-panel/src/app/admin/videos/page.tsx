@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { YouTubeVideo } from '@/lib/types';
 import { api } from '@/lib/api';
-import { Button, NavigationHeader, Card, DeleteConfirmationModal } from '@/app/components/ui';
+import { Alert, Badge, Button, Card, DeleteConfirmationModal, EmptyState, PageHeader, TableHeader, TableRow } from '@/app/components/ui';
+import { EditIcon, EyeIcon, EyeOffIcon, ImageIcon, PlusIcon, TrashIcon } from '@/app/components/icons/Icons';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -12,14 +13,22 @@ interface ApiResponse<T> {
   data: T;
 }
 
+const cols = [
+  { label: 'Thumbnail', width: '100px' },
+  { label: 'Title', width: '1fr' },
+  { label: 'Status', width: '100px' },
+  { label: 'Order', width: '80px' },
+  { label: 'Added', width: '120px' },
+  { label: '', width: '150px' },
+];
+
 export default function VideosPage() {
   const router = useRouter();
   const [videos, setVideos] = useState<YouTubeVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [videoToDelete, setVideoToDelete] = useState<YouTubeVideo | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [toggling, setToggling] = useState<string | null>(null);
 
   const fetchVideos = async () => {
@@ -43,7 +52,7 @@ export default function VideosPage() {
       await api.youtubeVideos.toggleActive(video.id);
       await fetchVideos();
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Failed to toggle status');
+      setError(e instanceof Error ? e.message : 'Failed to toggle status');
     } finally {
       setToggling(null);
     }
@@ -52,165 +61,87 @@ export default function VideosPage() {
   const handleDeleteConfirm = async () => {
     if (!videoToDelete) return;
     try {
-      setDeletingId(videoToDelete.id);
+      setDeleting(true);
       await api.youtubeVideos.delete(videoToDelete.id);
       await fetchVideos();
-      setShowDeleteModal(false);
       setVideoToDelete(null);
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Failed to delete video');
+      setError(e instanceof Error ? e.message : 'Failed to delete video');
     } finally {
-      setDeletingId(null);
+      setDeleting(false);
     }
-  };
-
-  const getYouTubeId = (url: string) => {
-    const match = url.match(/(?:v=|youtu\.be\/|embed\/)([^&?\s]{11})/);
-    return match ? match[1] : null;
   };
 
   return (
     <div className="space-y-6">
-      <NavigationHeader
-        title="Videos Management"
-        subtitle="Manage the YouTube videos shown in the mobile app's 'Latest Messages' section"
-        breadcrumbs={[
-          { label: 'Dashboard', href: '/admin/dashboard' },
-          { label: 'Videos', current: true },
-        ]}
-      >
-        <Button variant="primary" onClick={() => router.push('/admin/videos/create')}>
-          + Add Video
-        </Button>
-      </NavigationHeader>
+      <PageHeader
+        title="Videos"
+        subtitle="Manage YouTube videos shown in Latest Messages"
+        breadcrumbs={['Admin', 'Videos']}
+        actions={<Button size="sm" icon={<PlusIcon />} onClick={() => router.push('/admin/videos/create')}>Add Video</Button>}
+      />
 
-      {error && (
-        <Card className="p-4 border-red-200 bg-red-50">
-          <p className="text-red-700 text-sm">{error}</p>
-          <Button variant="secondary" size="sm" onClick={fetchVideos} className="mt-2">
-            Retry
-          </Button>
-        </Card>
-      )}
+      {error && <Alert type="error" message={error} onClose={() => setError(null)} />}
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map(i => (
-            <Card key={i} className="animate-pulse">
-              <div className="h-48 bg-gray-200 rounded-t-lg" />
-              <div className="p-4 space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4" />
-                <div className="h-3 bg-gray-200 rounded w-1/2" />
-              </div>
-            </Card>
-          ))}
-        </div>
+        <Card>
+          {[1, 2, 3].map((i) => <div key={i} className="mx-3 my-3 h-12 rounded skeleton-shimmer" />)}
+        </Card>
       ) : videos.length === 0 ? (
-        <Card className="p-12 text-center">
-          <div className="text-6xl mb-4">🎬</div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No videos yet</h3>
-          <p className="text-gray-500 mb-6">Add YouTube videos to display in the mobile app.</p>
-          <Button variant="primary" onClick={() => router.push('/admin/videos/create')}>
-            Add First Video
-          </Button>
+        <Card>
+          <EmptyState title="No videos yet" description="Add YouTube videos to display in the mobile app." actionText="Add First Video" onAction={() => router.push('/admin/videos/create')} icon={<ImageIcon />} />
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {videos
-            .sort((a, b) => a.displayOrder - b.displayOrder)
-            .map((video) => {
-              const ytId = getYouTubeId(video.videoUrl);
-              const thumb = ytId
-                ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg`
-                : video.thumbnailUrl;
-
-              return (
-                <Card key={video.id} hover className="flex flex-col">
-                  {/* Thumbnail */}
-                  <div className="relative h-44 bg-gray-900 rounded-t-lg overflow-hidden">
-                    <img
-                      src={thumb}
-                      alt={video.title}
-                      className="w-full h-full object-cover opacity-90"
-                    />
-                    {/* Play overlay */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center shadow-lg">
-                        <svg className="w-5 h-5 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      </div>
-                    </div>
-                    {/* Order badge */}
-                    <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full font-mono">
-                      #{video.displayOrder}
-                    </div>
-                    {/* Status badge */}
-                    <div className="absolute top-2 right-2">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                        video.active ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'
-                      }`}>
-                        {video.active ? 'Active' : 'Hidden'}
-                      </span>
-                    </div>
+        <Card className="overflow-hidden">
+          <TableHeader cols={cols} />
+          {videos.sort((a, b) => a.displayOrder - b.displayOrder).map((video, index) => {
+            const thumb = getThumbnail(video);
+            return (
+              <TableRow
+                key={video.id}
+                cols={cols}
+                last={index === videos.length - 1}
+                cells={[
+                  <div key="thumb" className="h-[42px] w-[72px] overflow-hidden rounded-[5px] bg-[var(--color-surface-alt)]">
+                    {thumb ? <img src={thumb} alt={video.title} className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-[var(--color-text-muted)]"><ImageIcon /></div>}
+                  </div>,
+                  <button key="title" type="button" className="truncate text-left font-semibold text-[var(--color-text)] hover:text-[var(--color-accent)]" onClick={() => router.push(`/admin/videos/${video.id}`)}>{video.title}</button>,
+                  <Badge key="status" color={video.active ? 'green' : 'neutral'}>{video.active ? 'Active' : 'Hidden'}</Badge>,
+                  <span key="order">#{video.displayOrder}</span>,
+                  <span key="date">{formatDate(video.createdAt)}</span>,
+                ]}
+                actions={
+                  <div className="flex items-center gap-1.5">
+                    <Button size="xs" variant="ghost" icon={video.active ? <EyeOffIcon /> : <EyeIcon />} loading={toggling === video.id} onClick={() => handleToggleActive(video)}>
+                      {video.active ? 'Hide' : 'Show'}
+                    </Button>
+                    <Button size="xs" variant="ghost" icon={<EditIcon />} onClick={() => router.push(`/admin/videos/${video.id}`)}>Edit</Button>
+                    <Button size="xs" variant="danger" icon={<TrashIcon />} onClick={() => setVideoToDelete(video)}>Del</Button>
                   </div>
-
-                  {/* Content */}
-                  <div className="p-4 flex-1 flex flex-col">
-                    <h3 className="font-bold text-gray-900 line-clamp-2 mb-1">{video.title}</h3>
-                    {video.description && (
-                      <p className="text-sm text-gray-500 line-clamp-2 mb-3 flex-1">{video.description}</p>
-                    )}
-                    <a
-                      href={video.videoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-500 hover:underline truncate mb-4 block"
-                    >
-                      {video.videoUrl}
-                    </a>
-
-                    {/* Actions */}
-                    <div className="flex gap-2 pt-3 border-t border-gray-100">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => router.push(`/admin/videos/${video.id}`)}
-                        className="flex-1"
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleToggleActive(video)}
-                        className="flex-1"
-                      >
-                        {toggling === video.id ? '...' : video.active ? 'Hide' : 'Show'}
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => { setVideoToDelete(video); setShowDeleteModal(true); }}
-                      >
-                        🗑
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
-        </div>
+                }
+              />
+            );
+          })}
+        </Card>
       )}
 
       <DeleteConfirmationModal
-        show={showDeleteModal}
+        show={!!videoToDelete}
         title="Delete Video"
         message={`Are you sure you want to delete "${videoToDelete?.title}"? This action cannot be undone.`}
         onConfirm={handleDeleteConfirm}
-        onCancel={() => { setShowDeleteModal(false); setVideoToDelete(null); }}
-        loading={!!deletingId}
+        onCancel={() => setVideoToDelete(null)}
+        loading={deleting}
       />
     </div>
   );
+}
+
+function getThumbnail(video: YouTubeVideo) {
+  const match = video.videoUrl.match(/(?:v=|youtu\.be\/|embed\/)([^&?\s]{11})/);
+  return match ? `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg` : video.thumbnailUrl;
+}
+
+function formatDate(value?: string) {
+  return value ? new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
 }

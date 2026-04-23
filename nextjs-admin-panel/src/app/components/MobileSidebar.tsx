@@ -1,87 +1,36 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/app/hooks';
-import UserAvatar from './ui/UserAvatar';
+import {
+  AttendanceIcon,
+  CalendarIcon,
+  DashboardIcon,
+  EncountersIcon,
+  EventsIcon,
+  PostsIcon,
+  ReportsIcon,
+  ServiceIcon,
+  SignoutIcon,
+  UsersIcon,
+  VideosIcon,
+  XIcon,
+} from './icons/Icons';
 
-interface NavItem {
-  label: string;
-  href: string;
-  icon: string;
-  subItems?: NavItem[];
-}
-
-const navItems: NavItem[] = [
-  {
-    label: 'Dashboard',
-    href: '/admin/dashboard',
-    icon: '📊',
-  },
-  {
-    label: 'Posts',
-    href: '/admin/posts',
-    icon: '📝',
-  },
-  {
-    label: 'Events',
-    href: '/admin/events',
-    icon: '🎉',
-  },
-  {
-    label: 'Encounters',
-    href: '/admin/encounters',
-    icon: '🤝',
-  },
-  {
-    label: 'Videos',
-    href: '/admin/videos',
-    icon: '▶️',
-  },
-  {
-    label: 'Calendar',
-    href: '/admin/calendar',
-    icon: '📅',
-  },
-  {
-    label: 'Users',
-    href: '/admin/users',
-    icon: '👥',
-  },
-  {
-    label: 'Attendance',
-    href: '/admin/attendance',
-    icon: '📋',
-    subItems: [
-      {
-        label: 'Overview',
-        href: '/admin/attendance',
-        icon: '📊',
-      },
-      {
-        label: 'Events',
-        href: '/admin/attendance/event',
-        icon: '🎉',
-      },
-      {
-        label: 'Services',
-        href: '/admin/attendance/service',
-        icon: '⛪',
-      },
-      {
-        label: 'Kids Services',
-        href: '/admin/attendance/kids-service',
-        icon: '👶',
-      },
-      {
-        label: 'Reports',
-        href: '/admin/attendance/reports',
-        icon: '📈',
-      },
-    ],
-  },
+const navItems = [
+  { label: 'Dashboard', href: '/admin/dashboard', icon: DashboardIcon },
+  { label: 'Posts', href: '/admin/posts', icon: PostsIcon },
+  { label: 'Events', href: '/admin/events', icon: EventsIcon },
+  { label: 'Encounters', href: '/admin/encounters', icon: EncountersIcon },
+  { label: 'Videos', href: '/admin/videos', icon: VideosIcon },
+  { label: 'Calendar', href: '/admin/calendar', icon: CalendarIcon },
+  { label: 'Users', href: '/admin/users', icon: UsersIcon },
+  { label: 'Attendance', href: '/admin/attendance', icon: AttendanceIcon },
+  { label: 'Services', href: '/admin/attendance/service', icon: ServiceIcon },
+  { label: 'Reports', href: '/admin/attendance/reports', icon: ReportsIcon },
 ];
 
 interface MobileSidebarProps {
@@ -91,34 +40,7 @@ interface MobileSidebarProps {
 
 const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
-  const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const { user, loading, logout } = useAuth();
-
-  const isActiveLink = (href: string) => {
-    if (href === '/admin/attendance') {
-      return pathname === href;
-    }
-    return pathname.startsWith(href);
-  };
-
-  const isParentActive = (item: NavItem) => {
-    if (item.subItems) {
-      return item.subItems.some(subItem => isActiveLink(subItem.href));
-    }
-    return isActiveLink(item.href);
-  };
-
-  const toggleExpanded = (href: string) => {
-    setExpandedItems(prev =>
-      prev.includes(href)
-        ? prev.filter(item => item !== href)
-        : [...prev, href]
-    );
-  };
-
-  const handleLinkClick = () => {
-    onClose();
-  };
 
   const handleLogout = () => {
     onClose();
@@ -127,138 +49,54 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose }) => {
 
   return (
     <>
-      {/* Backdrop */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden animate-in fade-in"
-          style={{ animationDuration: '200ms' }}
-          onClick={onClose}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div
-        className={cn(
-          'fixed inset-y-0 left-0 w-72 bg-[#0f172a] text-white flex flex-col transform transition-transform duration-300 ease-in-out z-50 md:hidden shadow-2xl',
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        )}
-      >
-        {/* Header */}
-        <div className="p-6 border-b border-[#1e293b]/50 flex justify-between items-center">
+      {isOpen && <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden" onClick={onClose} />}
+      <div className={cn('fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-[var(--color-sidebar-bg)] text-white shadow-2xl transition-transform duration-300 md:hidden', isOpen ? 'translate-x-0' : '-translate-x-full')}>
+        <div className="flex items-center justify-between border-b border-[var(--color-sidebar-border)] p-5">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
-              <span className="text-sm">✝️</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[rgba(201,149,42,0.3)] bg-[var(--color-accent-sub)]">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M7 1v12M4 3.5v7M10 3.5v7M1 7h12" stroke="var(--color-accent)" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Admin</h2>
+              <h2 className="font-display text-[16px] text-[#F9F8F6]">Hillsong PT</h2>
+              <p className="text-[10px] uppercase tracking-[1.2px] text-[var(--color-sidebar-text)]">Admin Panel</p>
             </div>
           </div>
-
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-[#1e293b] transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+          <button onClick={onClose} className="rounded-[7px] p-2 text-[var(--color-sidebar-text)] hover:bg-white/[0.04] hover:text-white" aria-label="Close navigation menu">
+            <XIcon />
           </button>
         </div>
 
-        {/* User Profile Mini-Card (Integrated Top) */}
         {!loading && user && (
           <div className="px-4 py-4">
-            <div className="flex items-center gap-3 p-3 bg-[#1e293b] rounded-xl border border-[#334155]/50">
-              <UserAvatar user={user} size="sm" className="ring-2 ring-blue-500" />
-              <div className="overflow-hidden">
-                <p className="text-sm font-semibold text-white truncate">
-                  {user.firstName || user.email.split('@')[0]}
-                </p>
-                <p className="text-xs text-slate-400 truncate">
-                  {user.isAdmin ? 'Admin' : 'User'}
-                </p>
+            <div className="flex items-center gap-3 rounded-[8px] bg-white/[0.04] p-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(201,149,42,0.45)] bg-[var(--color-accent-sub)] font-display text-[13px] text-[var(--color-accent)]">
+                {(user.firstName || user.email).charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-[12px] font-semibold text-white">{user.firstName || user.email.split('@')[0]}</p>
+                <p className="text-[10px] text-[var(--color-sidebar-text)]">{user.isAdmin ? 'Admin' : 'User'}</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 py-2 custom-scrollbar">
-          <ul className="space-y-1">
-            {navItems.map((item) => (
-              <li key={item.href}>
-                <div className="flex items-center">
-                  <Link
-                    href={item.href}
-                    onClick={handleLinkClick}
-                    className={cn(
-                      'flex items-center px-4 py-3 rounded-xl transition-all duration-200 flex-1 group',
-                      isParentActive(item)
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20'
-                        : 'text-slate-400 hover:text-white hover:bg-[#1e293b]'
-                    )}
-                  >
-                    <span className={cn(
-                      "mr-3 text-lg transition-colors",
-                      isParentActive(item) ? "text-white" : "text-slate-500 group-hover:text-blue-400"
-                    )}>{item.icon}</span>
-                    <span className="font-medium">{item.label}</span>
-                  </Link>
-
-                  {/* Expand/Collapse button for items with sub-items */}
-                  {item.subItems && (
-                    <button
-                      onClick={() => toggleExpanded(item.href)}
-                      className="p-3 text-slate-500 hover:text-white rounded-lg hover:bg-[#1e293b] ml-1"
-                    >
-                      <svg
-                        className={cn(
-                          'w-4 h-4 transition-transform duration-200',
-                          (expandedItems.includes(item.href) || isParentActive(item)) && 'rotate-90'
-                        )}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-
-                {/* Sub-navigation */}
-                {item.subItems && (expandedItems.includes(item.href) || isParentActive(item)) && (
-                  <ul className="mt-1 ml-4 pl-4 border-l border-[#334155] space-y-1">
-                    {item.subItems.map((subItem) => (
-                      <li key={subItem.href}>
-                        <Link
-                          href={subItem.href}
-                          onClick={handleLinkClick}
-                          className={cn(
-                            'flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200',
-                            isActiveLink(subItem.href)
-                              ? 'text-blue-400 bg-blue-500/10 font-medium'
-                              : 'text-slate-400 hover:text-white hover:bg-[#1e293b]/50'
-                          )}
-                        >
-                          <span className="mr-2 text-xs opacity-70">{subItem.icon}</span>
-                          <span>{subItem.label}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
-          </ul>
+        <nav className="flex-1 overflow-y-auto px-3 py-2">
+          {navItems.map(({ label, href, icon: Icon }) => {
+            const active = href === '/admin/attendance' ? pathname === href : pathname.startsWith(href);
+            return (
+              <Link key={href} href={href} onClick={onClose} className={cn('mb-px flex items-center gap-2.5 rounded-[7px] border-l-2 px-3 py-2.5 text-[13px]', active ? 'border-l-[var(--color-accent)] bg-[var(--color-sidebar-active-bg)] font-semibold text-white' : 'border-l-transparent text-[var(--color-sidebar-text)] hover:bg-white/[0.04]')}>
+                <Icon className={active ? 'text-[var(--color-accent)]' : 'text-[var(--color-sidebar-text)]'} />
+                {label}
+              </Link>
+            );
+          })}
         </nav>
 
-        {/* Footer Actions */}
-        <div className="p-4 border-t border-[#1e293b]/50">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center px-4 py-3 rounded-xl bg-[#1e293b] text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 font-medium border border-[#334155]"
-          >
-            <span className="mr-2">🚪</span>
+        <div className="border-t border-[var(--color-sidebar-border)] p-4">
+          <button onClick={handleLogout} className="flex w-full items-center justify-center gap-2 rounded-[7px] bg-white/[0.04] px-4 py-3 text-[13px] font-semibold text-[var(--color-sidebar-text)] hover:text-white">
+            <SignoutIcon />
             Sign Out
           </button>
         </div>
