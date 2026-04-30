@@ -29,7 +29,9 @@ import rfm.hillsongptapp.feature.groups.GroupDetailScreen
 import rfm.hillsongptapp.feature.groups.GroupsScreen
 import rfm.hillsongptapp.feature.giving.GivingScreen
 import rfm.hillsongptapp.feature.feed.FeedScreen
+import rfm.hillsongptapp.feature.events.EventDetailScreen
 import rfm.hillsongptapp.feature.events.EventsScreen
+import rfm.hillsongptapp.feature.events.MyQrScreen
 import rfm.hillsongptapp.feature.calendar.CalendarScreen
 import rfm.hillsongptapp.feature.home.ui.screens.homeScreen
 import rfm.hillsongptapp.feature.videoplayer.ui.VideoPlayerScreen
@@ -62,6 +64,10 @@ fun RootNavigation() {
             giving = { GivingScreen(navController = rootNavController) },
             feed = { FeedScreen(navController = rootNavController) },
             events = { EventsScreen(navController = rootNavController) },
+            eventDetail = { eventId ->
+                EventDetailScreen(eventId = eventId, navController = rootNavController)
+            },
+            myQr = { MyQrScreen(navController = rootNavController) },
             calendar = { CalendarScreen(navController = rootNavController) },
             homeScreen = { homeScreen(navController = rootNavController) },
             youtubeVideoScreen = { videoId, videoUrl ->

@@ -5,7 +5,7 @@ export const APP_VERSION = '1.0.0';
 
 // API Configuration
 export const API_TIMEOUT = 15000; // 15 seconds
-export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
 // Pagination
@@ -24,18 +24,18 @@ export const DEBOUNCE_DELAY = 300; // milliseconds
 
 // Status Colors
 export const STATUS_COLORS = {
-  CHECKED_IN: 'bg-green-100 text-green-800',
-  CHECKED_OUT: 'bg-blue-100 text-blue-800',
-  NO_SHOW: 'bg-red-100 text-red-800',
-  EMERGENCY: 'bg-orange-100 text-orange-800',
+  CHECKED_IN: 'green',
+  CHECKED_OUT: 'neutral',
+  NO_SHOW: 'red',
+  EMERGENCY: 'red',
 } as const;
 
 // Button Variants
 export const BUTTON_VARIANTS = {
-  primary: 'bg-blue-600 hover:bg-blue-700 text-white',
-  secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-900',
-  danger: 'bg-red-600 hover:bg-red-700 text-white',
-  ghost: 'bg-transparent hover:bg-gray-100 text-gray-700',
+  primary: 'bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white',
+  secondary: 'bg-[var(--color-surface)] hover:bg-[var(--color-surface-alt)] text-[var(--color-text)] border border-[var(--color-border-med)]',
+  danger: 'bg-[var(--color-danger-bg)] hover:bg-[#FECACA] text-[var(--color-danger)] border border-[rgba(220,38,38,0.2)]',
+  ghost: 'bg-transparent hover:bg-[var(--color-surface-alt)] text-[var(--color-text-sub)]',
 } as const;
 
 export const BUTTON_SIZES = {

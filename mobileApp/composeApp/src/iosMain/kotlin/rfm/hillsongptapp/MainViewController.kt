@@ -4,7 +4,7 @@ import androidx.compose.ui.window.ComposeUIViewController
 import rfm.hillsongptapp.core.designsystem.theme.AppTheme
 import rfm.hillsongptapp.di.initKoin
 
-private const val IOS_BASE_URL = "http://172.233.96.224:8080"
+private const val IOS_BASE_URL = "http://172.233.96.224"
 
 fun MainViewController() = ComposeUIViewController(
     configure = {

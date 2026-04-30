@@ -72,8 +72,8 @@ const GlobalLoadingIndicator: React.FC<GlobalLoadingIndicatorProps> = ({
   };
 
   const containerClasses = {
-    top: 'w-full bg-blue-600 text-white shadow-lg',
-    bottom: 'w-full bg-blue-600 text-white shadow-lg',
+    top: 'w-full bg-[var(--color-accent)] text-white shadow-lg',
+    bottom: 'w-full bg-[var(--color-accent)] text-white shadow-lg',
     'top-right': 'bg-white rounded-lg shadow-lg border max-w-sm',
     'top-left': 'bg-white rounded-lg shadow-lg border max-w-sm',
   };
@@ -97,7 +97,7 @@ const GlobalLoadingIndicator: React.FC<GlobalLoadingIndicatorProps> = ({
         <div className={cn('flex items-center space-x-3', contentClasses[position])}>
           <LoadingSpinner 
             size="sm" 
-            color={position.includes('top-') ? 'text-blue-600' : 'text-white'} 
+            color={position.includes('top-') ? 'text-[var(--color-accent)]' : 'text-white'} 
           />
           
           <div className="flex-1 min-w-0">
@@ -114,12 +114,12 @@ const GlobalLoadingIndicator: React.FC<GlobalLoadingIndicatorProps> = ({
               <div className="mt-1">
                 <div className={cn(
                   'w-full rounded-full h-1.5',
-                  position.includes('top-') ? 'bg-gray-200' : 'bg-blue-500'
+                  position.includes('top-') ? 'bg-gray-200' : 'bg-[var(--color-accent-hover)]'
                 )}>
                   <div
                     className={cn(
                       'h-1.5 rounded-full transition-all duration-300',
-                      position.includes('top-') ? 'bg-blue-600' : 'bg-white'
+                      position.includes('top-') ? 'bg-[var(--color-accent)]' : 'bg-white'
                     )}
                     style={{ width: `${overallProgress}%` }}
                   />
@@ -127,7 +127,7 @@ const GlobalLoadingIndicator: React.FC<GlobalLoadingIndicatorProps> = ({
                 {showMessage && (
                   <p className={cn(
                     'text-xs mt-1',
-                    position.includes('top-') ? 'text-gray-500' : 'text-blue-100'
+                    position.includes('top-') ? 'text-gray-500' : 'text-white/80'
                   )}>
                     {overallProgress}% complete
                   </p>
@@ -160,7 +160,7 @@ export const CompactGlobalLoadingIndicator: React.FC<{
 
   return (
     <div className={cn('fixed top-0 left-0 right-0 z-50', className)}>
-      <div className="h-1 bg-blue-600 animate-pulse" />
+      <div className="h-1 animate-pulse bg-[var(--color-accent)]" />
     </div>
   );
 };

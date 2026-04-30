@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Breadcrumb, { BreadcrumbItem } from './Breadcrumb';
 import Button from './Button';
 import { cn } from '@/lib/utils';
+import { ChevronRIcon } from '../icons/Icons';
 
 interface NavigationHeaderProps {
   title?: string;
@@ -29,67 +30,27 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
 }) => {
   const router = useRouter();
 
-  const handleBackClick = () => {
-    if (backButtonHref) {
-      router.push(backButtonHref);
-    } else {
-      router.back();
-    }
-  };
-
   return (
-    <div className={cn('space-y-4', className)}>
-      {/* Breadcrumbs */}
-      <Breadcrumb items={breadcrumbs} />
-      
-      {/* Back Button */}
+    <div className={cn('mb-6', className)}>
+      {breadcrumbs && <Breadcrumb items={breadcrumbs} className="mb-2 hidden md:flex" />}
       {showBackButton && (
-        <div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBackClick}
-            className="text-gray-600 hover:text-blue-600 transition-colors p-0 h-auto font-normal"
-          >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="h-4 w-4 mr-2" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth="2" 
-                d="M10 19l-7-7m0 0l7-7m-7 7h18" 
-              />
-            </svg>
-            {backButtonText}
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          icon={<ChevronRIcon className="rotate-180" />}
+          onClick={() => backButtonHref ? router.push(backButtonHref) : router.back()}
+          className="mb-3 px-0"
+        >
+          {backButtonText}
+        </Button>
       )}
-
-      {/* Title and Actions */}
       {(title || children) && (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            {title && (
-              <h1 className="text-2xl font-bold text-gray-900">
-                {title}
-              </h1>
-            )}
-            {subtitle && (
-              <p className="mt-1 text-sm text-gray-600">
-                {subtitle}
-              </p>
-            )}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+          <div className="min-w-0">
+            {title && <h1 className="font-display text-[22px] font-normal leading-[1.15] text-[var(--color-text)] sm:text-[26px]">{title}</h1>}
+            {subtitle && <p className="mt-1 text-[13px] leading-[1.4] text-[var(--color-text-sub)]">{subtitle}</p>}
           </div>
-          {children && (
-            <div className="flex items-center gap-3">
-              {children}
-            </div>
-          )}
+          {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
         </div>
       )}
     </div>

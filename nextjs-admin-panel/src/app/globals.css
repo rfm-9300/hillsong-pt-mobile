@@ -1,53 +1,93 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-family-sans: var(--font-geist-sans), system-ui, sans-serif;
-  --font-family-mono: var(--font-geist-mono), monospace;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-dm-serif), Georgia, serif;
 
-  /* Much larger font size scale */
-  --font-size-xs: 1.25rem;
-  --font-size-sm: 1.5rem;
-  --font-size-base: 1.75rem;
-  --font-size-lg: 2rem;
-  --font-size-xl: 2.25rem;
-  --font-size-2xl: 2.75rem;
-  --font-size-3xl: 3.25rem;
-  --font-size-4xl: 4rem;
-  --font-size-5xl: 5rem;
-}
+  --color-sidebar-bg: #0F1115;
+  --color-sidebar-border: rgba(255, 255, 255, 0.055);
+  --color-sidebar-text: #9CA3AF;
+  --color-sidebar-text-active: #F9F8F6;
+  --color-sidebar-active-bg: rgba(201, 149, 42, 0.12);
+  --color-sidebar-active-border: #C9952A;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-content-bg: #F9F8F6;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F3F2EF;
+  --color-border: rgba(0, 0, 0, 0.07);
+  --color-border-med: rgba(0, 0, 0, 0.12);
+
+  --color-text: #111318;
+  --color-text-sub: #6B7280;
+  --color-text-muted: #9CA3AF;
+
+  --color-accent: #C9952A;
+  --color-accent-hover: #D9A530;
+  --color-accent-sub: rgba(201, 149, 42, 0.12);
+  --color-accent-sub-hover: rgba(201, 149, 42, 0.2);
+
+  --color-success: #16A34A;
+  --color-success-bg: #DCFCE7;
+  --color-danger: #DC2626;
+  --color-danger-bg: #FEE2E2;
+  --color-warning: #D97706;
+  --color-warning-bg: #FEF3C7;
+  --color-info: #2563EB;
+  --color-info-bg: #DBEAFE;
 }
 
 html {
-  font-size: 20px;
+  font-size: 14px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-  line-height: 1.6;
-}
-
-/* Better text rendering */
-* {
+  font-family: var(--font-sans);
+  background: var(--color-content-bg);
+  color: var(--color-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Line clamp utilities */
+body.no-scroll {
+  overflow: hidden;
+  touch-action: none;
+}
+
+@layer utilities {
+  .pt-safe { padding-top: env(safe-area-inset-top); }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  .pl-safe { padding-left: env(safe-area-inset-left); }
+  .pr-safe { padding-right: env(safe-area-inset-right); }
+  .min-h-touch { min-height: 44px; }
+  .min-w-touch { min-width: 44px; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes sheet-in {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
+
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -62,186 +102,8 @@ body {
   overflow: hidden;
 }
 
-/* Animation utilities */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slide-in-from-bottom {
-  from {
-    transform: translateY(1rem);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slide-in-from-left {
-  from {
-    transform: translateX(-1rem);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slide-in-from-right {
-  from {
-    transform: translateX(1rem);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes scale-in {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes bounce-in {
-  0% {
-    transform: scale(0.3);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  70% {
-    transform: scale(0.9);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200px 0;
-  }
-  100% {
-    background-position: calc(200px + 100%) 0;
-  }
-}
-
-.animate-in {
-  animation-fill-mode: both;
-}
-
-.fade-in {
-  animation-name: fade-in;
-}
-
-.slide-in-from-bottom-4 {
-  animation-name: slide-in-from-bottom;
-}
-
-.slide-in-from-left {
-  animation-name: slide-in-from-left;
-}
-
-.slide-in-from-right {
-  animation-name: slide-in-from-right;
-}
-
-.scale-in {
-  animation-name: scale-in;
-}
-
-.bounce-in {
-  animation-name: bounce-in;
-}
-
-/* Enhanced loading skeleton with shimmer effect */
 .skeleton-shimmer {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200px 100%;
+  background: linear-gradient(90deg, #f0ede8 25%, #e8e4de 50%, #f0ede8 75%);
+  background-size: 400px 100%;
   animation: shimmer 1.5s infinite;
-}
-
-/* Smooth page transitions */
-.page-transition {
-  animation: fade-in 0.3s ease-out;
-}
-
-/* Hover effects */
-.hover-lift {
-  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
-}
-
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.hover-scale {
-  transition: transform 0.2s ease-out;
-}
-
-.hover-scale:hover {
-  transform: scale(1.02);
-}
-
-/* Mobile-specific utilities */
-@media (max-width: 768px) {
-  .mobile-padding {
-    padding: 1rem;
-  }
-  
-  .mobile-text-sm {
-    font-size: 0.875rem;
-  }
-  
-  .mobile-grid-1 {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Touch-friendly button sizing */
-.touch-target {
-  min-height: 44px;
-  min-width: 44px;
-}
-
-/* Responsive grid utilities */
-.responsive-grid {
-  display: grid;
-  gap: 1.5rem;
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 640px) {
-  .responsive-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .responsive-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 1280px) {
-  .responsive-grid-4 {
-    grid-template-columns: repeat(4, 1fr);
-  }
 }

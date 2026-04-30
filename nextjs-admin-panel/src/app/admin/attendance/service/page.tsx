@@ -205,14 +205,14 @@ const ServiceAttendancePage: React.FC = () => {
               placeholder="Search by attendee or service name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="min-h-[40px] w-full rounded-md border border-gray-300 px-3 py-2 text-[16px] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm"
             />
           </div>
           <div>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value as AttendanceStatus | 'all')}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="min-h-[40px] rounded-md border border-gray-300 px-3 py-2 text-[16px] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm"
             >
               <option value="all">All Status</option>
               <option value={AttendanceStatus.CHECKED_IN}>Checked In</option>

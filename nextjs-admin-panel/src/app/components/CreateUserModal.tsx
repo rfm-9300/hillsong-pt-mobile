@@ -102,7 +102,7 @@ export default function CreateUserModal({
                         <p className="mt-1 text-xs text-gray-500">Must be at least 8 characters</p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <Input
                             label="First Name"
                             value={formData.firstName}

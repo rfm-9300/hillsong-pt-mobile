@@ -19,6 +19,8 @@ interface UserRepository : MongoRepository<User, String> {
     
     fun findByIsAdminTrue(): List<User>
 
+    fun findByQrToken(qrToken: String): User?
+
     @Query("{'joinedAt': {'\$gte': ?0}}")
     fun findUsersCreatedAfter(fromDate: LocalDateTime): List<User>
 

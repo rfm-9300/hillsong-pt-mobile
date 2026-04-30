@@ -192,6 +192,23 @@ data class KidsServiceResponse(
 )
 
 /**
+ * Request DTO for admin check-in by user QR token
+ */
+data class CheckInByTokenRequest(
+    @field:NotBlank(message = "QR token is required")
+    val qrToken: String,
+
+    @field:NotNull(message = "Attendance type is required")
+    val attendanceType: AttendanceType,
+
+    val eventId: String? = null,
+    val serviceId: String? = null,
+    val kidsServiceId: String? = null,
+
+    val notes: String? = null
+)
+
+/**
  * Request DTO for bulk check-in operations
  */
 data class BulkCheckInRequest(

@@ -167,7 +167,7 @@ export default function GroupForm({ mode, groupId, initialGroup }: GroupFormProp
       <div className="max-w-4xl">
         <FormContainer onSubmit={handleSubmit}>
           <div className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <Input
                 label="Group name"
                 value={formData.name}
@@ -199,7 +199,7 @@ export default function GroupForm({ mode, groupId, initialGroup }: GroupFormProp
               showCharCount
             />
 
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <Input
                 label="Leader name"
                 value={formData.leaderName}

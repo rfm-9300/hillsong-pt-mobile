@@ -51,6 +51,14 @@ fun NavHostController.navigateToEvents() {
     navigate(HomeNav.EventsScreen)
 }
 
+fun NavHostController.navigateToEventDetail(eventId: String) {
+    navigate(HomeNav.EventDetailScreen(eventId))
+}
+
+fun NavHostController.navigateToMyQr() {
+    navigate(HomeNav.MyQrScreen)
+}
+
 fun NavHostController.navigateToCalendar() {
     navigate(HomeNav.CalendarScreen)
 }

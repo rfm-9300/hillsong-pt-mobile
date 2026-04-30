@@ -1,146 +1,90 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 export interface BreadcrumbItem {
   label: string;
   href?: string;
+  route?: string;
   current?: boolean;
 }
 
 interface BreadcrumbProps {
   items?: BreadcrumbItem[];
   className?: string;
+  onNavigate?: (route: string) => void;
 }
 
-const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className }) => {
+const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className, onNavigate }) => {
   const pathname = usePathname();
-
-  // Auto-generate breadcrumbs from pathname if items not provided
+  const router = useRouter();
   const breadcrumbItems = items || generateBreadcrumbsFromPath(pathname);
 
-  if (breadcrumbItems.length <= 1) {
-    return null; // Don't show breadcrumbs for single-level pages
-  }
+  if (breadcrumbItems.length <= 1) return null;
 
   return (
-    <nav className={cn('flex', className)} aria-label="Breadcrumb">
-      <ol className="inline-flex items-center space-x-1 md:space-x-3">
-        {breadcrumbItems.map((item, index) => (
-          <li key={index} className="inline-flex items-center">
-            {index > 0 && (
-              <svg
-                className="w-3 h-3 text-gray-400 mx-1"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 6 10"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="m1 9 4-4-4-4"
-                />
-              </svg>
-            )}
-            {item.current || !item.href ? (
-              <span className="ml-1 text-sm font-medium text-gray-500 md:ml-2">
-                {item.label}
-              </span>
-            ) : (
-              <Link
-                href={item.href}
-                className="inline-flex items-center ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2 transition-colors"
-              >
-                {index === 0 && (
-                  <svg
-                    className="w-3 h-3 mr-2.5"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z" />
-                  </svg>
-                )}
-                {item.label}
-              </Link>
-            )}
-          </li>
-        ))}
-      </ol>
+    <nav className={cn('flex items-center gap-1.5 text-[12px] font-medium', className)} aria-label="Breadcrumb">
+      {breadcrumbItems.map((item, index) => {
+        const href = item.href || item.route;
+        const last = item.current || index === breadcrumbItems.length - 1 || !href;
+        return (
+          <React.Fragment key={`${item.label}-${index}`}>
+            {index > 0 && <span className="text-[var(--color-text-muted)]">/</span>}
+            <button
+              type="button"
+              disabled={last}
+              className={last ? 'cursor-default text-[var(--color-text-sub)]' : 'text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]'}
+              onClick={() => {
+                if (!last && href) (onNavigate || router.push)(href);
+              }}
+            >
+              {item.label}
+            </button>
+          </React.Fragment>
+        );
+      })}
     </nav>
   );
 };
 
 function generateBreadcrumbsFromPath(pathname: string): BreadcrumbItem[] {
-  const segments = pathname.split('/').filter(Boolean);
-  const breadcrumbs: BreadcrumbItem[] = [];
-
-  // Always start with Dashboard
-  breadcrumbs.push({
-    label: 'Dashboard',
-    href: '/admin/dashboard',
-  });
-
+  const parts = pathname.split('/').filter(Boolean);
+  const items: BreadcrumbItem[] = [{ label: 'Dashboard', href: '/admin/dashboard' }];
   let currentPath = '';
-  
-  segments.forEach((segment, index) => {
-    currentPath += `/${segment}`;
-    
-    // Skip 'admin' segment as it's redundant
-    if (segment === 'admin') {
-      return;
-    }
-
-    const isLast = index === segments.length - 1;
-    const label = formatSegmentLabel(segment, segments, index);
-    
-    breadcrumbs.push({
-      label,
-      href: isLast ? undefined : currentPath,
-      current: isLast,
-    });
+  parts.forEach((part, index) => {
+    currentPath += `/${part}`;
+    if (part === 'admin' || part === 'dashboard') return;
+    const last = index === parts.length - 1;
+    items.push({ label: formatSegment(part, parts, index), href: last ? undefined : currentPath, current: last });
   });
-
-  return breadcrumbs;
+  return items;
 }
 
-function formatSegmentLabel(segment: string, segments: string[], index: number): string {
-  // Handle dynamic routes (IDs)
-  if (segment.match(/^[a-f0-9-]{36}$/) || segment.match(/^\d+$/)) {
-    const previousSegment = segments[index - 1];
-    if (previousSegment === 'posts') {
-      return 'Edit Post';
-    } else if (previousSegment === 'events') {
-      return 'Edit Event';
-    } else if (previousSegment === 'users') {
-      return 'Edit User';
-    }
-    return 'Edit';
-  }
-
-  // Handle specific segments
-  const segmentMap: Record<string, string> = {
-    'dashboard': 'Dashboard',
-    'posts': 'Posts',
-    'events': 'Events',
-    'users': 'Users',
-    'attendance': 'Attendance',
-    'create': 'Create',
-    'edit': 'Edit',
-    'event': 'Event Attendance',
-    'service': 'Service Attendance',
-    'kids-service': 'Kids Service Attendance',
-    'reports': 'Reports & Analytics',
+function formatSegment(segment: string, parts: string[], index: number) {
+  if (segment === 'create') return 'New';
+  if (/^\d+$/.test(segment) || /^[a-f0-9-]{24,36}$/i.test(segment)) return `Edit ${singular(parts[index - 1])}`;
+  const labels: Record<string, string> = {
+    posts: 'Posts',
+    events: 'Events',
+    groups: 'Groups',
+    encounters: 'Encounters',
+    videos: 'Videos',
+    calendar: 'Calendar',
+    users: 'Users',
+    attendance: 'Attendance',
+    event: 'Events',
+    service: 'Services',
+    'kids-service': 'Kids Services',
+    reports: 'Reports',
   };
+  return labels[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
+}
 
-  return segmentMap[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
+function singular(value = '') {
+  const map: Record<string, string> = { posts: 'Post', events: 'Event', groups: 'Group', encounters: 'Encounter', videos: 'Video' };
+  return map[value] || 'Item';
 }
 
 export default Breadcrumb;

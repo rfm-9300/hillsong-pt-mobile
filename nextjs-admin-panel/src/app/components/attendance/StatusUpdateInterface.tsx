@@ -86,9 +86,8 @@ const StatusUpdateInterface: React.FC<StatusUpdateInterfaceProps> = ({
     <>
       {/* Floating Action Bar */}
       <div className={cn(
-        'fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50',
-        'bg-white shadow-lg rounded-lg border border-gray-200 p-4',
-        'flex items-center space-x-4',
+        'fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white p-3 pb-safe shadow-lg sm:bottom-6 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:transform sm:rounded-lg sm:border sm:p-4',
+        'flex flex-col gap-3 sm:flex-row sm:items-center sm:space-x-4',
         className
       )}>
         <div className="flex items-center space-x-2">
@@ -98,7 +97,7 @@ const StatusUpdateInterface: React.FC<StatusUpdateInterfaceProps> = ({
           <div className="h-4 w-px bg-gray-300" />
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap items-center gap-2 sm:space-x-2">
           <Button
             variant="primary"
             size="sm"
@@ -163,7 +162,7 @@ const StatusUpdateInterface: React.FC<StatusUpdateInterfaceProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center justify-end space-x-3">
+          <div className="flex flex-wrap items-center justify-end gap-3">
             <Button
               variant="ghost"
               onClick={handleCloseModal}

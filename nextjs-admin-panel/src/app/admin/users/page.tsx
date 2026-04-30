@@ -8,11 +8,12 @@ import {
   UserEditModal,
   CreateUserModal,
   Alert,
-  NavigationHeader,
+  PageHeader,
   Button
 } from '@/app/components';
 import { useUsers } from '@/app/hooks';
 import { getUserDisplayName } from '@/lib/userUtils';
+import { PlusIcon } from '@/app/components/icons/Icons';
 
 export default function UsersPage() {
   const { users, loading, error, refetch, deleteUser, createUser, updateUser } = useUsers();
@@ -92,18 +93,12 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <NavigationHeader
-        title="Users Management"
-        subtitle="Manage system users, roles, and permissions"
-        breadcrumbs={[
-          { label: 'Dashboard', href: '/admin/dashboard' },
-          { label: 'Users', current: true },
-        ]}
-      >
-        <Button onClick={() => setIsCreateModalOpen(true)}>
-          Create User
-        </Button>
-      </NavigationHeader>
+      <PageHeader
+        title="Users"
+        subtitle={`${users.length} total users`}
+        breadcrumbs={['Admin', 'Users']}
+        actions={<Button size="sm" icon={<PlusIcon />} onClick={() => setIsCreateModalOpen(true)}>Create User</Button>}
+      />
 
       {successMessage && (
         <Alert

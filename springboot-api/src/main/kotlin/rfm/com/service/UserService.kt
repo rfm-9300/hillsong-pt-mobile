@@ -6,6 +6,7 @@ import rfm.com.dto.*
 import rfm.com.entity.*
 import rfm.com.repository.UserRepository
 import java.time.LocalDateTime
+import java.util.UUID
 
 @Service
 class UserService(
@@ -93,7 +94,8 @@ class UserService(
                 imagePath = user.imagePath,
                 isAdmin = user.isAdmin,
                 joinedAt = user.joinedAt,
-                fullName = user.fullName
+                fullName = user.fullName,
+                qrToken = user.qrToken
             )
             
             ApiResponse(success = true, message = "Profile retrieved successfully", data = profileResponse)
@@ -271,7 +273,8 @@ class UserService(
                 firstName = request.firstName,
                 lastName = request.lastName,
                 phone = request.phone ?: "",
-                isAdmin = request.isAdmin
+                isAdmin = request.isAdmin,
+                qrToken = UUID.randomUUID().toString()
             )
             
             userRepository.save(user)

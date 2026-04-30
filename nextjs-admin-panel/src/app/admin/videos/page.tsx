@@ -111,7 +111,7 @@ export default function VideosPage() {
                   <span key="date">{formatDate(video.createdAt)}</span>,
                 ]}
                 actions={
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <Button size="xs" variant="ghost" icon={video.active ? <EyeOffIcon /> : <EyeIcon />} loading={toggling === video.id} onClick={() => handleToggleActive(video)}>
                       {video.active ? 'Hide' : 'Show'}
                     </Button>

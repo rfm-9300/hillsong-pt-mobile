@@ -2,6 +2,7 @@ package rfm.hillsongptapp.feature.events
 
 import AppFonts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,6 +52,7 @@ import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 import rfm.hillsongptapp.core.designsystem.theme.HillsongColors
 import rfm.hillsongptapp.core.designsystem.ui.components.EditorialSectionHeader
+import rfm.hillsongptapp.core.navigation.navigateToEventDetail
 import rfm.hillsongptapp.core.network.api.Event
 
 @Composable
@@ -123,6 +125,7 @@ fun EventsScreen(
                                 imageUrl = event.headerImagePath?.let {
                                     "${viewModel.baseUrl}/api/files/$it"
                                 },
+                                onClick = { navController.navigateToEventDetail(event.id) },
                             )
                             HorizontalDivider(
                                 modifier = Modifier.padding(horizontal = 24.dp),
@@ -137,8 +140,10 @@ fun EventsScreen(
 }
 
 @Composable
-private fun EventCard(event: Event, imageUrl: String?) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+private fun EventCard(event: Event, imageUrl: String?, onClick: () -> Unit = {}) {
+    Column(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
+    ) {
         // Header image
         if (imageUrl != null) {
             Box(
@@ -275,13 +280,13 @@ private fun EventCard(event: Event, imageUrl: String?) {
     }
 }
 
-private fun parseEventDateTime(raw: String): kotlinx.datetime.LocalDateTime? = try {
+internal fun parseEventDateTime(raw: String): kotlinx.datetime.LocalDateTime? = try {
     Instant.parse(raw).toLocalDateTime(TimeZone.of("Europe/Lisbon"))
 } catch (_: Exception) {
     try { LocalDateTime.parse(raw.substringBefore(".")) } catch (_: Exception) { null }
 }
 
-private fun formatEventDateBlock(raw: String): Pair<String, String> {
+internal fun formatEventDateBlock(raw: String): Pair<String, String> {
     val dt = parseEventDateTime(raw) ?: return Pair("?", "?")
     val month = when (dt.monthNumber) {
         1 -> "JAN"; 2 -> "FEV"; 3 -> "MAR"; 4 -> "ABR"; 5 -> "MAI"; 6 -> "JUN"
@@ -291,7 +296,7 @@ private fun formatEventDateBlock(raw: String): Pair<String, String> {
     return Pair(dt.dayOfMonth.toString(), month)
 }
 
-private fun formatEventTime(raw: String): String {
+internal fun formatEventTime(raw: String): String {
     val dt = parseEventDateTime(raw) ?: return ""
     return "${dt.hour.toString().padStart(2, '0')}:${dt.minute.toString().padStart(2, '0')}"
 }

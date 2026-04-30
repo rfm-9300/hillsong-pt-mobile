@@ -7,6 +7,7 @@ interface ResponsiveBreakpoints {
   isTablet: boolean;
   isDesktop: boolean;
   isLargeDesktop: boolean;
+  isTouch: boolean;
   screenWidth: number;
 }
 
@@ -16,17 +17,24 @@ export function useResponsive(): ResponsiveBreakpoints {
     isTablet: false,
     isDesktop: false,
     isLargeDesktop: false,
+    isTouch: false,
     screenWidth: 0,
   });
 
   useEffect(() => {
     const updateBreakpoints = () => {
       const width = window.innerWidth;
+      const isTouch =
+        'ontouchstart' in window ||
+        navigator.maxTouchPoints > 0 ||
+        // @ts-expect-error - msMaxTouchPoints is not in TypeScript definitions
+        navigator.msMaxTouchPoints > 0;
       setBreakpoints({
         isMobile: width < 768,
         isTablet: width >= 768 && width < 1024,
         isDesktop: width >= 1024 && width < 1280,
         isLargeDesktop: width >= 1280,
+        isTouch,
         screenWidth: width,
       });
     };

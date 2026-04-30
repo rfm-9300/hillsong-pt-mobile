@@ -1,17 +1,22 @@
-version: '3.8'
-
 services:
   # ==========================================
   # MongoDB
   # ==========================================
   mongodb:
-    image: mongo:7.0
+    image: mongo:7.0.31
     container_name: hillsong-mongodb
+    command: mongod --bind_ip_all --wiredTigerCacheSizeGB 0.25
     restart: always
+    stop_grace_period: 60s
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand({ ping: 1 }).ok"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   # ==========================================
   # MinIO Object Storage

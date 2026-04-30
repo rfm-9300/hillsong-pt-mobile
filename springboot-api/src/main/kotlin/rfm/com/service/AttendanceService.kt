@@ -66,6 +66,58 @@ class AttendanceService(
     }
 
     /**
+     * Admin check-in by scanning a user's QR token
+     */
+    fun checkInByToken(adminUserId: String, request: CheckInByTokenRequest): AttendanceResponse {
+        val user = userRepository.findByQrToken(request.qrToken)
+            ?: throw IllegalArgumentException("No user found for the provided QR token")
+
+        val userId = user.id!!
+
+        when (request.attendanceType) {
+            AttendanceType.EVENT -> {
+                val event = eventRepository.findById(request.eventId!!)
+                    .orElseThrow { IllegalArgumentException("Event not found with ID: ${request.eventId}") }
+
+                if (!event.attendeeIds.contains(userId)) {
+                    if (event.isAtCapacity) {
+                        throw IllegalStateException("Event is at capacity. Cannot add walk-in attendee.")
+                    }
+                    event.attendeeIds.add(userId)
+                    event.waitingListIds.remove(userId)
+                    eventRepository.save(event)
+                }
+            }
+            AttendanceType.SERVICE -> {
+                serviceRepository.findById(request.serviceId!!)
+                    .orElseThrow { IllegalArgumentException("Service not found with ID: ${request.serviceId}") }
+            }
+            AttendanceType.KIDS_SERVICE -> {
+                kidsServiceRepository.findById(request.kidsServiceId!!)
+                    .orElseThrow { IllegalArgumentException("Kids service not found with ID: ${request.kidsServiceId}") }
+            }
+        }
+
+        val existing = findExistingTodayAttendance(userId, request.eventId, request.serviceId, request.kidsServiceId)
+        if (existing != null && existing.status == AttendanceStatus.CHECKED_IN) {
+            return mapToAttendanceResponse(existing)
+        }
+
+        val attendance = Attendance(
+            userId = userId,
+            eventId = request.eventId,
+            serviceId = request.serviceId,
+            kidsServiceId = request.kidsServiceId,
+            attendanceType = request.attendanceType,
+            status = AttendanceStatus.CHECKED_IN,
+            checkInTime = LocalDateTime.now(),
+            notes = request.notes,
+            checkedInBy = adminUserId
+        )
+        return mapToAttendanceResponse(attendanceRepository.save(attendance))
+    }
+
+    /**
      * Check out a user from their attendance record
      */
     fun checkOut(userId: String, request: CheckOutRequest): AttendanceResponse {

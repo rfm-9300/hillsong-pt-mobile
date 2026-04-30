@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, NavigationHeader } from '@/app/components/ui';
+import { Button, PageHeader } from '@/app/components/ui';
 import EncountersList from '@/app/components/EncountersList';
+import { PlusIcon } from '@/app/components/icons/Icons';
 
 export default function EncountersPage() {
   const router = useRouter();
@@ -20,21 +21,12 @@ export default function EncountersPage() {
 
   return (
     <div className="space-y-6">
-      <NavigationHeader 
-        title="Encounters Management" 
+      <PageHeader
+        title="Encounters"
         subtitle="Manage community encounters and gatherings"
-        breadcrumbs={[
-          { label: 'Dashboard', href: '/admin/dashboard' },
-          { label: 'Encounters', current: true },
-        ]}
-      >
-        <Button
-          variant="primary"
-          onClick={handleCreateEncounter}
-        >
-          Create Encounter
-        </Button>
-      </NavigationHeader>
+        breadcrumbs={['Admin', 'Encounters']}
+        actions={<Button variant="primary" size="sm" icon={<PlusIcon />} onClick={handleCreateEncounter}>New Encounter</Button>}
+      />
       
       <EncountersList 
         key={refreshKey}

@@ -6,7 +6,7 @@ package rfm.hillsongptapp.config
  * In a more advanced setup, you could read from Info.plist or use build settings
  */
 class IosAppConfig : AppConfig {
-    override val apiBaseUrl: String = "http://172.233.96.224:8080"
+    override val apiBaseUrl: String = "http://172.233.96.224"
     override val buildType: String = "release"
     override val isDebug: Boolean = false
 }

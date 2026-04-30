@@ -39,7 +39,8 @@ data class UserProfileResponse(
     val imagePath: String,
     val isAdmin: Boolean,
     val joinedAt: LocalDateTime,
-    val fullName: String
+    val fullName: String,
+    val qrToken: String? = null
 )
 
 /**

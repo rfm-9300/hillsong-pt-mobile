@@ -342,6 +342,47 @@ class EventController(
     }
     
     /**
+     * Get full attendee list for an event with check-in status (admin)
+     */
+    @GetMapping("/{id}/attendees")
+    @PreAuthorize("hasRole('USER')")
+    fun getEventAttendees(
+        @PathVariable id: String
+    ): ResponseEntity<ApiResponse<EventAttendeeListResponse>> = runBlocking {
+        logger.debug("Fetching attendee list for event: $id")
+
+        val result = eventService.getEventAttendees(id)
+
+        ResponseEntity.ok(
+            ApiResponse(
+                success = true,
+                message = "Event attendees retrieved successfully",
+                data = result
+            )
+        )
+    }
+
+    /**
+     * Remove an attendee from an event (admin only)
+     */
+    @DeleteMapping("/{id}/attendees/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    fun removeAttendee(
+        @PathVariable id: String,
+        @PathVariable userId: String
+    ): ResponseEntity<ApiResponse<String>> = runBlocking {
+        logger.info("Removing attendee $userId from event $id")
+        eventService.removeAttendee(id, userId)
+        ResponseEntity.ok(
+            ApiResponse(
+                success = true,
+                message = "Attendee removed successfully",
+                data = "User $userId removed from event $id"
+            )
+        )
+    }
+
+    /**
      * Search events by title or location
      */
     @GetMapping("/search")

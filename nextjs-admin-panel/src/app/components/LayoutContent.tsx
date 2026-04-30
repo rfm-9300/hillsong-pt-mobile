@@ -1,42 +1,46 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { ErrorProvider } from '../context/ErrorContext';
 import ErrorBoundary from './ui/ErrorBoundary';
 import { CompactGlobalLoadingIndicator } from './ui/GlobalLoadingIndicator';
-import Sidebar from './Sidebar';
 import MobileHeader from './MobileHeader';
 import MobileSidebar from './MobileSidebar';
+import Sidebar from './Sidebar';
+import TopBar from './TopBar';
 
 function LayoutContentInner({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const pathname = usePathname();
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [pathname]);
+
+  if (!isAuthenticated) {
+    return (
+      <>
+        <CompactGlobalLoadingIndicator />
+        {children}
+      </>
+    );
+  }
 
   return (
-    <div className="flex h-screen  bg-gray-50">
+    <div className="flex h-[100dvh] overflow-hidden bg-[var(--color-content-bg)]">
       <CompactGlobalLoadingIndicator />
-      {isAuthenticated ? (
-        <>
-          <Sidebar />
-          <MobileHeader onMenuClick={toggleSidebar} />
-          <MobileSidebar isOpen={sidebarOpen} onClose={toggleSidebar} />
-
-          <main className="flex-1 overflow-y-auto">
-            <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-6 sm:py-8 min-h-screen page-transition">
-              {children}
-            </div>
-          </main>
-        </>
-      ) : (
-        <div className="flex items-center justify-center min-h-screen w-full bg-gradient-to-br from-indigo-50 to-white">
+      <Sidebar />
+      <MobileSidebar isOpen={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <MobileHeader onMenuClick={() => setMobileNavOpen(true)} />
+        <TopBar />
+        <main className="flex-1 overflow-auto bg-[var(--color-content-bg)] px-4 py-4 pb-12 pl-safe pr-safe sm:px-6 md:px-7 md:py-6">
           {children}
-        </div>
-      )}
+        </main>
+      </div>
     </div>
   );
 }

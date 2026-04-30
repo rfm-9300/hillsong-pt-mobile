@@ -60,8 +60,8 @@ const AttendanceList: React.FC<AttendanceListProps> = ({
           >
             <div className="p-4">
               {/* Header Row */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-3">
+              <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-wrap items-center gap-3">
                   <h3 className="font-medium text-gray-900">
                     {attendance.attendeeName}
                   </h3>
@@ -81,7 +81,7 @@ const AttendanceList: React.FC<AttendanceListProps> = ({
               </div>
 
               {/* Event Info */}
-              <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
+              <div className="mb-3 flex flex-col gap-1 text-sm text-gray-600 sm:flex-row sm:items-center sm:justify-between">
                 <span className="font-medium">{attendance.eventName}</span>
                 <span>{formatTimestamp(attendance.timestamp)}</span>
               </div>

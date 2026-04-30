@@ -64,6 +64,35 @@ class AttendanceController(private val attendanceService: AttendanceService) {
                 }
         }
 
+        /** Admin check-in by scanning a user's QR token */
+        @PostMapping("/check-in/by-token")
+        @PreAuthorize("hasRole('ADMIN')")
+        fun checkInByToken(
+                @Valid @RequestBody request: CheckInByTokenRequest,
+                authentication: Authentication
+        ): ResponseEntity<ApiResponse<AttendanceResponse>> {
+                return try {
+                        val adminUserId = authentication.getCurrentUserId()
+                        val attendance = attendanceService.checkInByToken(adminUserId, request)
+                        ResponseEntity.ok(
+                                ApiResponse(
+                                        success = true,
+                                        message = "User checked in successfully",
+                                        data = attendance
+                                )
+                        )
+                } catch (e: IllegalArgumentException) {
+                        ResponseEntity.badRequest()
+                                .body(ApiResponse(success = false, message = e.message ?: "Invalid request"))
+                } catch (e: IllegalStateException) {
+                        ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body(ApiResponse(success = false, message = e.message ?: "Conflict"))
+                } catch (e: Exception) {
+                        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(ApiResponse(success = false, message = "An error occurred during check-in"))
+                }
+        }
+
         /** Check out from an attendance record */
         @PostMapping("/check-out")
         @PreAuthorize("hasRole('USER')")

@@ -15,30 +15,14 @@ export default function DeleteConfirmationModal({
   message = 'Are you sure you want to delete this item? This action cannot be undone.',
   onConfirm,
   onCancel,
-  loading = false
+  loading = false,
 }: DeleteConfirmationModalProps) {
   return (
     <Modal show={show} title={title} size="sm" onClose={onCancel}>
-      <div className="space-y-4">
-        <p className="text-gray-700">{message}</p>
-        
-        <div className="flex justify-end gap-3 pt-4">
-          <Button
-            variant="secondary"
-            onClick={onCancel}
-            disabled={loading}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={onConfirm}
-            loading={loading}
-            disabled={loading}
-          >
-            {loading ? 'Deleting...' : 'Delete'}
-          </Button>
-        </div>
+      <p className="text-[13px] leading-[1.5] text-[var(--color-text-sub)]">{message}</p>
+      <div className="mt-5 flex justify-end gap-2">
+        <Button variant="secondary" size="sm" onClick={onCancel} disabled={loading}>Cancel</Button>
+        <Button variant="danger" size="sm" onClick={onConfirm} loading={loading} disabled={loading}>Delete</Button>
       </div>
     </Modal>
   );

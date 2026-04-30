@@ -5,8 +5,13 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
 
-const backendApiUrl = process.env.API_BASE_URL || 'http://localhost:8080/api';
-const fileProxyUrl = process.env.FILE_PROXY_URL || 'http://localhost:9000/church-files';
+const isProductionBuild = process.env.NODE_ENV === 'production';
+const backendApiUrl =
+  process.env.API_BASE_URL ||
+  (isProductionBuild ? 'http://springboot-api:8080/api' : 'http://localhost:8080/api');
+const fileProxyUrl =
+  process.env.FILE_PROXY_URL ||
+  (isProductionBuild ? 'http://minio:9000/church-files' : 'http://localhost:9000/church-files');
 
 const nextConfig: NextConfig = {
   // Enable experimental features for better performance
@@ -40,7 +45,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '**',
+        hostname: 'img.youtube.com',
       }
     ],
   },

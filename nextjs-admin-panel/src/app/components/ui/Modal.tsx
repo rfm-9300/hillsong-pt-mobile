@@ -3,29 +3,22 @@
 import React, { useEffect } from 'react';
 import { ModalProps } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { MODAL_SIZES } from '@/lib/constants';
+import { XIcon } from '../icons/Icons';
 
-const Modal: React.FC<ModalProps> = ({
-  show,
-  title,
-  size = 'md',
-  onClose,
-  children,
-}) => {
-  // Handle escape key press
+const sizes = {
+  sm: 'max-w-[440px]',
+  md: 'max-w-[560px]',
+  lg: 'max-w-[720px]',
+};
+
+const Modal: React.FC<ModalProps> = ({ show, title, size = 'md', onClose, children }) => {
   useEffect(() => {
+    if (!show) return;
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
+      if (event.key === 'Escape') onClose();
     };
-
-    if (show) {
-      document.addEventListener('keydown', handleEscape);
-      // Prevent body scroll when modal is open
-      document.body.style.overflow = 'hidden';
-    }
-
+    document.addEventListener('keydown', handleEscape);
+    document.body.style.overflow = 'hidden';
     return () => {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = 'unset';
@@ -34,57 +27,23 @@ const Modal: React.FC<ModalProps> = ({
 
   if (!show) return null;
 
-  const sizeClasses = MODAL_SIZES[size];
-
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto animate-in fade-in" style={{ animationDuration: '200ms' }}>
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-[200] flex items-end justify-center bg-black/45 backdrop-blur-[4px] sm:items-center sm:p-6" onClick={onClose}>
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-200"
-        onClick={onClose}
-      />
-      
-      {/* Modal */}
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div
-          className={cn(
-            'relative w-full bg-white rounded-lg shadow-xl animate-in scale-in',
-            sizeClasses
-          )}
-          style={{ animationDuration: '300ms', animationDelay: '100ms' }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">
-              {title}
-            </h3>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label="Close modal"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-          
-          {/* Content */}
-          <div className="p-6">
-            {children}
-          </div>
+        className={cn(
+          'max-h-[92dvh] w-full overflow-auto rounded-t-[16px] bg-[var(--color-surface)] pb-safe shadow-[0_24px_60px_rgba(0,0,0,0.2)] sm:max-h-[90vh] sm:rounded-[12px]',
+          sizes[size]
+        )}
+        style={{ animation: 'sheet-in 180ms ease' }}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4">
+          <h3 className="text-[15px] font-bold text-[var(--color-text)]">{title}</h3>
+          <button type="button" onClick={onClose} className="flex min-h-touch min-w-touch items-center justify-center rounded-[7px] text-[var(--color-text-sub)] hover:bg-[var(--color-surface-alt)] sm:min-h-0 sm:min-w-0 sm:p-1.5" aria-label="Close modal">
+            <XIcon />
+          </button>
         </div>
+        <div className="p-4 sm:p-5">{children}</div>
       </div>
     </div>
   );

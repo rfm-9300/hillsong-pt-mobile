@@ -104,7 +104,7 @@ export default function CreateVideoPage() {
                   value={form.title}
                   onChange={e => handleChange('title', e.target.value)}
                   placeholder="e.g. Sunday Service - The Power of Grace"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="min-h-[40px] w-full rounded-lg border border-gray-300 px-3 py-2 text-[16px] focus:border-transparent focus:ring-2 focus:ring-blue-500 sm:text-sm"
                   required
                 />
               </div>
@@ -118,7 +118,7 @@ export default function CreateVideoPage() {
                   value={form.videoUrl}
                   onChange={e => handleChange('videoUrl', e.target.value)}
                   placeholder="https://www.youtube.com/watch?v=..."
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="min-h-[96px] w-full rounded-lg border border-gray-300 px-3 py-2 text-[16px] focus:border-transparent focus:ring-2 focus:ring-blue-500 sm:text-sm"
                   required
                 />
                 <p className="text-xs text-gray-400 mt-1">Thumbnail will be auto-detected from the YouTube URL.</p>
@@ -150,7 +150,7 @@ export default function CreateVideoPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Display Order
@@ -160,7 +160,7 @@ export default function CreateVideoPage() {
                     min={0}
                     value={form.displayOrder}
                     onChange={e => handleChange('displayOrder', parseInt(e.target.value) || 0)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="min-h-[40px] w-full rounded-lg border border-gray-300 px-3 py-2 text-[16px] focus:border-transparent focus:ring-2 focus:ring-blue-500 sm:text-sm"
                   />
                   <p className="text-xs text-gray-400 mt-1">Lower numbers appear first.</p>
                 </div>
@@ -186,7 +186,7 @@ export default function CreateVideoPage() {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4 border-t border-gray-200">
+              <div className="sticky bottom-0 -mx-4 flex flex-wrap gap-3 border-t border-gray-200 bg-[var(--color-surface)] px-4 py-3 pb-safe sm:static sm:mx-0 sm:p-0 sm:pt-4">
                 <Button type="submit" variant="primary" loading={saving}>
                   {saving ? 'Creating...' : 'Create Video'}
                 </Button>

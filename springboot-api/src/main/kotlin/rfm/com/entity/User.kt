@@ -32,6 +32,9 @@ data class User(
     @org.springframework.data.mongodb.core.mapping.DBRef
     val roles: MutableList<Role> = mutableListOf(),
 
+    @Indexed(unique = true, sparse = true)
+    val qrToken: String? = null,
+
     @CreatedDate
     val joinedAt: LocalDateTime = LocalDateTime.now(),
 

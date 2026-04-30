@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Card, Button, DeleteConfirmationModal } from './ui';
+import { Badge, Button, Card, DeleteConfirmationModal } from './ui';
 import { Event } from '@/lib/types';
-import { formatDate, formatTime, truncateText, getImageUrl } from '@/lib/utils';
+import { getImageUrl } from '@/lib/utils';
+import { EditIcon, EventsIcon, TrashIcon, ChevronRIcon } from './icons/Icons';
 import { api, ENDPOINTS } from '@/lib/api';
 
 interface EventCardProps {
@@ -13,33 +14,26 @@ interface EventCardProps {
   onDelete?: (eventId: string) => void;
 }
 
+const gradients = [
+  'bg-[linear-gradient(135deg,#1e3a5f,#2563EB)]',
+  'bg-[linear-gradient(135deg,#14532d,#16A34A)]',
+  'bg-[linear-gradient(135deg,#4c1d95,#7c3aed)]',
+  'bg-[linear-gradient(135deg,#7c2d12,#D97706)]',
+];
+
 export default function EventCard({ event, onDelete }: EventCardProps) {
   const router = useRouter();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
   const eventDate = new Date(event.date);
   const isUpcoming = eventDate > new Date();
-  
-  // Generate gradient based on event ID for visual variety
-  const gradients = [
-    'from-blue-500 to-purple-600',
-    'from-green-500 to-teal-600',
-    'from-orange-500 to-red-600',
-    'from-purple-500 to-pink-600',
-    'from-teal-500 to-blue-600',
-    'from-red-500 to-orange-600',
-  ];
-  
-  const gradientIndex = event.id.toString().split('').reduce((acc, char) => {
-    return char.charCodeAt(0) + acc;
-  }, 0) % gradients.length;
-  
-  const gradient = gradients[gradientIndex];
+  const percent = event.maxAttendees ? Math.min(100, Math.round((event.attendeeCount / event.maxAttendees) * 100)) : 0;
+  const imagePath = event.headerImagePath || event.imageUrl;
+  const imageUrl = imagePath ? getImageUrl(imagePath) : '';
+  const gradient = gradients[Number(event.id) % gradients.length];
 
-  const handleEdit = () => {
-    router.push(`/admin/events/${event.id}`);
-  };
+  const handleView = () => router.push(`/admin/events/${event.id}`);
+  const handleEdit = () => router.push(`/admin/events/${event.id}/edit`);
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -47,9 +41,6 @@ export default function EventCard({ event, onDelete }: EventCardProps) {
       await api.delete(ENDPOINTS.EVENT_DELETE(event.id.toString()));
       onDelete?.(event.id.toString());
       setShowDeleteModal(false);
-    } catch (error) {
-      console.error('Error deleting event:', error);
-      // You might want to show an error message here
     } finally {
       setDeleting(false);
     }
@@ -57,112 +48,48 @@ export default function EventCard({ event, onDelete }: EventCardProps) {
 
   return (
     <>
-      <Card 
-        hover 
-        className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 touch-target"
-        onClick={handleEdit}
-      >
-        <div className="relative overflow-hidden">
-          {/* Gradient Header */}
-          <div className={`h-32 bg-gradient-to-r ${gradient} relative`}>
-            {(event.imageUrl || event.headerImagePath) && event.headerImagePath !== '' && (
-              <Image
-                src={getImageUrl(event.imageUrl || event.headerImagePath)}
-                alt={event.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                onError={(e) => {
-                  // Hide the image if it fails to load
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
-            )}
-            
-            {/* Calendar Indicator */}
-            <div className="absolute top-4 right-4 bg-white rounded-lg shadow-md p-2 text-center min-w-[60px]">
-              <div className="text-xs font-semibold text-gray-600 uppercase">
-                {eventDate.toLocaleDateString('en-US', { month: 'short' })}
-              </div>
-              <div className="text-lg font-bold text-gray-900">
-                {eventDate.getDate()}
-              </div>
+      <Card className="overflow-hidden">
+        <div className={`relative h-[120px] ${gradient}`}>
+          {imageUrl && (
+            <Image src={imageUrl} alt={event.title} fill className="object-cover opacity-60" sizes="(max-width: 1024px) 100vw, 50vw" />
+          )}
+          <div className="absolute left-3 top-3">
+            <Badge color={isUpcoming ? 'green' : 'neutral'}>{isUpcoming ? 'Upcoming' : 'Past'}</Badge>
+          </div>
+          {event.needsApproval && (
+            <div className="absolute right-3 top-3">
+              <Badge color="yellow">Approval required</Badge>
             </div>
-            
-            {/* Status Badge */}
-            <div className="absolute top-4 left-4">
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                isUpcoming 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-gray-100 text-gray-800'
-              }`}>
-                {isUpcoming ? 'Upcoming' : 'Past'}
-              </span>
+          )}
+          <div className="absolute bottom-3 right-3 min-w-12 rounded-[8px] bg-white px-2 py-1 text-center shadow-sm">
+            <div className="text-[10px] font-semibold uppercase text-[var(--color-text-sub)]">{eventDate.toLocaleDateString('en-GB', { month: 'short' })}</div>
+            <div className="font-display text-[18px] leading-none text-[var(--color-text)]">{eventDate.getDate()}</div>
+          </div>
+        </div>
+
+        <div className="p-[14px_16px]">
+          <h3 className="mb-1 line-clamp-1 text-[14px] font-bold text-[var(--color-text)]">{event.title}</h3>
+          <div className="mb-3 flex items-center gap-1.5 text-[12px] text-[var(--color-text-sub)]">
+            <EventsIcon size={14} />
+            <span className="truncate">{formatEventDate(eventDate)} · {event.location}</span>
+          </div>
+          <div className="mb-3">
+            <div className="mb-1 flex items-center justify-between text-[11px] text-[var(--color-text-sub)]">
+              <span>Attendance</span>
+              <span>{event.attendeeCount || 0}/{event.maxAttendees || 0}</span>
+            </div>
+            <div className="h-1 rounded-full bg-[var(--color-surface-alt)]">
+              <div className={`h-1 rounded-full ${percent > 80 ? 'bg-[var(--color-danger)]' : 'bg-[var(--color-accent)]'}`} style={{ width: `${percent}%` }} />
             </div>
           </div>
-          
-          {/* Content */}
-          <div className="p-4 sm:p-6">
-            <div className="flex justify-between items-start mb-3">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
-                {event.title}
-              </h3>
-            </div>
-            
-            <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-              {truncateText(event.description, 120)}
-            </p>
-            
-            {/* Event Metadata */}
-            <div className="space-y-2 mb-4">
-              <div className="flex items-center text-sm text-gray-500">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                {formatDate(event.date)} at {formatTime(event.date)}
-              </div>
-              
-              <div className="flex items-center text-sm text-gray-500">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                {event.location}
-              </div>
-            </div>
-            
-            {/* Action Buttons */}
-            <div className="flex gap-2 opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity">
-              <Button
-                size="sm"
-                variant="primary"
-                onClick={(e) => {
-                  e?.stopPropagation();
-                  handleEdit();
-                }}
-                className="flex-1 sm:flex-none"
-              >
-                <span className="sm:hidden">✏️</span>
-                <span className="hidden sm:inline">Edit</span>
-              </Button>
-              
-              <Button
-                size="sm"
-                variant="danger"
-                onClick={(e) => {
-                  e?.stopPropagation();
-                  setShowDeleteModal(true);
-                }}
-                className="flex-1 sm:flex-none"
-              >
-                <span className="sm:hidden">🗑️</span>
-                <span className="hidden sm:inline">Delete</span>
-              </Button>
-            </div>
+          <div className="flex flex-wrap gap-2">
+            <Button size="xs" variant="ghost" icon={<ChevronRIcon size={12} />} onClick={handleView}>View</Button>
+            <Button size="xs" variant="outline" icon={<EditIcon />} onClick={handleEdit}>Edit</Button>
+            <Button size="xs" variant="danger" icon={<TrashIcon />} onClick={() => setShowDeleteModal(true)}>Delete</Button>
           </div>
         </div>
       </Card>
-      
+
       <DeleteConfirmationModal
         show={showDeleteModal}
         title="Delete Event"
@@ -173,4 +100,8 @@ export default function EventCard({ event, onDelete }: EventCardProps) {
       />
     </>
   );
+}
+
+function formatEventDate(date: Date) {
+  return date.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'short' });
 }

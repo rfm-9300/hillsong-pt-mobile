@@ -1,6 +1,8 @@
+import Image from 'next/image';
 import { Post } from '@/lib/types';
-import { EmptyState, PostsGrid, AnimatedGrid } from './ui';
-import PostCard from './PostCard';
+import { getImageUrl } from '@/lib/utils';
+import { Button, Card, EmptyState, TableHeader, TableRow } from './ui';
+import { EditIcon, ImageIcon, TrashIcon } from './icons/Icons';
 
 interface PostsListProps {
   posts: Post[];
@@ -9,47 +11,78 @@ interface PostsListProps {
   loading?: boolean;
 }
 
+const cols = [
+  { label: 'Image', width: '120px' },
+  { label: 'Title', width: '1fr' },
+  { label: 'Date', width: '140px' },
+  { label: 'Author', width: '120px' },
+  { label: '', width: '100px' },
+];
+
 export default function PostsList({ posts, onEdit, onDelete, loading = false }: PostsListProps) {
   if (loading) {
     return (
-      <PostsGrid>
+      <Card>
         {Array.from({ length: 6 }).map((_, i) => (
-          <div 
-            key={i} 
-            className="skeleton-shimmer rounded-xl h-64 sm:h-72"
-            style={{ animationDelay: `${i * 100}ms` }}
-          ></div>
+          <div key={i} className="mx-3 my-3 h-12 rounded skeleton-shimmer" />
         ))}
-      </PostsGrid>
+      </Card>
     );
   }
 
   if (posts.length === 0) {
     return (
-      <EmptyState
-        title="No Posts Yet"
-        description="Create your first post to get started"
-        actionText="Create Post"
-        onAction={() => window.location.href = '/admin/posts/create'}
-        icon={
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-          </svg>
-        }
-      />
+      <Card>
+        <EmptyState
+          title="No posts yet"
+          description="Create your first post to get started."
+          actionText="Create Post"
+          onAction={() => window.location.href = '/admin/posts/create'}
+          icon={<ImageIcon />}
+        />
+      </Card>
     );
   }
 
   return (
-    <AnimatedGrid cols="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-      {posts.map((post) => (
-        <PostCard 
-          key={post.id}
-          post={post} 
-          onEdit={() => onEdit(post.id)} 
-          onDelete={() => onDelete(post.id)} 
-        />
-      ))}
-    </AnimatedGrid>
+    <Card className="overflow-hidden">
+      <TableHeader cols={cols} />
+      {posts.map((post, index) => {
+        const imagePath = post.headerImagePath || post.imageUrl;
+        const imageUrl = imagePath ? getImageUrl(imagePath) : '';
+        return (
+          <TableRow
+            key={post.id}
+            cols={cols}
+            last={index === posts.length - 1}
+            cells={[
+              <div key="image" className="flex h-[46px] w-20 items-center justify-center overflow-hidden rounded-[6px] bg-[var(--color-surface-alt)] text-[var(--color-text-muted)]">
+                {imageUrl ? (
+                  <Image src={imageUrl} alt={post.title} width={80} height={46} className="h-full w-full object-cover" />
+                ) : (
+                  <ImageIcon />
+                )}
+              </div>,
+              <button key="title" type="button" onClick={() => onEdit(post.id)} className="block truncate text-left font-semibold text-[var(--color-text)] hover:text-[var(--color-accent)]">
+                {post.title}
+              </button>,
+              <span key="date">{formatDate(post.date || post.createdAt)}</span>,
+              <span key="author" className="truncate">{post.author?.fullName || 'Admin'}</span>,
+            ]}
+            actions={
+              <div className="flex flex-wrap items-center gap-1.5">
+                <Button size="xs" variant="ghost" icon={<EditIcon />} onClick={() => onEdit(post.id)}>Edit</Button>
+                <Button size="xs" variant="danger" icon={<TrashIcon />} onClick={() => onDelete(post.id)}>Del</Button>
+              </div>
+            }
+          />
+        );
+      })}
+    </Card>
   );
+}
+
+function formatDate(value: string) {
+  if (!value) return '-';
+  return new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }

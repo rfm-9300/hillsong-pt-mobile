@@ -1,22 +1,15 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { AttendanceRecord, AttendanceStatus, EventType } from '@/lib/types';
-
-type ApiResponse<T = unknown> = { success: boolean; data?: T };
-import {
-  Card,
-  Button,
-  EmptyState,
-  LoadingOverlay,
-  Alert,
-  StatCard,
-  NavigationHeader
-} from '@/app/components/ui';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { AttendanceRecord, AttendanceStatus } from '@/lib/types';
+import { Alert, Badge, Button, Card, EmptyState, PageHeader, TableHeader, TableRow } from '@/app/components/ui';
 import { useMultipleApiCalls } from '@/app/hooks';
 import { api } from '@/lib/api';
-import Link from 'next/link';
-import { cn } from '@/lib/utils';
+import { AttendanceIcon, EventsIcon, KidsIcon, RefreshIcon, ReportsIcon, ServiceIcon } from '@/app/components/icons/Icons';
+import type { BadgeColor } from '@/app/components/ui/Badge';
+
+type ApiResponse<T = unknown> = { success: boolean; data?: T };
 
 interface AttendanceStats {
   totalEvents: number;
@@ -31,303 +24,117 @@ interface AttendanceData extends Record<string, unknown> {
   recentActivity: ApiResponse<AttendanceRecord[]> | null;
 }
 
-const AttendanceOverviewPage: React.FC = () => {
+const cols = [
+  { label: 'Name', width: '200px' },
+  { label: 'Event', width: '1fr' },
+  { label: 'Type', width: '140px' },
+  { label: 'Status', width: '130px' },
+  { label: 'Time', width: '140px' },
+];
+
+const statusColors: Record<AttendanceStatus, BadgeColor> = {
+  [AttendanceStatus.CHECKED_IN]: 'green',
+  [AttendanceStatus.CHECKED_OUT]: 'neutral',
+  [AttendanceStatus.NO_SHOW]: 'red',
+  [AttendanceStatus.EMERGENCY]: 'red',
+};
+
+export default function AttendanceOverviewPage() {
+  const router = useRouter();
   const [stats, setStats] = useState<AttendanceStats | null>(null);
   const [recentActivity, setRecentActivity] = useState<AttendanceRecord[]>([]);
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [hasExecuted, setHasExecuted] = useState(false);
 
-  // Memoize API calls to prevent infinite loops
   const apiCalls = useMemo(() => ({
     stats: () => api.attendance.getStats() as Promise<ApiResponse<AttendanceStats>>,
     recentActivity: () => api.attendance.getRecent(10) as Promise<ApiResponse<AttendanceRecord[]>>,
   }), []);
 
-  const {
-    data,
-    globalLoading,
-    executeAll,
-  } = useMultipleApiCalls<AttendanceData>(apiCalls, {
+  const { data, globalLoading, executeAll } = useMultipleApiCalls<AttendanceData>(apiCalls, {
     batchLoadingKey: 'attendance_overview',
     showToUser: false,
   });
 
-  // Update local state when data changes
   useEffect(() => {
-    if (data.stats && (data.stats as ApiResponse<AttendanceStats>).success && (data.stats as ApiResponse<AttendanceStats>).data) {
-      setStats((data.stats as ApiResponse<AttendanceStats>).data!);
-    }
-    if (data.recentActivity && (data.recentActivity as ApiResponse<AttendanceRecord[]>).success && (data.recentActivity as ApiResponse<AttendanceRecord[]>).data) {
-      setRecentActivity((data.recentActivity as ApiResponse<AttendanceRecord[]>).data!);
-    }
+    if (data.stats?.success && data.stats.data) setStats(data.stats.data);
+    if (data.recentActivity?.success && data.recentActivity.data) setRecentActivity(data.recentActivity.data);
   }, [data]);
 
-  // Load data only once on mount
   useEffect(() => {
     if (!hasExecuted) {
       setHasExecuted(true);
-      executeAll().catch((error) => {
-        console.error('Failed to load attendance data:', error);
-        setAlert({ type: 'error', message: 'Failed to load attendance data' });
-      });
+      executeAll().catch(() => setAlert({ type: 'error', message: 'Failed to load attendance data' }));
     }
   }, [hasExecuted, executeAll]);
 
-  const loadData = useCallback(async () => {
+  const loadData = async () => {
     try {
       await executeAll();
-    } catch (error) {
-      console.error('Failed to load attendance data:', error);
+    } catch {
       setAlert({ type: 'error', message: 'Failed to load attendance data' });
     }
-  }, [executeAll]);
-
-  const loadingStats = globalLoading;
-  const loadingActivity = globalLoading;
-
-  const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString();
   };
 
-  const getStatusColor = (status: AttendanceStatus) => {
-    switch (status) {
-      case AttendanceStatus.CHECKED_IN:
-        return 'text-green-600';
-      case AttendanceStatus.CHECKED_OUT:
-        return 'text-blue-600';
-      case AttendanceStatus.NO_SHOW:
-        return 'text-red-600';
-      case AttendanceStatus.EMERGENCY:
-        return 'text-orange-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
-
-  const getEventTypeIcon = (eventType: EventType) => {
-    switch (eventType) {
-      case EventType.EVENT:
-        return '🎉';
-      case EventType.SERVICE:
-        return '⛪';
-      case EventType.KIDS_SERVICE:
-        return '👶';
-      default:
-        return '📅';
-    }
-  };
-
-  const navigationCards = [
-    {
-      title: 'Event Attendance',
-      description: 'Manage attendance for regular events',
-      href: '/admin/attendance/event',
-      icon: '🎉',
-      color: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
-    },
-    {
-      title: 'Service Attendance',
-      description: 'Track attendance for regular services',
-      href: '/admin/attendance/service',
-      icon: '⛪',
-      color: 'bg-green-50 border-green-200 hover:bg-green-100',
-    },
-    {
-      title: 'Kids Service Attendance',
-      description: 'Manage children\'s program attendance',
-      href: '/admin/attendance/kids-service',
-      icon: '👶',
-      color: 'bg-purple-50 border-purple-200 hover:bg-purple-100',
-    },
-    {
-      title: 'Reports & Analytics',
-      description: 'Generate attendance reports and analytics',
-      href: '/admin/attendance/reports',
-      icon: '📊',
-      color: 'bg-orange-50 border-orange-200 hover:bg-orange-100',
-    },
+  const cards = [
+    { label: 'Event Attendance', value: stats?.totalEvents || 0, sub: 'Regular events', href: '/admin/attendance/event', icon: EventsIcon },
+    { label: 'Service Attendance', value: stats?.totalServices || 0, sub: 'Church services', href: '/admin/attendance/service', icon: ServiceIcon },
+    { label: 'Kids Services', value: stats?.totalKidsServices || 0, sub: 'Children programs', href: '/admin/attendance/kids-service', icon: KidsIcon },
+    { label: 'Reports', value: '→', sub: `${stats?.totalAttendees || 0} total attendees`, href: '/admin/attendance/reports', icon: ReportsIcon },
   ];
 
   return (
     <div className="space-y-6">
-      <NavigationHeader
-        title="Attendance Management"
-        subtitle="Overview of attendance tracking across all events and services"
-        breadcrumbs={[
-          { label: 'Dashboard', href: '/admin/dashboard' },
-          { label: 'Attendance', current: true },
-        ]}
-      >
-        <Button
-          variant="primary"
-          onClick={loadData}
-          loading={loadingStats || loadingActivity}
-        >
-          Refresh
-        </Button>
-      </NavigationHeader>
+      <PageHeader
+        title="Attendance"
+        subtitle="Overview of attendance tracking across all event types"
+        actions={<Button variant="ghost" size="sm" icon={<RefreshIcon />} onClick={loadData} loading={globalLoading}>Refresh</Button>}
+      />
 
-      {alert && (
-        <Alert
-          type={alert.type}
-          message={alert.message}
-          onClose={() => setAlert(null)}
-        />
-      )}
+      {alert && <Alert type={alert.type} message={alert.message} onClose={() => setAlert(null)} />}
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard
-          title="Total Events"
-          value={stats?.totalEvents || 0}
-          icon="🎉"
-          loading={loadingStats}
-          onClick={() => window.location.href = '/admin/attendance/event'}
-        />
-        <StatCard
-          title="Total Services"
-          value={stats?.totalServices || 0}
-          icon="⛪"
-          loading={loadingStats}
-          onClick={() => window.location.href = '/admin/attendance/service'}
-        />
-        <StatCard
-          title="Kids Services"
-          value={stats?.totalKidsServices || 0}
-          icon="👶"
-          loading={loadingStats}
-          onClick={() => window.location.href = '/admin/attendance/kids-service'}
-        />
-        <StatCard
-          title="Total Attendees"
-          value={stats?.totalAttendees || 0}
-          icon="👥"
-          loading={loadingStats}
-          onClick={() => window.location.href = '/admin/attendance/reports'}
-        />
-      </div>
-
-      {/* Navigation Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {navigationCards.map((card) => (
-          <Link key={card.href} href={card.href}>
-            <Card className={cn(
-              'p-6 transition-all duration-200 cursor-pointer',
-              card.color
-            )}>
-              <div className="flex items-start space-x-4">
-                <div className="text-3xl">{card.icon}</div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    {card.title}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {card.description}
-                  </p>
-                </div>
-                <div className="text-gray-400">
-                  →
-                </div>
-              </div>
-            </Card>
-          </Link>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {cards.map(({ label, value, sub, href, icon: Icon }) => (
+          <Card key={href} className="cursor-pointer p-4 transition-all hover:border-[var(--color-border-med)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] sm:p-[20px_22px]" onClick={() => router.push(href)}>
+            <div className="mb-5 flex items-start justify-between">
+              <div className="text-[12px] font-bold uppercase tracking-[0.3px] text-[var(--color-text-sub)]">{label}</div>
+              <Icon className="text-[var(--color-accent)]" />
+            </div>
+            <div className="font-display text-[32px] leading-none text-[var(--color-text)] sm:text-[40px]">{value}</div>
+            <div className="mt-1 text-[12px] text-[var(--color-text-sub)]">{sub}</div>
+          </Card>
         ))}
       </div>
 
-      {/* Recent Activity */}
-      <Card className="p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium text-gray-900">Recent Activity</h3>
-          <Link href="/admin/attendance/reports">
-            <Button variant="ghost" size="sm">
-              View All Reports
-            </Button>
-          </Link>
-        </div>
+      <PageHeader title="Recent Records" subtitle="Latest check-ins across all event types" />
 
-        <div className="relative">
-          <LoadingOverlay show={loadingActivity} />
-          
-          {recentActivity.length === 0 ? (
-            <EmptyState
-              title="No recent activity"
-              description="No attendance records have been created recently"
-              icon={<span className="text-4xl">📋</span>}
+      {recentActivity.length === 0 ? (
+        <Card>
+          <EmptyState title="No recent activity" description="No attendance records have been created recently." icon={<AttendanceIcon />} />
+        </Card>
+      ) : (
+        <Card className="overflow-hidden">
+          <TableHeader cols={cols} />
+          {recentActivity.map((record, index) => (
+            <TableRow
+              key={record.id}
+              cols={cols}
+              last={index === recentActivity.length - 1}
+              cells={[
+                <span key="name" className="font-semibold text-[var(--color-text)]">{record.attendeeName}</span>,
+                <span key="event" className="truncate">{record.eventName}</span>,
+                <Badge key="type" color="neutral">{record.eventType.replace(/_/g, ' ')}</Badge>,
+                <Badge key="status" color={statusColors[record.status] || 'neutral'}>{record.status.replace(/_/g, ' ')}</Badge>,
+                <span key="time">{formatTime(record.timestamp)}</span>,
+              ]}
             />
-          ) : (
-            <div className="space-y-3">
-              {recentActivity.map((record) => (
-                <div
-                  key={record.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center space-x-3">
-                    <span className="text-lg">
-                      {getEventTypeIcon(record.eventType)}
-                    </span>
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {record.attendeeName}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {record.eventName}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <span className={cn(
-                      'text-sm font-medium',
-                      getStatusColor(record.status)
-                    )}>
-                      {record.status === AttendanceStatus.CHECKED_IN && 'Checked In'}
-                      {record.status === AttendanceStatus.CHECKED_OUT && 'Checked Out'}
-                      {record.status === AttendanceStatus.NO_SHOW && 'No Show'}
-                      {record.status === AttendanceStatus.EMERGENCY && 'Emergency'}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {formatTimestamp(record.timestamp)}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </Card>
-
-      {/* Quick Actions */}
-      <Card className="p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <Link href="/admin/attendance/event">
-            <Button variant="secondary" className="w-full justify-start">
-              <span className="mr-2">🎉</span>
-              Manage Events
-            </Button>
-          </Link>
-          <Link href="/admin/attendance/service">
-            <Button variant="secondary" className="w-full justify-start">
-              <span className="mr-2">⛪</span>
-              Manage Services
-            </Button>
-          </Link>
-          <Link href="/admin/attendance/kids-service">
-            <Button variant="secondary" className="w-full justify-start">
-              <span className="mr-2">👶</span>
-              Kids Programs
-            </Button>
-          </Link>
-          <Link href="/admin/attendance/reports">
-            <Button variant="secondary" className="w-full justify-start">
-              <span className="mr-2">📊</span>
-              View Reports
-            </Button>
-          </Link>
-        </div>
-      </Card>
+          ))}
+        </Card>
+      )}
     </div>
   );
-};
+}
 
-export default AttendanceOverviewPage;
+function formatTime(timestamp: string) {
+  return new Date(timestamp).toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}

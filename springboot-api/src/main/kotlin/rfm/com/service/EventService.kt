@@ -10,9 +10,12 @@ import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import rfm.com.dto.*
+import rfm.com.entity.Attendance
+import rfm.com.entity.AttendanceStatus
 import rfm.com.entity.Event
 import rfm.com.entity.User
 import rfm.com.exception.EntityNotFoundException
+import rfm.com.repository.AttendanceRepository
 import rfm.com.repository.EventRepository
 import rfm.com.repository.UserRepository
 import java.time.LocalDateTime
@@ -24,6 +27,7 @@ import java.time.LocalDateTime
 class EventService(
     private val eventRepository: EventRepository,
     private val userRepository: UserRepository,
+    private val attendanceRepository: AttendanceRepository,
     private val fileStorageService: FileStorageService
 ) {
     
@@ -423,6 +427,62 @@ class EventService(
             .map { mapToEventSummaryResponse(it) }
     }
     
+    /**
+     * Remove an attendee from an event and delete their attendance record (admin)
+     */
+    suspend fun removeAttendee(eventId: String, userId: String): Unit = withContext(Dispatchers.IO) {
+        val event = eventRepository.findById(eventId).orElse(null)
+            ?: throw EntityNotFoundException("Event", eventId)
+
+        event.removeAttendee(userId)
+        event.removeFromWaitingList(userId)
+        eventRepository.save(event)
+
+        val rows = attendanceRepository.findByUserIdAndEventId(userId, eventId)
+        attendanceRepository.deleteAll(rows)
+    }
+
+    /**
+     * Get the full attendee list for an event with check-in status
+     */
+    suspend fun getEventAttendees(eventId: String): EventAttendeeListResponse = withContext(Dispatchers.IO) {
+        val event = eventRepository.findById(eventId).orElse(null)
+            ?: throw EntityNotFoundException("Event", eventId)
+
+        val allIds = (event.attendeeIds + event.waitingListIds).distinct()
+        val usersById = userRepository.findAllById(allIds).associateBy { it.id!! }
+
+        val attendanceRows = attendanceRepository.findByEventId(eventId)
+        val attendanceByUserId = attendanceRows
+            .filter { it.status == AttendanceStatus.CHECKED_IN }
+            .associateBy { it.userId }
+
+        fun toRow(userId: String): EventAttendeeRow {
+            val user = usersById[userId]
+            val attendance = attendanceByUserId[userId]
+            return EventAttendeeRow(
+                userId = userId,
+                fullName = user?.fullName ?: "Unknown",
+                email = user?.email ?: "",
+                imagePath = user?.imagePath?.takeIf { it.isNotBlank() },
+                isCheckedIn = attendance != null,
+                checkInTime = attendance?.checkInTime,
+                checkedInBy = attendance?.checkedInBy,
+                attendanceId = attendance?.id
+            )
+        }
+
+        val attendees = event.attendeeIds.map { toRow(it) }
+        val waitingList = event.waitingListIds.map { toRow(it) }
+
+        EventAttendeeListResponse(
+            eventId = eventId,
+            attendees = attendees,
+            waitingList = waitingList,
+            checkedInCount = attendees.count { it.isCheckedIn }
+        )
+    }
+
     // Helper methods for mapping entities to DTOs
     
     private fun mapToEventResponse(event: Event, includeAttendees: Boolean = false): EventResponse {

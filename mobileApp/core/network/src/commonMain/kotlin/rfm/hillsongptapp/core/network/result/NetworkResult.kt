@@ -46,6 +46,7 @@ sealed class NetworkException(
  */
 suspend fun Throwable.toNetworkException(): NetworkException {
     return when (this) {
+        is NetworkException -> this
         is ClientRequestException -> {
             // Try to parse error message from response body
             val errorMessage = try {

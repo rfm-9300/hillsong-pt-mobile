@@ -37,6 +37,24 @@ export interface Event {
   imageUrl?: string; // Keep for backward compatibility
 }
 
+export interface EventAttendeeRow {
+  userId: string;
+  fullName: string;
+  email: string;
+  imagePath?: string;
+  isCheckedIn: boolean;
+  checkInTime?: string;
+  checkedInBy?: string;
+  attendanceId?: string;
+}
+
+export interface EventAttendeeListResponse {
+  eventId: string;
+  attendees: EventAttendeeRow[];
+  waitingList: EventAttendeeRow[];
+  checkedInCount: number;
+}
+
 export interface Encounter {
   id: number;
   title: string;

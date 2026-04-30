@@ -45,6 +45,7 @@ out/
 .vscode/
 
 .env
+nginx/.htpasswd
 
 ### Android ###
 # Built application files

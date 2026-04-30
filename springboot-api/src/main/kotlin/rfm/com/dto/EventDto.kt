@@ -139,6 +139,31 @@ enum class EventUserStatus {
 }
 
 /**
+ * Per-row attendee data for the event detail attendees endpoint
+ */
+data class EventAttendeeRow(
+    val userId: String,
+    val fullName: String,
+    val email: String,
+    val imagePath: String?,
+    val isCheckedIn: Boolean,
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    val checkInTime: java.time.LocalDateTime? = null,
+    val checkedInBy: String? = null,
+    val attendanceId: String? = null
+)
+
+/**
+ * Full attendee list for an event, including waitlist and check-in status
+ */
+data class EventAttendeeListResponse(
+    val eventId: String,
+    val attendees: List<EventAttendeeRow>,
+    val waitingList: List<EventAttendeeRow>,
+    val checkedInCount: Int
+)
+
+/**
  * Response DTO for user's event status
  */
 data class UserEventStatusResponse(

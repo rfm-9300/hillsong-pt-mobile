@@ -2,6 +2,7 @@ package rfm.hillsongptapp.core.network.base
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
@@ -11,6 +12,9 @@ import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
+import rfm.hillsongptapp.core.network.ktor.responses.ApiResponse
+import rfm.hillsongptapp.core.network.result.NetworkException
 import rfm.hillsongptapp.core.network.result.NetworkResult
 import rfm.hillsongptapp.core.network.result.toNetworkException
 
@@ -33,7 +37,7 @@ abstract class BaseApiService(
         return safeApiCall {
             httpClient.get("$baseUrl/$endpoint") {
                 requestBuilder()
-            }.body()
+            }.bodyOrError()
         }
     }
     
@@ -50,7 +54,7 @@ abstract class BaseApiService(
                 contentType(ContentType.Application.Json)
                 body?.let { setBody(it) }
                 requestBuilder()
-            }.body()
+            }.bodyOrError()
         }
     }
     
@@ -67,7 +71,7 @@ abstract class BaseApiService(
                 contentType(ContentType.Application.Json)
                 body?.let { setBody(it) }
                 requestBuilder()
-            }.body()
+            }.bodyOrError()
         }
     }
     
@@ -84,7 +88,7 @@ abstract class BaseApiService(
                 contentType(ContentType.Application.Json)
                 body?.let { setBody(it) }
                 requestBuilder()
-            }.body()
+            }.bodyOrError()
         }
     }
     
@@ -98,7 +102,31 @@ abstract class BaseApiService(
         return safeApiCall {
             httpClient.delete("$baseUrl/$endpoint") {
                 requestBuilder()
-            }.body()
+            }.bodyOrError()
+        }
+    }
+
+    protected suspend inline fun <reified T> HttpResponse.bodyOrError(): T {
+        if (status.isSuccess()) {
+            return body()
+        }
+
+        throw responseException()
+    }
+
+    protected suspend fun HttpResponse.responseException(): NetworkException {
+        val errorMessage = try {
+            body<ApiResponse<Any>>().message
+        } catch (e: Exception) {
+            status.description
+        }
+
+        return when (status) {
+            io.ktor.http.HttpStatusCode.Unauthorized -> NetworkException.Unauthorized
+            else -> NetworkException.HttpError(
+                statusCode = status,
+                errorMessage = errorMessage
+            )
         }
     }
     

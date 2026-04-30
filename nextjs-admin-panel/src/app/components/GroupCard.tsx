@@ -35,8 +35,8 @@ export default function GroupCard({ group, onDelete }: GroupCardProps) {
 
   return (
     <>
-      <Card className="p-[16px_18px]">
-        <div className="grid grid-cols-[1fr_200px_180px_120px_100px] items-center gap-4">
+      <Card className="p-4 sm:p-[16px_18px]">
+        <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-[1fr_200px_180px_120px_100px] md:items-center">
           <div className="min-w-0">
             <div className="mb-1 flex flex-wrap items-center gap-2">
               <button type="button" onClick={handleEdit} className="truncate text-left text-[14px] font-bold text-[var(--color-text)] hover:text-[var(--color-accent)]">
@@ -65,7 +65,7 @@ export default function GroupCard({ group, onDelete }: GroupCardProps) {
             </div>
           </InfoBlock>
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-wrap gap-1.5 md:flex-col">
             <Button size="xs" variant="ghost" icon={<EditIcon />} onClick={handleEdit}>Edit</Button>
             <Button size="xs" variant="danger" icon={<TrashIcon />} onClick={() => setShowDeleteModal(true)}>Delete</Button>
           </div>

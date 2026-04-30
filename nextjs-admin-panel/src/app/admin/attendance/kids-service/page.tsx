@@ -17,6 +17,7 @@ import {
   StatusUpdateInterface
 } from '@/app/components/attendance';
 import { api } from '@/lib/api';
+import { KidsIcon } from '@/app/components/icons/Icons';
 
 const KidsServiceAttendancePage: React.FC = () => {
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
@@ -200,7 +201,7 @@ const KidsServiceAttendancePage: React.FC = () => {
       <Card className="p-4 bg-blue-50 border-blue-200">
         <div className="flex items-start space-x-3">
           <div className="flex-shrink-0">
-            <span className="text-blue-500 text-lg">👶</span>
+            <span className="text-[var(--color-info)]"><KidsIcon /></span>
           </div>
           <div>
             <h3 className="text-sm font-medium text-blue-800">
@@ -223,14 +224,14 @@ const KidsServiceAttendancePage: React.FC = () => {
               placeholder="Search by child name or program name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="min-h-[40px] w-full rounded-md border border-gray-300 px-3 py-2 text-[16px] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm"
             />
           </div>
           <div>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value as AttendanceStatus | 'all')}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="min-h-[40px] rounded-md border border-gray-300 px-3 py-2 text-[16px] focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm"
             >
               <option value="all">All Status</option>
               <option value={AttendanceStatus.CHECKED_IN}>Arrived</option>

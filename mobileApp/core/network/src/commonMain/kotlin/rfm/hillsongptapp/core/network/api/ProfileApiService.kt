@@ -9,16 +9,22 @@ import rfm.hillsongptapp.core.network.result.NetworkResult
  */
 @kotlinx.serialization.Serializable
 data class UserProfile(
-    val id: Int,
-    val email: String,
-    val firstName: String,
-    val lastName: String,
+    val id: String = "",
+    val userId: String = "",
+    val email: String = "",
+    val firstName: String = "",
+    val lastName: String = "",
+    val fullName: String = "",
+    val phone: String = "",
+    val imagePath: String = "",
+    val isAdmin: Boolean = false,
+    val joinedAt: String = "",
+    val qrToken: String? = null,
+    // Legacy fields kept for backward compatibility
     val profileImageUrl: String? = null,
     val phoneNumber: String? = null,
     val dateOfBirth: String? = null,
-    val bio: String? = null,
-    val createdAt: String,
-    val updatedAt: String
+    val bio: String? = null
 )
 
 @kotlinx.serialization.Serializable
@@ -63,7 +69,12 @@ class ProfileApiServiceImpl(
 ) : BaseApiService(httpClient, baseUrl), ProfileApiService {
     
     override suspend fun getProfile(): NetworkResult<UserProfile> {
-        return safeGet("api/profile")
+        return when (val result = safeGet<ApiResponse<UserProfile>>("api/profile")) {
+            is NetworkResult.Success -> result.data.data?.let { NetworkResult.Success(it) }
+                ?: NetworkResult.Error(rfm.hillsongptapp.core.network.result.NetworkException.UnknownError("No data"))
+            is NetworkResult.Error -> result
+            is NetworkResult.Loading -> result
+        }
     }
     
     override suspend fun updateProfile(request: UpdateProfileRequest): NetworkResult<UserProfile> {

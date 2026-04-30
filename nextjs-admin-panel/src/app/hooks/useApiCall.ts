@@ -313,7 +313,7 @@ export function useApiCall<T, TArgs extends unknown[] = []>(
 // Legacy compatibility - keep existing useMultipleApiCalls
 export function useMultipleApiCalls<T extends Record<string, unknown>>(
   apiCalls: Record<keyof T, () => Promise<T[keyof T]>>,
-  options: UseEnhancedApiCallOptions = {}
+  options: UseEnhancedApiCallOptions & { failFast?: boolean; batchLoadingKey?: string } = {}
 ) {
   return useEnhancedMultipleApiCalls<T>(apiCalls, options);
 }

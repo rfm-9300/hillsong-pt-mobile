@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, NavigationHeader } from '@/app/components/ui';
+import { Button, PageHeader } from '@/app/components/ui';
 import EventsList from '@/app/components/EventsList';
+import { PlusIcon } from '@/app/components/icons/Icons';
 
 export default function EventsPage() {
   const router = useRouter();
@@ -20,21 +21,12 @@ export default function EventsPage() {
 
   return (
     <div className="space-y-6">
-      <NavigationHeader 
-        title="Events Management" 
+      <PageHeader
+        title="Events"
         subtitle="Manage community events and gatherings"
-        breadcrumbs={[
-          { label: 'Dashboard', href: '/admin/dashboard' },
-          { label: 'Events', current: true },
-        ]}
-      >
-        <Button
-          variant="primary"
-          onClick={handleCreateEvent}
-        >
-          Create Event
-        </Button>
-      </NavigationHeader>
+        breadcrumbs={['Admin', 'Events']}
+        actions={<Button variant="primary" size="sm" icon={<PlusIcon />} onClick={handleCreateEvent}>New Event</Button>}
+      />
       
       <EventsList 
         key={refreshKey}

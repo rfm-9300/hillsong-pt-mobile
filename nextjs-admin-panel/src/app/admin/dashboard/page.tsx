@@ -2,313 +2,129 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth as useSessionAuth } from '../../context/AuthContext';
 import { api, ENDPOINTS } from '../../../lib/api';
-import { useMultipleApiCalls } from '../../hooks';
-import { useErrorContext } from '../../context/ErrorContext';
-import {
-  PageHeader,
-  StatCard,
-  QuickActions,
-  ErrorBoundary,
-  DashboardSkeleton,
-  Card,
-  RetryButton,
-
-  AnimatedRow,
-} from '../../components/ui';
+import { useMultipleApiCalls, useAuth as useProfileAuth } from '../../hooks';
+import { Alert, Badge, Button, Card, DashboardSkeleton, ErrorBoundary, PageHeader, StatCard } from '../../components/ui';
+import { EventsIcon, GroupsIcon, PostsIcon, RefreshIcon, UsersIcon, VideosIcon } from '../../components/icons/Icons';
 
 interface DashboardData extends Record<string, unknown> {
   posts: { data: { posts: unknown[] } } | null;
-  events: { data: { events: unknown[] } } | null;
+  events: { data: { events: unknown[]; content?: unknown[] } } | null;
   users: { data: unknown[] } | null;
 }
 
+const actions = [
+  { label: 'New Post', href: '/admin/posts/create', icon: PostsIcon },
+  { label: 'New Event', href: '/admin/events/create', icon: EventsIcon },
+  { label: 'Add Video', href: '/admin/videos/create', icon: VideosIcon },
+  { label: 'New Group', href: '/admin/groups/create', icon: GroupsIcon },
+  { label: 'New Encounter', href: '/admin/encounters/create', icon: UsersIcon },
+  { label: 'View Users', href: '/admin/users', icon: UsersIcon },
+];
+
 export default function DashboardPage() {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useSessionAuth();
+  const { user } = useProfileAuth();
   const router = useRouter();
-  const { showSuccess } = useErrorContext();
   const [hasExecuted, setHasExecuted] = useState(false);
 
-  // API calls configuration with enhanced error handling - memoized to prevent infinite loops
   const apiCalls = useMemo(() => ({
-    events: () => api.get<{ data: { events: unknown[] } }>(ENDPOINTS.EVENTS),
+    events: () => api.get<{ data: { events: unknown[]; content?: unknown[] } }>(ENDPOINTS.EVENTS),
     posts: () => api.get<{ data: { posts: unknown[] } }>(ENDPOINTS.POSTS),
     users: () => api.get<{ data: unknown[] }>(ENDPOINTS.PROFILE_ALL),
   }), []);
 
-  const {
-    data,
-    loading,
-    errors,
-    globalLoading,
-    globalError,
-    executeAll,
-    retry,
-    progress,
-  } = useMultipleApiCalls<DashboardData>(apiCalls, {
+  const { data, loading, errors, globalLoading, globalError, executeAll, retry } = useMultipleApiCalls<DashboardData>(apiCalls, {
     batchLoadingKey: 'dashboard_data',
     context: 'Dashboard Data Loading',
     message: 'Loading dashboard statistics...',
-    showProgress: true,
-    showToUser: false, // Disable automatic success messages
+    showToUser: false,
   });
 
   useEffect(() => {
-    if (authLoading) return; // Wait until auth state is resolved from localStorage
-
+    if (authLoading) return;
     if (!isAuthenticated) {
       router.push('/login');
       return;
     }
-
-    // Only execute once when authenticated and not already executed
     if (!hasExecuted) {
       setHasExecuted(true);
       executeAll();
     }
   }, [isAuthenticated, authLoading, router, hasExecuted, executeAll]);
 
-  // Show loading skeleton while data is being fetched
   if (globalLoading && !data.posts && !data.events && !data.users) {
     return (
-      <div className="p-4">
-        <PageHeader
-          title="Admin Dashboard"
-          subtitle="Loading dashboard data..."
-        />
-        {progress !== undefined && (
-          <div className="mb-6">
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <p className="text-sm text-gray-600 mt-2">{progress}% complete</p>
-          </div>
-        )}
+      <>
+        <PageHeader title="Dashboard" subtitle="Loading dashboard data..." />
         <DashboardSkeleton />
-      </div>
+      </>
     );
   }
 
-  const stats = {
-    posts: {
-      count: data.posts?.data?.posts?.length || 0,
-      loading: loading.posts || false,
-      error: errors.posts?.message,
-    },
-    events: {
-      count: data.events?.data?.events?.length || 0,
-      loading: loading.events || false,
-      error: errors.events?.message,
-    },
-    users: {
-      count: Array.isArray(data.users?.data) ? data.users.data.length : 0,
-      loading: loading.users || false,
-      error: errors.users?.message,
-    },
-  };
+  const eventList = data.events?.data?.events || data.events?.data?.content || [];
+  const postsCount = data.posts?.data?.posts?.length || 0;
+  const eventsCount = eventList.length;
+  const usersCount = Array.isArray(data.users?.data) ? data.users.data.length : 0;
+  const firstName = user?.firstName || user?.fullName?.split(' ')[0] || 'there';
 
   return (
     <ErrorBoundary>
-      <div className="space-y-6 page-transition">
-        <div className="animate-in fade-in" style={{ animationDuration: '300ms' }}>
-          <PageHeader
-            title="Admin Dashboard"
-            subtitle="Welcome back! Here's what's happening with your community."
-          />
+      <PageHeader title="Dashboard" subtitle={`Welcome back, ${firstName}. Here's what's happening.`} />
 
-          {/* Backend Status Notice - Only show if there are actual errors */}
-          {(errors.posts || errors.events || errors.users) && (
-            <Card className="p-4 border-yellow-200 bg-yellow-50 mb-6">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-yellow-800">
-                    Backend Integration Status
-                  </h3>
-                  <div className="mt-2 text-sm text-yellow-700">
-                    <p>Some endpoints are experiencing issues:</p>
-                    <ul className="list-disc list-inside mt-1 space-y-1">
-                      <li>{errors.events ? '❌' : '✅'} Events API - {errors.events ? errors.events.message : 'Working correctly'}</li>
-                      <li>{errors.posts ? '❌' : '✅'} Posts API - {errors.posts ? errors.posts.message : 'Working correctly'}</li>
-                      <li>{errors.users ? '❌' : '✅'} Users API - {errors.users ? errors.users.message : 'Working correctly'}</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          )}
-        </div>
+      {globalError && (
+        <Alert type="error" message={globalError.message} className="mb-4" />
+      )}
 
-        {/* Global Error Handling with Retry */}
-        {globalError && (
-          <Card className="p-4 border-red-200 bg-red-50">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="text-sm font-medium text-red-800 mb-1">
-                  Failed to load some dashboard data
-                </h3>
-                <p className="text-sm text-red-700">
-                  {globalError.message}
-                </p>
-                {globalError.message.includes('Authentication required') && (
-                  <p className="text-xs text-red-600 mt-2">
-                    Your session may have expired or you may not have the required permissions to access these resources.
-                  </p>
-                )}
-              </div>
-              <RetryButton
-                onRetry={() => { executeAll(); }}
-                variant="danger"
-                size="sm"
-                className="ml-4"
+      <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <StatCard title="Total Posts" value={postsCount} color="amber" trend={`+${postsCount} this week`} href="/admin/posts" loading={loading.posts} error={errors.posts?.message} icon={<PostsIcon />} />
+        <StatCard title="Total Events" value={eventsCount} color="green" trend={`${eventsCount} upcoming`} href="/admin/events" loading={loading.events} error={errors.events?.message} icon={<EventsIcon />} />
+        <StatCard title="Total Users" value={usersCount} color="blue" trend={`+${usersCount} this month`} href="/admin/users" loading={loading.users} error={errors.users?.message} icon={<UsersIcon />} />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Card className="p-4 sm:p-[18px_20px]">
+          <h2 className="mb-4 text-[13px] font-bold text-[var(--color-text)]">Quick Actions</h2>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {actions.map(({ label, href, icon: Icon }) => (
+              <button
+                key={href}
+                type="button"
+                onClick={() => router.push(href)}
+                className="flex flex-col items-center gap-[7px] rounded-[8px] border border-[var(--color-border)] p-[12px_8px] text-center transition-colors duration-150 hover:border-[rgba(201,149,42,0.3)] hover:bg-[var(--color-accent-sub)]"
               >
-                Retry All
-              </RetryButton>
+                <Icon className="text-[var(--color-accent)]" />
+                <span className="text-[10px] font-medium text-[var(--color-text-sub)] sm:text-[11px]">{label}</span>
+              </button>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="p-4 sm:p-[18px_20px]">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="text-[13px] font-bold text-[var(--color-text)]">System Status</h2>
+            <Button variant="ghost" size="xs" icon={<RefreshIcon />} onClick={() => executeAll()}>Refresh</Button>
+          </div>
+          {[
+            ['API Status', <Badge key="api" color={globalError ? 'yellow' : 'green'}>{globalError ? 'Degraded' : 'Operational'}</Badge>],
+            ['Database', <Badge key="db" color="green">Connected</Badge>],
+            ['Last Backup', <Badge key="backup" color="neutral">2 hours ago</Badge>],
+          ].map(([label, value], index) => (
+            <div key={label as string} className="flex items-center justify-between border-b border-[var(--color-border)] py-2.5 last:border-0">
+              <span className="text-[13px] text-[var(--color-text-sub)]">{label}</span>
+              {value}
             </div>
-          </Card>
-        )}
-
-        {/* Statistics Cards */}
-        <AnimatedRow className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6" spacing="">
-          <StatCard
-            title="Total Posts"
-            value={stats.posts.count}
-            loading={stats.posts.loading}
-            error={stats.posts.error}
-            color="blue"
-            href="/admin/posts"
-            icon={
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
-              </svg>
-            }
-          />
-          <StatCard
-            title="Total Events"
-            value={stats.events.count}
-            loading={stats.events.loading}
-            error={stats.events.error}
-            color="green"
-            href="/admin/events"
-            icon={
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            }
-          />
-          <StatCard
-            title="Total Users"
-            value={stats.users.count}
-            loading={stats.users.loading}
-            error={stats.users.error}
-            color="purple"
-            href="/admin/users"
-            icon={
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-                />
-              </svg>
-            }
-          />
-        </AnimatedRow>
-
-        {/* Quick Actions and Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="animate-in fade-in slide-in-from-left" style={{ animationDelay: '400ms', animationDuration: '400ms' }}>
-            <QuickActions />
-          </div>
-
-          <div className="animate-in fade-in slide-in-from-right" style={{ animationDelay: '500ms', animationDuration: '400ms' }}>
-            <Card className="p-4 sm:p-6">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">System Status</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">API Status</span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Operational
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Database</span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Connected
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Last Backup</span>
-                  <span className="text-sm text-gray-900">2 hours ago</span>
-                </div>
-                {(errors.posts || errors.events || errors.users) && (
-                  <div className="pt-4 border-t border-gray-200">
-                    <div className="space-y-2">
-                      {errors.posts && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-red-600">Posts failed to load</span>
-                          <RetryButton
-                            onRetry={() => retry('posts')}
-                            size="sm"
-                            variant="ghost"
-                            className="text-xs"
-                          >
-                            Retry
-                          </RetryButton>
-                        </div>
-                      )}
-                      {errors.events && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-red-600">Events failed to load</span>
-                          <RetryButton
-                            onRetry={() => retry('events')}
-                            size="sm"
-                            variant="ghost"
-                            className="text-xs"
-                          >
-                            Retry
-                          </RetryButton>
-                        </div>
-                      )}
-                      {errors.users && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-red-600">Users failed to load</span>
-                          <RetryButton
-                            onRetry={() => retry('users')}
-                            size="sm"
-                            variant="ghost"
-                            className="text-xs"
-                          >
-                            Retry
-                          </RetryButton>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </Card>
-          </div>
-        </div>
+          ))}
+          {(errors.posts || errors.events || errors.users) && (
+            <div className="mt-3 space-y-2">
+              <Alert type="warning" message="Some admin data failed to load. Retry the affected endpoint if needed." />
+              {errors.posts && <Button size="xs" variant="ghost" onClick={() => retry('posts')}>Retry posts</Button>}
+              {errors.events && <Button size="xs" variant="ghost" onClick={() => retry('events')}>Retry events</Button>}
+              {errors.users && <Button size="xs" variant="ghost" onClick={() => retry('users')}>Retry users</Button>}
+            </div>
+          )}
+        </Card>
       </div>
     </ErrorBoundary>
   );

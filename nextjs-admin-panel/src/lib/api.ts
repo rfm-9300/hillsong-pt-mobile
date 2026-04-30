@@ -41,6 +41,9 @@ export const ENDPOINTS = {
     EVENT_ATTENDING: '/events/attending',
     EVENT_WAITING_LIST: '/events/waiting-list',
     EVENT_SEARCH: '/events/search',
+    EVENT_ATTENDEES: (id: string) => `/events/${id}/attendees`,
+    EVENT_REMOVE_ATTENDEE: (id: string, userId: string) => `/events/${id}/attendees/${userId}`,
+    ATTENDANCE_CHECK_IN_BY_TOKEN: '/attendance/check-in/by-token',
 
     // Groups - /api/groups/* and /api/admin/groups/*
     GROUPS: '/groups',

@@ -3,9 +3,9 @@
 import React, { useRef, useState } from 'react';
 import Image from 'next/image';
 import { ImageUploadProps } from '@/lib/types';
-import { cn } from '@/lib/utils';
-import { formatFileSize } from '@/lib/utils';
+import { cn, formatFileSize } from '@/lib/utils';
 import { MAX_FILE_SIZE, ALLOWED_IMAGE_TYPES } from '@/lib/constants';
+import { ImageIcon } from '../icons/Icons';
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
   label,
@@ -28,193 +28,77 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       setPreview(null);
       return;
     }
-
-    // Validate file type
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      return; // Could set an error here
-    }
-
-    // Validate file size
-    if (file.size > MAX_FILE_SIZE) {
-      return; // Could set an error here
-    }
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type) || file.size > MAX_FILE_SIZE) return;
 
     onChange(file);
-
-    // Create preview
     const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
-    };
+    reader.onload = (event) => setPreview(event.target?.result as string);
     reader.readAsDataURL(file);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      handleFileSelect(files[0]);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-  };
-
   const handleClick = () => {
-    if (!disabled) {
-      fileInputRef.current?.click();
-    }
-  };
-
-  const handleRemove = () => {
-    handleFileSelect(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    if (!disabled) fileInputRef.current?.click();
   };
 
   const inputId = React.useId();
 
   return (
-    <div className={cn('space-y-1', className)}>
-      {label && (
-        <label
-          htmlFor={inputId}
-          className="block text-sm font-medium text-gray-700"
-        >
-          {label}
-        </label>
-      )}
-      
+    <div className={cn('space-y-1.5', className)}>
+      {label && <label htmlFor={inputId} className="block text-[12px] font-semibold uppercase tracking-[0.2px] text-[var(--color-text-sub)]">{label}</label>}
       <div
         className={cn(
-          'relative border-2 border-dashed rounded-lg p-6 transition-colors',
-          disabled
-            ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
-            : dragOver
-            ? 'border-blue-400 bg-blue-50'
-            : 'border-gray-300 hover:border-gray-400',
-          error && 'border-red-300'
+          'cursor-pointer rounded-[8px] border border-dashed border-[var(--color-border-med)] bg-[var(--color-surface-alt)] px-4 py-5 text-center transition-colors duration-150',
+          dragOver && 'border-[var(--color-accent)] bg-[var(--color-accent-sub)]',
+          disabled && 'cursor-not-allowed opacity-60',
+          error && 'border-[var(--color-danger)]'
         )}
-        onDrop={disabled ? undefined : handleDrop}
-        onDragOver={disabled ? undefined : handleDragOver}
-        onDragLeave={disabled ? undefined : handleDragLeave}
+        onClick={handleClick}
+        onDrop={(event) => {
+          event.preventDefault();
+          setDragOver(false);
+          if (!disabled) handleFileSelect(Array.from(event.dataTransfer.files)[0] || null);
+        }}
+        onDragOver={(event) => {
+          event.preventDefault();
+          if (!disabled) setDragOver(true);
+        }}
+        onDragLeave={(event) => {
+          event.preventDefault();
+          setDragOver(false);
+        }}
       >
         <input
           ref={fileInputRef}
           id={inputId}
           type="file"
           accept={accept}
-          onChange={(e) => {
-            const file = e.target.files?.[0] || null;
-            handleFileSelect(file);
-          }}
+          onChange={(event) => handleFileSelect(event.target.files?.[0] || null)}
           className="hidden"
           disabled={disabled}
           aria-describedby={error ? `${inputId}-error` : undefined}
         />
 
         {preview ? (
-          <div className="text-center">
-            <div className="relative mx-auto h-32 w-32 mb-4">
-              <Image
-                src={preview}
-                alt="Preview"
-                fill
-                className="object-cover rounded-lg"
-                sizes="128px"
-              />
+          <div className="flex items-center justify-center gap-3 text-left">
+            <div className="relative h-9 w-12 overflow-hidden rounded-[4px] bg-[var(--color-surface)]">
+              <Image src={preview} alt="Selected image" fill className="object-cover" sizes="48px" />
             </div>
-            <div className="flex justify-center space-x-2">
-              <button
-                type="button"
-                onClick={handleClick}
-                disabled={disabled}
-                className={cn(
-                  "text-sm transition-colors",
-                  disabled
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-blue-600 hover:text-blue-500"
-                )}
-              >
-                Change Image
-              </button>
-              <button
-                type="button"
-                onClick={handleRemove}
-                disabled={disabled}
-                className={cn(
-                  "text-sm transition-colors",
-                  disabled
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-red-600 hover:text-red-500"
-                )}
-              >
-                Remove
-              </button>
+            <div>
+              <div className="text-[13px] font-semibold text-[var(--color-text)]">Image selected</div>
+              <button type="button" className="text-[12px] font-semibold text-[var(--color-accent)]" onClick={handleClick} disabled={disabled}>Change</button>
             </div>
           </div>
         ) : (
-          <div className="text-center">
-            <svg
-              className="mx-auto h-12 w-12 text-gray-400"
-              stroke="currentColor"
-              fill="none"
-              viewBox="0 0 48 48"
-            >
-              <path
-                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <div className="mt-4">
-              <button
-                type="button"
-                onClick={handleClick}
-                disabled={disabled}
-                className={cn(
-                  "font-medium transition-colors",
-                  disabled
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-blue-600 hover:text-blue-500"
-                )}
-              >
-                Upload an image
-              </button>
-              <p className={cn(
-                "text-sm mt-1",
-                disabled ? "text-gray-400" : "text-gray-500"
-              )}>
-                {disabled ? "Upload disabled" : "or drag and drop"}
-              </p>
+          <div>
+            <div className="mx-auto mb-2 flex justify-center text-[var(--color-text-muted)]"><ImageIcon /></div>
+            <div className="text-[13px] text-[var(--color-text-sub)]">
+              Drop an image or <span className="font-semibold text-[var(--color-accent)]">browse</span>
             </div>
-            <p className="text-xs text-gray-500 mt-2">
-              PNG, JPG, GIF up to {formatFileSize(MAX_FILE_SIZE)}
-            </p>
+            <div className="mt-1 text-[11px] text-[var(--color-text-muted)]">PNG, JPG up to {formatFileSize(MAX_FILE_SIZE)}</div>
           </div>
         )}
       </div>
-
-      {error && (
-        <p
-          id={`${inputId}-error`}
-          className="text-sm text-red-600"
-          role="alert"
-        >
-          {error}
-        </p>
-      )}
+      {error && <p id={`${inputId}-error`} className="text-[11px] text-[var(--color-danger)]" role="alert">{error}</p>}
     </div>
   );
 };
