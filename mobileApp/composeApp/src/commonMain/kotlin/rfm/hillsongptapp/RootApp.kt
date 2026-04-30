@@ -30,6 +30,7 @@ import rfm.hillsongptapp.feature.groups.GroupsScreen
 import rfm.hillsongptapp.feature.giving.GivingScreen
 import rfm.hillsongptapp.feature.feed.FeedScreen
 import rfm.hillsongptapp.feature.events.EventDetailScreen
+import rfm.hillsongptapp.feature.events.EventQrCheckInScreen
 import rfm.hillsongptapp.feature.events.EventsScreen
 import rfm.hillsongptapp.feature.events.MyQrScreen
 import rfm.hillsongptapp.feature.calendar.CalendarScreen
@@ -66,6 +67,9 @@ fun RootNavigation() {
             events = { EventsScreen(navController = rootNavController) },
             eventDetail = { eventId ->
                 EventDetailScreen(eventId = eventId, navController = rootNavController)
+            },
+            eventQrCheckIn = { eventId ->
+                EventQrCheckInScreen(eventId = eventId, navController = rootNavController)
             },
             myQr = { MyQrScreen(navController = rootNavController) },
             calendar = { CalendarScreen(navController = rootNavController) },

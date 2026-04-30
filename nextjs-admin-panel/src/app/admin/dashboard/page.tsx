@@ -92,7 +92,7 @@ export default function DashboardPage() {
                 key={href}
                 type="button"
                 onClick={() => router.push(href)}
-                className="flex flex-col items-center gap-[7px] rounded-[8px] border border-[var(--color-border)] p-[12px_8px] text-center transition-colors duration-150 hover:border-[rgba(201,149,42,0.3)] hover:bg-[var(--color-accent-sub)]"
+                className="flex cursor-pointer flex-col items-center gap-[7px] rounded-[8px] border border-[var(--color-border)] p-[12px_8px] text-center transition-colors duration-150 hover:border-[rgba(201,149,42,0.3)] hover:bg-[var(--color-accent-sub)]"
               >
                 <Icon className="text-[var(--color-accent)]" />
                 <span className="text-[10px] font-medium text-[var(--color-text-sub)] sm:text-[11px]">{label}</span>

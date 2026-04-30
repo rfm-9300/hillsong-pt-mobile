@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import rfm.hillsongptapp.core.network.api.Event
 import rfm.hillsongptapp.core.network.api.EventsApiService
+import rfm.hillsongptapp.core.network.api.ProfileApiService
 import rfm.hillsongptapp.core.network.api.UserEventStatusResponse
 import rfm.hillsongptapp.core.network.result.NetworkException
 import rfm.hillsongptapp.core.network.result.NetworkResult
@@ -20,10 +21,12 @@ data class EventDetailUiState(
     val isActing: Boolean = false,
     val error: String? = null,
     val successMessage: String? = null,
+    val canScanQr: Boolean = false,
 )
 
 class EventDetailViewModel(
     private val eventsApiService: EventsApiService,
+    private val profileApiService: ProfileApiService,
     val baseUrl: String,
 ) : ViewModel() {
 
@@ -36,15 +39,18 @@ class EventDetailViewModel(
 
             val eventDeferred = async { eventsApiService.getEventById(eventId) }
             val statusDeferred = async { eventsApiService.getMyStatus(eventId) }
+            val profileDeferred = async { profileApiService.getProfile() }
 
             val eventResult = eventDeferred.await()
             val statusResult = statusDeferred.await()
+            val profileResult = profileDeferred.await()
 
             val event = (eventResult as? NetworkResult.Success)?.data
             val status = (statusResult as? NetworkResult.Success)?.data
+            val canScanQr = (profileResult as? NetworkResult.Success)?.data?.isAdmin == true
             val error = (eventResult as? NetworkResult.Error)?.exception?.message
 
-            _uiState.value = EventDetailUiState(event = event, status = status, error = error)
+            _uiState.value = EventDetailUiState(event = event, status = status, error = error, canScanQr = canScanQr)
         }
     }
 

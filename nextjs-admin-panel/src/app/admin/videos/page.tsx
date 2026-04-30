@@ -105,7 +105,7 @@ export default function VideosPage() {
                   <div key="thumb" className="h-[42px] w-[72px] overflow-hidden rounded-[5px] bg-[var(--color-surface-alt)]">
                     {thumb ? <img src={thumb} alt={video.title} className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-[var(--color-text-muted)]"><ImageIcon /></div>}
                   </div>,
-                  <button key="title" type="button" className="truncate text-left font-semibold text-[var(--color-text)] hover:text-[var(--color-accent)]" onClick={() => router.push(`/admin/videos/${video.id}`)}>{video.title}</button>,
+                  <button key="title" type="button" className="cursor-pointer truncate text-left font-semibold text-[var(--color-text)] hover:text-[var(--color-accent)]" onClick={() => router.push(`/admin/videos/${video.id}`)}>{video.title}</button>,
                   <Badge key="status" color={video.active ? 'green' : 'neutral'}>{video.active ? 'Active' : 'Hidden'}</Badge>,
                   <span key="order">#{video.displayOrder}</span>,
                   <span key="date">{formatDate(video.createdAt)}</span>,

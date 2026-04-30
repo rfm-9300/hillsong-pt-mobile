@@ -26,7 +26,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, actions, bread
                 {index > 0 && <span className="text-[var(--color-text-muted)]">/</span>}
                 <button
                   type="button"
-                  className={last ? 'cursor-default text-[var(--color-text-sub)]' : 'text-[var(--color-accent)]'}
+                  className={last ? 'cursor-default text-[var(--color-text-sub)]' : 'cursor-pointer text-[var(--color-accent)]'}
                   onClick={() => {
                     if (!last && crumb.toLowerCase() === 'admin') router.push('/admin/dashboard');
                   }}

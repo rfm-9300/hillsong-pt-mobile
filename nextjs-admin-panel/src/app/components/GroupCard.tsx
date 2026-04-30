@@ -39,7 +39,7 @@ export default function GroupCard({ group, onDelete }: GroupCardProps) {
         <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-[1fr_200px_180px_120px_100px] md:items-center">
           <div className="min-w-0">
             <div className="mb-1 flex flex-wrap items-center gap-2">
-              <button type="button" onClick={handleEdit} className="truncate text-left text-[14px] font-bold text-[var(--color-text)] hover:text-[var(--color-accent)]">
+              <button type="button" onClick={handleEdit} className="cursor-pointer truncate text-left text-[14px] font-bold text-[var(--color-text)] hover:text-[var(--color-accent)]">
                 {group.name}
               </button>
               <Badge color={group.isActive ? 'green' : 'neutral'} size="xs">{group.isActive ? 'Active' : 'Hidden'}</Badge>

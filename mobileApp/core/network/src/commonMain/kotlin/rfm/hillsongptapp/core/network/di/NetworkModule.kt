@@ -15,6 +15,8 @@ import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 import rfm.hillsongptapp.core.network.api.AuthApiService
 import rfm.hillsongptapp.core.network.api.AuthApiServiceImpl
+import rfm.hillsongptapp.core.network.api.AttendanceApiService
+import rfm.hillsongptapp.core.network.api.AttendanceApiServiceImpl
 import rfm.hillsongptapp.core.network.api.CalendarApiService
 import rfm.hillsongptapp.core.network.api.CalendarApiServiceImpl
 import rfm.hillsongptapp.core.network.api.CheckInRequestApiService
@@ -132,6 +134,13 @@ val networkModule =
                 baseUrl = get(qualifier = org.koin.core.qualifier.named("baseUrl"))
             )
         }
+
+        single<AttendanceApiService> {
+            AttendanceApiServiceImpl(
+                httpClient = get(),
+                baseUrl = get(qualifier = org.koin.core.qualifier.named("baseUrl"))
+            )
+        }
         
         single<EncountersApiService> {
             EncountersApiServiceImpl(
@@ -200,6 +209,7 @@ val networkModule =
                 posts = get(),
                 profile = get(),
                 events = get(),
+                attendance = get(),
                 groups = get(),
                 prayer = get(),
                 kids = get()

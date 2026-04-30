@@ -25,6 +25,7 @@ fun NavGraphBuilder.homeGraph(
     feed: @Composable AnimatedContentScope.() -> Unit,
     events: @Composable AnimatedContentScope.() -> Unit,
     eventDetail: @Composable AnimatedContentScope.(eventId: String) -> Unit,
+    eventQrCheckIn: @Composable AnimatedContentScope.(eventId: String) -> Unit,
     myQr: @Composable AnimatedContentScope.() -> Unit,
     calendar: @Composable AnimatedContentScope.() -> Unit,
     homeScreen: @Composable AnimatedContentScope.() -> Unit,
@@ -95,6 +96,10 @@ fun NavGraphBuilder.homeGraph(
             val args = backStackEntry.toRoute<HomeNav.EventDetailScreen>()
             eventDetail(args.eventId)
         }
+        composable<HomeNav.EventQrCheckInScreen> { backStackEntry ->
+            val args = backStackEntry.toRoute<HomeNav.EventQrCheckInScreen>()
+            eventQrCheckIn(args.eventId)
+        }
         composable<HomeNav.MyQrScreen> {
             myQr()
         }
@@ -142,6 +147,8 @@ sealed class HomeNav {
     object EventsScreen : HomeNav()
     @Serializable
     data class EventDetailScreen(val eventId: String) : HomeNav()
+    @Serializable
+    data class EventQrCheckInScreen(val eventId: String) : HomeNav()
     @Serializable
     object MyQrScreen : HomeNav()
     @Serializable

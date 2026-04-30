@@ -87,7 +87,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose }) => {
               <p className="text-[10px] uppercase tracking-[1.2px] text-[var(--color-sidebar-text)]">Admin Panel</p>
             </div>
           </div>
-          <button onClick={onClose} className="flex min-h-touch min-w-touch items-center justify-center rounded-[7px] text-[var(--color-sidebar-text)] hover:bg-white/[0.04] hover:text-white" aria-label="Close navigation menu">
+          <button onClick={onClose} className="flex min-h-touch min-w-touch cursor-pointer items-center justify-center rounded-[7px] text-[var(--color-sidebar-text)] hover:bg-white/[0.04] hover:text-white" aria-label="Close navigation menu">
             <XIcon />
           </button>
         </div>
@@ -118,7 +118,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose }) => {
           })}
           <button
             type="button"
-            className={cn('mb-px flex min-h-touch w-full items-center gap-2.5 rounded-[7px] border-l-2 px-3 py-2.5 text-left text-[13px]', attendanceActive ? 'border-l-[var(--color-accent)] bg-[var(--color-sidebar-active-bg)] font-semibold text-white' : 'border-l-transparent text-[var(--color-sidebar-text)] hover:bg-white/[0.04]')}
+            className={cn('mb-px flex min-h-touch w-full cursor-pointer items-center gap-2.5 rounded-[7px] border-l-2 px-3 py-2.5 text-left text-[13px]', attendanceActive ? 'border-l-[var(--color-accent)] bg-[var(--color-sidebar-active-bg)] font-semibold text-white' : 'border-l-transparent text-[var(--color-sidebar-text)] hover:bg-white/[0.04]')}
             onClick={() => setAttendanceOpen((open) => !open)}
           >
             <AttendanceIcon className={attendanceActive ? 'text-[var(--color-accent)]' : 'text-[var(--color-sidebar-text)]'} />
@@ -146,7 +146,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose }) => {
         </nav>
 
         <div className="border-t border-[var(--color-sidebar-border)] p-4 pb-safe">
-          <button onClick={handleLogout} className="flex min-h-touch w-full items-center justify-center gap-2 rounded-[7px] bg-white/[0.04] px-4 py-3 text-[13px] font-semibold text-[var(--color-sidebar-text)] hover:text-white">
+          <button onClick={handleLogout} className="flex min-h-touch w-full cursor-pointer items-center justify-center gap-2 rounded-[7px] bg-white/[0.04] px-4 py-3 text-[13px] font-semibold text-[var(--color-sidebar-text)] hover:text-white">
             <SignoutIcon />
             Sign Out
           </button>

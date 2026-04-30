@@ -210,7 +210,7 @@ export default function EventDetailPage() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`-mb-px whitespace-nowrap border-b-2 px-4 py-2.5 text-[13px] font-medium transition-colors ${
+              className={`-mb-px cursor-pointer whitespace-nowrap border-b-2 px-4 py-2.5 text-[13px] font-medium transition-colors ${
                 activeTab === tab
                   ? 'border-[var(--color-accent)] text-[var(--color-accent)]'
                   : 'border-transparent text-[var(--color-text-sub)] hover:text-[var(--color-text)]'

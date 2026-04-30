@@ -35,7 +35,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className, onNavigate })
             <button
               type="button"
               disabled={last}
-              className={last ? 'cursor-default text-[var(--color-text-sub)]' : 'text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]'}
+              className={last ? 'cursor-default text-[var(--color-text-sub)]' : 'cursor-pointer text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]'}
               onClick={() => {
                 if (!last && href) (onNavigate || router.push)(href);
               }}

@@ -1,6 +1,7 @@
 package rfm.hillsongptapp.core.network
 
 import rfm.hillsongptapp.core.network.api.AuthApiService
+import rfm.hillsongptapp.core.network.api.AttendanceApiService
 import rfm.hillsongptapp.core.network.api.EventsApiService
 import rfm.hillsongptapp.core.network.api.GroupsApiService
 import rfm.hillsongptapp.core.network.api.KidsApiService
@@ -25,6 +26,7 @@ class HillsongApiClient(
     val posts: PostsApiService,
     val profile: ProfileApiService,
     val events: EventsApiService,
+    val attendance: AttendanceApiService,
     val groups: GroupsApiService,
     val prayer: PrayerApiService,
     val kids: KidsApiService

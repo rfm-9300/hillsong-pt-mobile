@@ -84,7 +84,7 @@ function LoginContent() {
                 <Input label="Password" type={showPassword ? 'text' : 'password'} value={password} onChange={setPassword} required autoComplete="current-password" className="[&_input]:pr-10" />
                 <button
                   type="button"
-                  className="absolute bottom-[8px] right-2 flex min-h-touch min-w-touch items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-sub)] sm:bottom-[9px] sm:right-1 sm:min-h-0 sm:min-w-0"
+                  className="absolute bottom-[8px] right-2 flex min-h-touch min-w-touch cursor-pointer items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-sub)] sm:bottom-[9px] sm:right-1 sm:min-h-0 sm:min-w-0"
                   onClick={() => setShowPassword((shown) => !shown)}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
@@ -92,7 +92,7 @@ function LoginContent() {
                 </button>
               </div>
               <div className="mt-2 text-right">
-                <button type="button" className="text-[11px] font-semibold text-[var(--color-accent)]">Forgot password?</button>
+                <button type="button" className="cursor-pointer text-[11px] font-semibold text-[var(--color-accent)]">Forgot password?</button>
               </div>
             </div>
 

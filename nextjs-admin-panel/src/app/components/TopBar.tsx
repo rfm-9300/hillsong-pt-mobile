@@ -21,7 +21,7 @@ export default function TopBar() {
                 type="button"
                 disabled={last}
                 onClick={() => !last && router.push(crumb.route)}
-                className={last ? 'cursor-default text-[var(--color-text-sub)]' : 'font-medium text-[var(--color-accent)]'}
+                className={last ? 'cursor-default text-[var(--color-text-sub)]' : 'cursor-pointer font-medium text-[var(--color-accent)]'}
               >
                 {crumb.label}
               </button>
@@ -32,7 +32,7 @@ export default function TopBar() {
       <button
         type="button"
         onClick={() => router.refresh()}
-        className="flex min-h-touch min-w-touch items-center justify-center rounded-[7px] bg-[var(--color-surface-alt)] text-[var(--color-text-sub)] transition-colors hover:text-[var(--color-text)] md:h-7 md:w-7 md:min-h-0 md:min-w-0"
+        className="flex min-h-touch min-w-touch cursor-pointer items-center justify-center rounded-[7px] bg-[var(--color-surface-alt)] text-[var(--color-text-sub)] transition-colors hover:text-[var(--color-text)] md:h-7 md:w-7 md:min-h-0 md:min-w-0"
         aria-label="Refresh"
       >
         <RefreshIcon />

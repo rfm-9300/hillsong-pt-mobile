@@ -43,6 +43,7 @@
             <option value="$PROJECT_DIR$/feature/ministries" />
             <option value="$PROJECT_DIR$/feature/prayer" />
             <option value="$PROJECT_DIR$/feature/profile" />
+            <option value="$PROJECT_DIR$/feature/qrcode" />
             <option value="$PROJECT_DIR$/feature/settings" />
             <option value="$PROJECT_DIR$/feature/stream" />
             <option value="$PROJECT_DIR$/feature/videoPlayer" />

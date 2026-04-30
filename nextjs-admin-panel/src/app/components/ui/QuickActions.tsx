@@ -140,7 +140,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
               key={action.id}
               onClick={() => handleActionClick(action)}
               className={cn(
-                'p-4 rounded-lg border-2 border-dashed transition-all duration-200 text-left',
+                'cursor-pointer p-4 rounded-lg border-2 border-dashed transition-all duration-200 text-left',
                 'hover:border-solid hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
                 colors.bg,
                 colors.border

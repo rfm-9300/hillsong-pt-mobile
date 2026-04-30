@@ -85,7 +85,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             </div>
             <div>
               <div className="text-[13px] font-semibold text-[var(--color-text)]">Image selected</div>
-              <button type="button" className="text-[12px] font-semibold text-[var(--color-accent)]" onClick={handleClick} disabled={disabled}>Change</button>
+              <button type="button" className="cursor-pointer text-[12px] font-semibold text-[var(--color-accent)]" onClick={handleClick} disabled={disabled}>Change</button>
             </div>
           </div>
         ) : (

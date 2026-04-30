@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import org.koin.compose.viewmodel.koinViewModel
 import rfm.hillsongptapp.core.designsystem.theme.HillsongColors
+import rfm.hillsongptapp.core.navigation.navigateToEventQrCheckIn
 import rfm.hillsongptapp.core.navigation.navigateToMyQr
 
 @Composable
@@ -303,6 +304,24 @@ fun EventDetailScreen(
                             val currentStatus = status?.status ?: "NOT_JOINED"
                             val canJoin = status?.canJoin ?: (!event.isAtCapacity)
                             val canLeave = status?.canLeave ?: false
+
+                            if (uiState.canScanQr) {
+                                OutlinedButton(
+                                    onClick = { navController.navigateToEventQrCheckIn(eventId) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(10.dp),
+                                ) {
+                                    Text(
+                                        text = "Ler QR para check-in",
+                                        style = TextStyle(
+                                            fontFamily = AppFonts.andika(),
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 14.sp,
+                                        ),
+                                    )
+                                }
+                                Spacer(Modifier.height(12.dp))
+                            }
 
                             when (currentStatus) {
                                 "ATTENDEE" -> {

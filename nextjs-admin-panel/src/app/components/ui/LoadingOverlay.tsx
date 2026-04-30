@@ -112,7 +112,7 @@ const LoadingOverlay: React.FC<EnhancedLoadingOverlayProps> = ({
     return (
       <button
         onClick={onCancel}
-        className="mt-3 text-sm text-gray-500 hover:text-gray-700 underline"
+        className="mt-3 cursor-pointer text-sm text-gray-500 underline hover:text-gray-700"
       >
         Cancel
       </button>

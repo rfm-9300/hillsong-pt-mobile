@@ -77,7 +77,7 @@ export default function UsersList({ users, loading = false, error, onEdit, onDel
         </div>
         <div className="mt-3 text-[12px] text-[var(--color-text-sub)]">
           Showing {filteredUsers.length} of {users.length}
-          {hasFilters && <button type="button" onClick={clearFilters} className="ml-2 font-semibold text-[var(--color-accent)]">Clear filters</button>}
+          {hasFilters && <button type="button" onClick={clearFilters} className="ml-2 cursor-pointer font-semibold text-[var(--color-accent)]">Clear filters</button>}
         </div>
       </Card>
 
@@ -142,7 +142,7 @@ export default function UsersList({ users, loading = false, error, onEdit, onDel
 
 function ViewButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" onClick={onClick} className={`flex h-8 w-8 items-center justify-center transition-colors ${active ? 'bg-[var(--color-accent-sub)] text-[var(--color-accent)]' : 'text-[var(--color-text-sub)] hover:bg-[var(--color-surface-alt)]'}`}>
+    <button type="button" onClick={onClick} className={`flex h-8 w-8 cursor-pointer items-center justify-center transition-colors ${active ? 'bg-[var(--color-accent-sub)] text-[var(--color-accent)]' : 'text-[var(--color-text-sub)] hover:bg-[var(--color-surface-alt)]'}`}>
       {children}
     </button>
   );

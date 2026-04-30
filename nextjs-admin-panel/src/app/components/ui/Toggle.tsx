@@ -21,7 +21,7 @@ export default function Toggle({
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={cn(
-          'relative h-5 w-9 rounded-full border transition-colors duration-150',
+          'relative h-5 w-9 cursor-pointer rounded-full border transition-colors duration-150',
           checked ? 'border-[var(--color-accent)] bg-[var(--color-accent)]' : 'border-[var(--color-border-med)] bg-[var(--color-surface-alt)]'
         )}
       >

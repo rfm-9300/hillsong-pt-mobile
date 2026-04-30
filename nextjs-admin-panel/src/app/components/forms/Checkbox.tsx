@@ -24,7 +24,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
           onChange={(e) => onChange(e.target.checked)}
           disabled={disabled}
           className={cn(
-            'h-4 w-4 text-blue-600 border-gray-300 rounded',
+            'h-4 w-4 cursor-pointer text-blue-600 border-gray-300 rounded',
             'focus:ring-2 focus:ring-blue-500',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             error && 'border-red-300 focus:ring-red-500'
@@ -36,7 +36,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
           <label
             htmlFor={checkboxId}
             className={cn(
-              'ml-2 block text-sm text-gray-700',
+              'ml-2 block cursor-pointer text-sm text-gray-700',
               disabled && 'opacity-50 cursor-not-allowed'
             )}
           >

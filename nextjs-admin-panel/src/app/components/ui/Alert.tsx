@@ -17,7 +17,7 @@ const Alert: React.FC<AlertProps> = ({ type, message, onClose, className }) => (
     <span className="mt-0.5 shrink-0">{type === 'success' ? <CheckIcon /> : <AlertIcon />}</span>
     <p className="flex-1 text-[13px] leading-[1.4]">{message}</p>
     {onClose && (
-      <button type="button" onClick={onClose} className="shrink-0 rounded p-0.5 opacity-70 hover:opacity-100" aria-label="Dismiss alert">
+      <button type="button" onClick={onClose} className="shrink-0 cursor-pointer rounded p-0.5 opacity-70 hover:opacity-100" aria-label="Dismiss alert">
         <XIcon />
       </button>
     )}

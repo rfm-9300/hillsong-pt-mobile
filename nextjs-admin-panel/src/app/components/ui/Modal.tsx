@@ -39,7 +39,7 @@ const Modal: React.FC<ModalProps> = ({ show, title, size = 'md', onClose, childr
       >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4">
           <h3 className="text-[15px] font-bold text-[var(--color-text)]">{title}</h3>
-          <button type="button" onClick={onClose} className="flex min-h-touch min-w-touch items-center justify-center rounded-[7px] text-[var(--color-text-sub)] hover:bg-[var(--color-surface-alt)] sm:min-h-0 sm:min-w-0 sm:p-1.5" aria-label="Close modal">
+          <button type="button" onClick={onClose} className="flex min-h-touch min-w-touch cursor-pointer items-center justify-center rounded-[7px] text-[var(--color-text-sub)] hover:bg-[var(--color-surface-alt)] sm:min-h-0 sm:min-w-0 sm:p-1.5" aria-label="Close modal">
             <XIcon />
           </button>
         </div>

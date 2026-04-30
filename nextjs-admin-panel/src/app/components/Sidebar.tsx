@@ -153,7 +153,7 @@ function NavLink({ href, active, icon, children }: { href: string; active: boole
 
 function navClass(active: boolean) {
   return cn(
-    'mb-px flex items-center gap-[9px] rounded-[7px] border-l-2 px-2.5 py-[7px] text-[13px] transition-colors duration-150',
+    'mb-px flex cursor-pointer items-center gap-[9px] rounded-[7px] border-l-2 px-2.5 py-[7px] text-[13px] transition-colors duration-150',
     active
       ? 'border-l-[var(--color-sidebar-active-border)] bg-[var(--color-sidebar-active-bg)] font-semibold text-[#F9F8F6]'
       : 'border-l-transparent font-normal text-[var(--color-sidebar-text)] hover:bg-white/[0.04]'

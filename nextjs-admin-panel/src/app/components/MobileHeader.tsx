@@ -19,7 +19,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuClick }) => {
       <div className="flex min-w-0 items-center gap-2">
         <button
           onClick={onMenuClick}
-          className="flex min-h-touch min-w-touch items-center justify-center rounded-[7px] text-[var(--color-sidebar-text)] transition-colors hover:bg-white/[0.04] hover:text-white"
+          className="flex min-h-touch min-w-touch cursor-pointer items-center justify-center rounded-[7px] text-[var(--color-sidebar-text)] transition-colors hover:bg-white/[0.04] hover:text-white"
           aria-label="Open navigation menu"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -34,7 +34,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuClick }) => {
       <button
         type="button"
         onClick={() => router.refresh()}
-        className="flex min-h-touch min-w-touch items-center justify-center rounded-[7px] text-[var(--color-sidebar-text)] transition-colors hover:bg-white/[0.04] hover:text-white"
+        className="flex min-h-touch min-w-touch cursor-pointer items-center justify-center rounded-[7px] text-[var(--color-sidebar-text)] transition-colors hover:bg-white/[0.04] hover:text-white"
         aria-label="Refresh"
       >
         <RefreshIcon />

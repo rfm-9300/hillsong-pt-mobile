@@ -63,7 +63,7 @@ export default function PostsList({ posts, onEdit, onDelete, loading = false }: 
                   <ImageIcon />
                 )}
               </div>,
-              <button key="title" type="button" onClick={() => onEdit(post.id)} className="block truncate text-left font-semibold text-[var(--color-text)] hover:text-[var(--color-accent)]">
+              <button key="title" type="button" onClick={() => onEdit(post.id)} className="block cursor-pointer truncate text-left font-semibold text-[var(--color-text)] hover:text-[var(--color-accent)]">
                 {post.title}
               </button>,
               <span key="date">{formatDate(post.date || post.createdAt)}</span>,

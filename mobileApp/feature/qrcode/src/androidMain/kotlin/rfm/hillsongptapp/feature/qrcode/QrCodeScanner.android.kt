@@ -1,4 +1,4 @@
-package rfm.hillsongptapp.feature.kids.util
+package rfm.hillsongptapp.feature.qrcode
 
 import android.annotation.SuppressLint
 import androidx.camera.core.CameraSelector
@@ -15,37 +15,32 @@ import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-/**
- * Android implementation of QR code scanner using ML Kit and CameraX
- */
-class AndroidQRCodeScanner(
+class AndroidQrCodeScanner(
     private val lifecycleOwner: LifecycleOwner,
     private val previewView: PreviewView
-) : QRCodeScanner {
-    
+) : QrCodeScanner {
+
     private var cameraProvider: ProcessCameraProvider? = null
     private var imageAnalysis: ImageAnalysis? = null
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private var isCurrentlyScanning = false
-    private var onQRCodeDetectedCallback: ((String) -> Unit)? = null
+    private var onQrCodeDetectedCallback: ((String) -> Unit)? = null
     private var onErrorCallback: ((String) -> Unit)? = null
-    
+
     private val barcodeScanner = BarcodeScanning.getClient()
-    
+
     override fun startScanning(
-        onQRCodeDetected: (String) -> Unit,
+        onQrCodeDetected: (String) -> Unit,
         onError: (String) -> Unit
     ) {
-        if (isCurrentlyScanning) {
-            return
-        }
-        
+        if (isCurrentlyScanning) return
+
         isCurrentlyScanning = true
-        onQRCodeDetectedCallback = onQRCodeDetected
+        onQrCodeDetectedCallback = onQrCodeDetected
         onErrorCallback = onError
-        
+
         val cameraProviderFuture = ProcessCameraProvider.getInstance(previewView.context)
-        
+
         cameraProviderFuture.addListener({
             try {
                 cameraProvider = cameraProviderFuture.get()
@@ -56,45 +51,36 @@ class AndroidQRCodeScanner(
             }
         }, ContextCompat.getMainExecutor(previewView.context))
     }
-    
+
     override fun stopScanning() {
         isCurrentlyScanning = false
         cameraProvider?.unbindAll()
-        onQRCodeDetectedCallback = null
+        onQrCodeDetectedCallback = null
         onErrorCallback = null
     }
-    
+
     override fun isScanning(): Boolean = isCurrentlyScanning
-    
+
     private fun bindCameraUseCases() {
         val cameraProvider = cameraProvider ?: return
-        
-        // Preview use case
         val preview = Preview.Builder()
             .build()
             .also {
                 it.setSurfaceProvider(previewView.surfaceProvider)
             }
-        
-        // Image analysis use case for QR code detection
+
         imageAnalysis = ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
             .also {
-                it.setAnalyzer(cameraExecutor, QRCodeAnalyzer())
+                it.setAnalyzer(cameraExecutor, QrCodeAnalyzer())
             }
-        
-        // Select back camera
-        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-        
+
         try {
-            // Unbind all use cases before rebinding
             cameraProvider.unbindAll()
-            
-            // Bind use cases to camera
             cameraProvider.bindToLifecycle(
                 lifecycleOwner,
-                cameraSelector,
+                CameraSelector.DEFAULT_BACK_CAMERA,
                 preview,
                 imageAnalysis
             )
@@ -103,8 +89,8 @@ class AndroidQRCodeScanner(
             isCurrentlyScanning = false
         }
     }
-    
-    private inner class QRCodeAnalyzer : ImageAnalysis.Analyzer {
+
+    private inner class QrCodeAnalyzer : ImageAnalysis.Analyzer {
         @SuppressLint("UnsafeOptInUsageError")
         override fun analyze(imageProxy: ImageProxy) {
             val mediaImage = imageProxy.image
@@ -113,14 +99,13 @@ class AndroidQRCodeScanner(
                     mediaImage,
                     imageProxy.imageInfo.rotationDegrees
                 )
-                
+
                 barcodeScanner.process(image)
                     .addOnSuccessListener { barcodes ->
                         for (barcode in barcodes) {
                             if (barcode.format == Barcode.FORMAT_QR_CODE) {
                                 barcode.rawValue?.let { qrCode ->
-                                    onQRCodeDetectedCallback?.invoke(qrCode)
-                                    // Stop scanning after first successful detection
+                                    onQrCodeDetectedCallback?.invoke(qrCode)
                                     stopScanning()
                                 }
                             }
@@ -137,7 +122,7 @@ class AndroidQRCodeScanner(
             }
         }
     }
-    
+
     fun cleanup() {
         stopScanning()
         cameraExecutor.shutdown()
@@ -145,12 +130,9 @@ class AndroidQRCodeScanner(
     }
 }
 
-/**
- * Factory function to create Android QR code scanner
- */
-actual fun createQRCodeScanner(context: Any): QRCodeScanner {
+actual fun createQrCodeScanner(context: Any): QrCodeScanner {
     require(context is Pair<*, *>) { "Context must be Pair<LifecycleOwner, PreviewView> on Android" }
     val lifecycleOwner = context.first as LifecycleOwner
     val previewView = context.second as PreviewView
-    return AndroidQRCodeScanner(lifecycleOwner, previewView)
+    return AndroidQrCodeScanner(lifecycleOwner, previewView)
 }

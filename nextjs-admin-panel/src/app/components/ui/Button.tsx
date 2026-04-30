@@ -33,7 +33,7 @@ const Button: React.FC<ButtonProps> = ({
   <button
     type={type}
     className={cn(
-      'inline-flex items-center justify-center gap-1.5 rounded-[7px] border font-semibold transition-all duration-150 ease-out',
+      'inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-[7px] border font-semibold transition-all duration-150 ease-out',
       'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)]',
       'disabled:cursor-not-allowed disabled:opacity-50',
       variants[variant],

@@ -1,69 +1,70 @@
-package rfm.hillsongptapp.feature.kids.util
+package rfm.hillsongptapp.feature.qrcode
 
-import platform.AVFoundation.*
-import platform.CoreGraphics.CGRect
-import platform.CoreMedia.CMSampleBufferGetImageBuffer
-import platform.Foundation.NSError
-import platform.QuartzCore.CALayer
+import kotlinx.cinterop.ExperimentalForeignApi
+import platform.AVFoundation.AVCaptureConnection
+import platform.AVFoundation.AVCaptureDevice
+import platform.AVFoundation.AVCaptureDeviceInput
+import platform.AVFoundation.AVCaptureMetadataOutput
+import platform.AVFoundation.AVCaptureMetadataOutputObjectsDelegateProtocol
+import platform.AVFoundation.AVCaptureOutput
+import platform.AVFoundation.AVCaptureSession
+import platform.AVFoundation.AVCaptureVideoPreviewLayer
+import platform.AVFoundation.AVLayerVideoGravityResizeAspectFill
+import platform.AVFoundation.AVMediaTypeVideo
+import platform.AVFoundation.AVMetadataMachineReadableCodeObject
+import platform.AVFoundation.AVMetadataObjectTypeQRCode
+import platform.Foundation.NSObject
 import platform.UIKit.UIView
-import platform.darwin.NSObject
-import kotlinx.cinterop.*
 
-/**
- * iOS implementation of QR code scanner using AVFoundation
- */
-class IOSQRCodeScanner(
+class IOSQrCodeScanner(
     private val previewView: UIView
-) : QRCodeScanner {
-    
+) : QrCodeScanner {
+
     private var captureSession: AVCaptureSession? = null
     private var previewLayer: AVCaptureVideoPreviewLayer? = null
+    private var metadataDelegate: QrCodeMetadataDelegate? = null
     private var isCurrentlyScanning = false
-    private var onQRCodeDetectedCallback: ((String) -> Unit)? = null
+    private var onQrCodeDetectedCallback: ((String) -> Unit)? = null
     private var onErrorCallback: ((String) -> Unit)? = null
-    
+
     override fun startScanning(
-        onQRCodeDetected: (String) -> Unit,
+        onQrCodeDetected: (String) -> Unit,
         onError: (String) -> Unit
     ) {
-        if (isCurrentlyScanning) {
-            return
-        }
-        
+        if (isCurrentlyScanning) return
+
         isCurrentlyScanning = true
-        onQRCodeDetectedCallback = onQRCodeDetected
+        onQrCodeDetectedCallback = onQrCodeDetected
         onErrorCallback = onError
-        
+
         setupCaptureSession()
     }
-    
+
     override fun stopScanning() {
         isCurrentlyScanning = false
         captureSession?.stopRunning()
         previewLayer?.removeFromSuperlayer()
         captureSession = null
         previewLayer = null
-        onQRCodeDetectedCallback = null
+        metadataDelegate = null
+        onQrCodeDetectedCallback = null
         onErrorCallback = null
     }
-    
+
     override fun isScanning(): Boolean = isCurrentlyScanning
-    
+
     @OptIn(ExperimentalForeignApi::class)
     private fun setupCaptureSession() {
         val session = AVCaptureSession()
         captureSession = session
-        
-        // Get the default video capture device
+
         val videoCaptureDevice = AVCaptureDevice.defaultDeviceWithMediaType(AVMediaTypeVideo)
-        
         if (videoCaptureDevice == null) {
             onErrorCallback?.invoke("No camera available")
             isCurrentlyScanning = false
             return
         }
-        
-        // Create input from the capture device
+
         val videoInput = try {
             AVCaptureDeviceInput.deviceInputWithDevice(videoCaptureDevice, null) as AVCaptureDeviceInput
         } catch (e: Exception) {
@@ -71,7 +72,7 @@ class IOSQRCodeScanner(
             isCurrentlyScanning = false
             return
         }
-        
+
         if (session.canAddInput(videoInput)) {
             session.addInput(videoInput)
         } else {
@@ -79,20 +80,17 @@ class IOSQRCodeScanner(
             isCurrentlyScanning = false
             return
         }
-        
-        // Create metadata output for QR code detection
+
         val metadataOutput = AVCaptureMetadataOutput()
-        
         if (session.canAddOutput(metadataOutput)) {
             session.addOutput(metadataOutput)
-            
-            // Set delegate for metadata output
-            val delegate = QRCodeMetadataDelegate(
-                onQRCodeDetected = { qrCode ->
-                    onQRCodeDetectedCallback?.invoke(qrCode)
+            val delegate = QrCodeMetadataDelegate(
+                onQrCodeDetected = { qrCode ->
+                    onQrCodeDetectedCallback?.invoke(qrCode)
                     stopScanning()
                 }
             )
+            metadataDelegate = delegate
             metadataOutput.setMetadataObjectsDelegate(delegate, null)
             metadataOutput.metadataObjectTypes = listOf(AVMetadataObjectTypeQRCode)
         } else {
@@ -100,33 +98,29 @@ class IOSQRCodeScanner(
             isCurrentlyScanning = false
             return
         }
-        
-        // Create preview layer
+
         val preview = AVCaptureVideoPreviewLayer(session = session)
         preview.frame = previewView.bounds
         preview.videoGravity = AVLayerVideoGravityResizeAspectFill
         previewView.layer.addSublayer(preview)
         previewLayer = preview
-        
-        // Start the session
+
         session.startRunning()
     }
-    
-    private class QRCodeMetadataDelegate(
-        private val onQRCodeDetected: (String) -> Unit
+
+    private class QrCodeMetadataDelegate(
+        private val onQrCodeDetected: (String) -> Unit
     ) : NSObject(), AVCaptureMetadataOutputObjectsDelegateProtocol {
-        
+
         override fun captureOutput(
             output: AVCaptureOutput,
             didOutputMetadataObjects: List<*>,
             fromConnection: AVCaptureConnection
         ) {
             for (metadata in didOutputMetadataObjects) {
-                if (metadata is AVMetadataMachineReadableCodeObject) {
-                    if (metadata.type == AVMetadataObjectTypeQRCode) {
-                        metadata.stringValue?.let { qrCode ->
-                            onQRCodeDetected(qrCode)
-                        }
+                if (metadata is AVMetadataMachineReadableCodeObject && metadata.type == AVMetadataObjectTypeQRCode) {
+                    metadata.stringValue?.let { qrCode ->
+                        onQrCodeDetected(qrCode)
                     }
                 }
             }
@@ -134,10 +128,7 @@ class IOSQRCodeScanner(
     }
 }
 
-/**
- * Factory function to create iOS QR code scanner
- */
-actual fun createQRCodeScanner(context: Any): QRCodeScanner {
+actual fun createQrCodeScanner(context: Any): QrCodeScanner {
     require(context is UIView) { "Context must be UIView on iOS" }
-    return IOSQRCodeScanner(context)
+    return IOSQrCodeScanner(context)
 }
