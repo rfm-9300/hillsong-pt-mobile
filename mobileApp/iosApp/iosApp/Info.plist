@@ -64,5 +64,10 @@
 	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs camera access to scan QR codes for child check-in verification.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

@@ -13,8 +13,8 @@ import platform.AVFoundation.AVLayerVideoGravityResizeAspectFill
 import platform.AVFoundation.AVMediaTypeVideo
 import platform.AVFoundation.AVMetadataMachineReadableCodeObject
 import platform.AVFoundation.AVMetadataObjectTypeQRCode
-import platform.Foundation.NSObject
 import platform.UIKit.UIView
+import platform.darwin.NSObject
 
 class IOSQrCodeScanner(
     private val previewView: UIView

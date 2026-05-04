@@ -1,3 +1,4 @@
+import java.util.Properties
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -8,7 +9,14 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.app.distribution)
     kotlin("native.cocoapods") version "2.0.0"
+}
+
+val localProperties = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) load(f.inputStream())
 }
 
 val apiBaseUrlDebug = providers.gradleProperty("API_BASE_URL_DEBUG").getOrElse("http://172.233.96.224:8080")
@@ -60,6 +68,8 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
             implementation(libs.ktor.client.okhttp)
+            implementation(project.dependencies.platform(libs.firebase.bom))
+            implementation(libs.firebase.analytics)
         }
         commonMain.dependencies {
             implementation(projects.core.designsystem)
@@ -134,18 +144,42 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    signingConfigs {
+        val keystoreFile = localProperties.getProperty("KEYSTORE_FILE", "")
+        if (keystoreFile.isNotEmpty()) {
+            create("release") {
+                storeFile = file(keystoreFile)
+                storePassword = localProperties.getProperty("KEYSTORE_PASSWORD", "")
+                keyAlias = localProperties.getProperty("KEY_ALIAS", "")
+                keyPassword = localProperties.getProperty("KEY_PASSWORD", "")
+            }
+        }
+    }
     buildTypes {
         getByName("debug") {
             buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrlDebug\"")
             buildConfigField("String", "AUTH_BASE_URL", "\"$authBaseUrlDebug\"")
             buildConfigField("String", "BUILD_TYPE", "\"debug\"")
             isDebuggable = true
+            firebaseAppDistribution {
+                artifactType = "APK"
+                releaseNotes = localProperties.getProperty("RELEASE_NOTES", "New debug build")
+                val t = localProperties.getProperty("FIREBASE_TESTERS", "")
+                if (t.isNotEmpty()) testers = t
+            }
         }
         getByName("release") {
             buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrlRelease\"")
             buildConfigField("String", "AUTH_BASE_URL", "\"$authBaseUrlRelease\"")
             buildConfigField("String", "BUILD_TYPE", "\"release\"")
             isMinifyEnabled = false
+            signingConfig = signingConfigs.findByName("release")
+            firebaseAppDistribution {
+                artifactType = "APK"
+                releaseNotes = localProperties.getProperty("RELEASE_NOTES", "New release build")
+                val t = localProperties.getProperty("FIREBASE_TESTERS", "")
+                if (t.isNotEmpty()) testers = t
+            }
         }
     }
     buildFeatures {
