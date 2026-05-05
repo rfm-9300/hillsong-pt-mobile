@@ -37,7 +37,7 @@ function LayoutContentInner({ children }: { children: React.ReactNode }) {
       <div className="flex flex-1 flex-col overflow-hidden">
         <MobileHeader onMenuClick={() => setMobileNavOpen(true)} />
         <TopBar />
-        <main className="flex-1 overflow-auto bg-[var(--color-content-bg)] px-4 py-4 pb-12 pl-safe pr-safe sm:px-6 md:px-7 md:py-6">
+        <main className="flex-1 overflow-auto bg-[var(--color-content-bg)] px-4 py-4 pb-12 pl-safe pr-safe sm:px-6 md:py-6 md:pl-14 md:pr-8 lg:pl-16 lg:pr-10 xl:pl-20">
           {children}
         </main>
       </div>

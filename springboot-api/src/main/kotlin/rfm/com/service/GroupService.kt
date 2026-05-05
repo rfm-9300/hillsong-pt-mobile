@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile
 import rfm.com.dto.*
 import rfm.com.entity.Group
 import rfm.com.entity.GroupLocation
-import rfm.com.entity.Ministry
+import rfm.com.entity.MinistryType
 import rfm.com.exception.EntityNotFoundException
 import rfm.com.repository.GroupRepository
 
@@ -34,7 +34,7 @@ class GroupService(
      * by distance from that point within [radiusKm].
      */
     suspend fun listGroups(
-        ministry: Ministry?,
+        ministry: MinistryType?,
         city: String?,
         latitude: Double?,
         longitude: Double?,
@@ -73,7 +73,7 @@ class GroupService(
     }
 
     suspend fun listAdminGroups(
-        ministry: Ministry?,
+        ministry: MinistryType?,
         city: String?,
         query: String?,
         includeInactive: Boolean,
@@ -207,6 +207,8 @@ class GroupService(
         id = group.id!!,
         name = group.name,
         ministry = group.ministry,
+        ministryId = group.ministryId,
+        leaderUserId = group.leaderUserId,
         description = group.description,
         leaderName = group.leaderName,
         leaderContact = group.leaderContact,
@@ -228,6 +230,7 @@ class GroupService(
         id = group.id!!,
         name = group.name,
         ministry = group.ministry,
+        ministryId = group.ministryId,
         description = group.description,
         leaderName = group.leaderName,
         meetingDay = group.meetingDay,

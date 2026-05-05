@@ -8,6 +8,14 @@ export const ministryOptions: Array<{ value: Ministry; label: string }> = [
   { value: Ministry.CASAIS, label: 'Casais' },
   { value: Ministry.THIRTY_PLUS, label: '30+' },
   { value: Ministry.GERAL, label: 'Geral' },
+  { value: Ministry.WORSHIP, label: 'Louvor' },
+  { value: Ministry.KIDS, label: 'Kids' },
+  { value: Ministry.USHERS, label: 'Recepção' },
+  { value: Ministry.HOSPITALITY, label: 'Hospitalidade' },
+  { value: Ministry.MEDIA, label: 'Multimédia' },
+  { value: Ministry.PRODUCTION, label: 'Produção' },
+  { value: Ministry.CONNECT, label: 'Connect' },
+  { value: Ministry.CAFE, label: 'Café' },
 ];
 
 export const frequencyOptions: Array<{ value: MeetingFrequency; label: string }> = [

@@ -7,14 +7,14 @@ import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import rfm.com.entity.Group
-import rfm.com.entity.Ministry
+import rfm.com.entity.MinistryType
 
 class GroupRepositoryImpl(
     private val mongoTemplate: MongoTemplate
 ) : GroupRepositoryCustom {
 
     override fun searchActiveGroups(
-        ministry: Ministry?,
+        ministry: MinistryType?,
         city: String?,
         query: String?,
         pageable: Pageable
@@ -29,7 +29,7 @@ class GroupRepositoryImpl(
     }
 
     override fun searchGroupsForAdmin(
-        ministry: Ministry?,
+        ministry: MinistryType?,
         city: String?,
         query: String?,
         includeInactive: Boolean,
@@ -55,7 +55,7 @@ class GroupRepositoryImpl(
     }
 
     private fun buildCriteria(
-        ministry: Ministry?,
+        ministry: MinistryType?,
         city: String?,
         query: String?,
         includeInactive: Boolean

@@ -148,6 +148,13 @@ class FileStorageService(
     fun storeGroupImage(file: MultipartFile): String {
         return storeFile(file, "groups")
     }
+
+    /**
+     * Store a ministry image
+     */
+    fun storeMinistryImage(file: MultipartFile): String {
+        return storeFile(file, "ministries")
+    }
     
     /**
      * Delete a file

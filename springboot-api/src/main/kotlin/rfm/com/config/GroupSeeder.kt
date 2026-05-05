@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 import rfm.com.entity.Group
 import rfm.com.entity.GroupLocation
 import rfm.com.entity.MeetingFrequency
-import rfm.com.entity.Ministry
+import rfm.com.entity.MinistryType
 import rfm.com.repository.GroupRepository
 import java.time.DayOfWeek
 import java.time.LocalTime
@@ -37,7 +37,7 @@ class GroupSeeder(
         val groups = listOf(
             group(
                 name = "Sisterhood Lisboa Centro",
-                ministry = Ministry.SISTERHOOD,
+                ministry = MinistryType.SISTERHOOD,
                 description = "Grupo de mulheres que se reúne semanalmente para crescer juntas na fé.",
                 leaderName = "Ana Silva",
                 leaderContact = "+351912345678",
@@ -51,7 +51,7 @@ class GroupSeeder(
             ),
             group(
                 name = "Jovens YxYa — Campo de Ourique",
-                ministry = Ministry.JOVENS_YXYA,
+                ministry = MinistryType.JOVENS_YXYA,
                 description = "Conexão semanal dos jovens adultos YxYa. Louvor, Palavra e convívio.",
                 leaderName = "Pedro Santos",
                 leaderContact = "+351913000111",
@@ -65,7 +65,7 @@ class GroupSeeder(
             ),
             group(
                 name = "Homens de Impacto Porto",
-                ministry = Ministry.MENS,
+                ministry = MinistryType.MENS,
                 description = "Homens reunidos para orar, partilhar e servir.",
                 leaderName = "João Ferreira",
                 leaderContact = "+351914222333",
@@ -79,7 +79,7 @@ class GroupSeeder(
             ),
             group(
                 name = "Casais Cascais",
-                ministry = Ministry.CASAIS,
+                ministry = MinistryType.CASAIS,
                 description = "Um espaço seguro para casais crescerem na relação e na fé.",
                 leaderName = "Miguel & Rita Costa",
                 leaderContact = "+351915444555",
@@ -94,7 +94,7 @@ class GroupSeeder(
             ),
             group(
                 name = "30+ Lisboa",
-                ministry = Ministry.THIRTY_PLUS,
+                ministry = MinistryType.THIRTY_PLUS,
                 description = "Comunidade para os 30 e tais à procura de pertença e propósito.",
                 leaderName = "Sara Mendes",
                 leaderContact = "+351916666777",
@@ -108,7 +108,7 @@ class GroupSeeder(
             ),
             group(
                 name = "Geral Almada",
-                ministry = Ministry.GERAL,
+                ministry = MinistryType.GERAL,
                 description = "Aberto a todos — um ponto de partida para se ligar à igreja.",
                 leaderName = "Bruno Carvalho",
                 leaderContact = "+351917888999",
@@ -122,7 +122,7 @@ class GroupSeeder(
             ),
             group(
                 name = "Sisterhood Porto",
-                ministry = Ministry.SISTERHOOD,
+                ministry = MinistryType.SISTERHOOD,
                 description = "Mulheres a caminharem juntas no Porto.",
                 leaderName = "Inês Lopes",
                 leaderContact = "+351918101112",
@@ -136,7 +136,7 @@ class GroupSeeder(
             ),
             group(
                 name = "Jovens YxYa Porto",
-                ministry = Ministry.JOVENS_YXYA,
+                ministry = MinistryType.JOVENS_YXYA,
                 description = "YxYa no Porto. Sextas à noite, todos bem-vindos.",
                 leaderName = "Tiago Monteiro",
                 leaderContact = "+351919131415",
@@ -150,7 +150,7 @@ class GroupSeeder(
             ),
             group(
                 name = "Casais Lisboa Norte",
-                ministry = Ministry.CASAIS,
+                ministry = MinistryType.CASAIS,
                 description = "Casais da zona norte de Lisboa. Jantar + partilha.",
                 leaderName = "Ricardo & Marta Nunes",
                 leaderContact = "+351920161718",
@@ -165,7 +165,7 @@ class GroupSeeder(
             ),
             group(
                 name = "Geral Braga",
-                ministry = Ministry.GERAL,
+                ministry = MinistryType.GERAL,
                 description = "A crescer juntos em Braga.",
                 leaderName = "Daniel Oliveira",
                 leaderContact = "+351921192021",
@@ -185,7 +185,7 @@ class GroupSeeder(
 
     private fun group(
         name: String,
-        ministry: Ministry,
+        ministry: MinistryType,
         description: String,
         leaderName: String,
         leaderContact: String,

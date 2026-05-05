@@ -60,14 +60,15 @@ services:
   auth-service:
     image: rfm9300/hillsong-pt-auth-service:latest
     container_name: auth-service
+    init: true
     ports:
       - "127.0.0.1:8081:8081"
     environment:
       - SPRING_DATA_MONGODB_URI=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/auth_db?authSource=admin&maxPoolSize=10
       - APP_JWT_SECRET=${APP_JWT_SECRET}
       # Hard heap cap to keep the JVM inside the container limit on a 1 GB VPS.
-      # Without -Xmx the JVM grows toward MaxRAMPercentage and pushes the host into swap.
-      - JAVA_TOOL_OPTIONS=-XX:+UseContainerSupport -Xms64m -Xmx192m -XX:MaxMetaspaceSize=96m -XX:ReservedCodeCacheSize=48m -XX:+ExitOnOutOfMemoryError
+      # JAVA_OPTS overrides the Dockerfile default (MaxRAMPercentage=75) via the sh -c entrypoint.
+      - JAVA_OPTS=-XX:+UseContainerSupport -Xms48m -Xmx160m -XX:MaxMetaspaceSize=80m -XX:ReservedCodeCacheSize=40m -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError
       # The SMTP server is unreachable — disable the mail health indicator so Docker
       # doesn't mark this container (unhealthy) and restart it in a loop.
       - MANAGEMENT_HEALTH_MAIL_ENABLED=false
@@ -79,9 +80,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 320M
+          memory: 280M
         reservations:
-          memory: 160M
+          memory: 128M
 
   # ==========================================
   # MinIO Object Storage
@@ -119,6 +120,7 @@ services:
   springboot-api:
     image: rfm9300/hillsong-pt-springboot-api:latest
     container_name: backend-springboot
+    init: true
     volumes:
       - ./logs:/app/logs
       - ./uploads:/app/uploads
@@ -136,8 +138,8 @@ services:
       - MINIO_BUCKET=church-files
       - ADMIN_TOKEN=${ADMIN_TOKEN}
       # Hard heap cap to keep the JVM inside the container limit on a 1 GB VPS.
-      # Without -Xmx the JVM grows toward MaxRAMPercentage and pushes the host into swap.
-      - JAVA_TOOL_OPTIONS=-XX:+UseContainerSupport -Xms64m -Xmx256m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=64m -XX:+ExitOnOutOfMemoryError
+      # JAVA_OPTS overrides the Dockerfile default (MaxRAMPercentage=75) via the sh -c entrypoint.
+      - JAVA_OPTS=-XX:+UseContainerSupport -Xms64m -Xmx200m -XX:MaxMetaspaceSize=100m -XX:ReservedCodeCacheSize=52m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+ExitOnOutOfMemoryError
       # The SMTP server is unreachable — disable the mail health indicator so Docker
       # doesn't mark this container (unhealthy) and restart it in a loop.
       - MANAGEMENT_HEALTH_MAIL_ENABLED=false
@@ -149,9 +151,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 448M
+          memory: 380M
         reservations:
-          memory: 224M
+          memory: 180M
 
   # ==========================================
   # MinIO Bucket Creator
@@ -181,6 +183,7 @@ services:
   admin-panel:
     image: rfm9300/hillsong-pt-admin-panel:latest
     container_name: nextjs-admin
+    init: true
     ports:
       - "127.0.0.1:3000:3000"
     environment:

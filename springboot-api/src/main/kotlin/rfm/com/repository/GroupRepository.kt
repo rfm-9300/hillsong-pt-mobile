@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.data.mongodb.repository.Query
 import org.springframework.stereotype.Repository
 import rfm.com.entity.Group
-import rfm.com.entity.Ministry
+import rfm.com.entity.MinistryType
 
 /**
  * Repository for connection groups.
@@ -22,12 +22,12 @@ interface GroupRepository : MongoRepository<Group, String>, GroupRepositoryCusto
 
     fun findByIsActiveTrue(pageable: Pageable): Page<Group>
 
-    fun findByIsActiveTrueAndMinistry(ministry: Ministry, pageable: Pageable): Page<Group>
+    fun findByIsActiveTrueAndMinistry(ministry: MinistryType, pageable: Pageable): Page<Group>
 
     fun findByIsActiveTrueAndLocationCity(city: String, pageable: Pageable): Page<Group>
 
     fun findByIsActiveTrueAndMinistryAndLocationCity(
-        ministry: Ministry,
+        ministry: MinistryType,
         city: String,
         pageable: Pageable
     ): Page<Group>
@@ -70,7 +70,7 @@ interface GroupRepository : MongoRepository<Group, String>, GroupRepositoryCusto
         """
     )
     fun findActiveNearByMinistry(
-        ministry: Ministry,
+        ministry: MinistryType,
         longitude: Double,
         latitude: Double,
         maxDistanceMeters: Double

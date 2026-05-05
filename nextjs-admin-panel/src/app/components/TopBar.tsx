@@ -10,7 +10,7 @@ export default function TopBar() {
   const crumbs = getBreadcrumbs(pathname);
 
   return (
-    <header className="sticky top-0 z-10 hidden h-[52px] shrink-0 items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface)] px-6 md:flex">
+    <header className="sticky top-0 z-10 hidden h-[52px] shrink-0 items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface)] px-6 md:flex md:pl-14 md:pr-8 lg:pl-16 lg:pr-10 xl:pl-20">
       <nav className="flex items-center gap-1.5 text-[12px]">
         {crumbs.map((crumb, index) => {
           const last = index === crumbs.length - 1;

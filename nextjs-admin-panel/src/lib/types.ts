@@ -67,6 +67,12 @@ export interface Encounter {
   createdAt: string;
 }
 
+/**
+ * Ministry classification tag (was named "Ministry" before; now serves
+ * as a category for both connection groups and full Ministry documents).
+ * Kept as `Ministry` here for backward-compat with the existing groups
+ * UI; aliased as `MinistryType` for new code.
+ */
 export enum Ministry {
   SISTERHOOD = 'SISTERHOOD',
   JOVENS_YXYA = 'JOVENS_YXYA',
@@ -74,6 +80,80 @@ export enum Ministry {
   CASAIS = 'CASAIS',
   THIRTY_PLUS = 'THIRTY_PLUS',
   GERAL = 'GERAL',
+  WORSHIP = 'WORSHIP',
+  KIDS = 'KIDS',
+  USHERS = 'USHERS',
+  HOSPITALITY = 'HOSPITALITY',
+  MEDIA = 'MEDIA',
+  PRODUCTION = 'PRODUCTION',
+  CONNECT = 'CONNECT',
+  CAFE = 'CAFE',
+}
+
+export type MinistryType = Ministry;
+export const MinistryType = Ministry;
+
+export enum MinistryRole {
+  VOLUNTEER = 'VOLUNTEER',
+  LEADER = 'LEADER',
+  COORDINATOR = 'COORDINATOR',
+}
+
+export enum MembershipStatus {
+  PENDING = 'PENDING',
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  REJECTED = 'REJECTED',
+}
+
+export interface MinistryDoc {
+  id: string;
+  name: string;
+  description: string;
+  type: MinistryType;
+  imagePath?: string | null;
+  isActive: boolean;
+  isJoinable: boolean;
+  requiresApproval: boolean;
+  tags: string[];
+  location?: GroupLocation | null;
+  leaderUserIds: string[];
+  coordinatorUserIds: string[];
+  parentMinistryId?: string | null;
+  memberCount: number;
+  pendingCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MinistrySummary {
+  id: string;
+  name: string;
+  description: string;
+  type: MinistryType;
+  imagePath?: string | null;
+  city?: string | null;
+  isActive: boolean;
+  isJoinable: boolean;
+  requiresApproval: boolean;
+  memberCount: number;
+  leaderCount: number;
+}
+
+export interface MinistryMember {
+  id: string;
+  userId: string;
+  ministryId: string;
+  role: MinistryRole;
+  status: MembershipStatus;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  email: string;
+  phone?: string | null;
+  imagePath?: string | null;
+  joinedAt: string;
+  notes?: string | null;
 }
 
 export enum MeetingFrequency {
@@ -106,6 +186,7 @@ export interface GroupSummary {
   id: string;
   name: string;
   ministry: Ministry;
+  ministryId?: string | null;
   description: string;
   leaderName: string;
   meetingDay: GroupDayOfWeek;
@@ -125,6 +206,8 @@ export interface Group {
   id: string;
   name: string;
   ministry: Ministry;
+  ministryId?: string | null;
+  leaderUserId?: string | null;
   description: string;
   leaderName: string;
   leaderContact: string;

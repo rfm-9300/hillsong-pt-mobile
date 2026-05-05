@@ -26,7 +26,7 @@ import rfm.com.dto.CreateGroupRequest
 import rfm.com.dto.GroupResponse
 import rfm.com.dto.GroupSummaryResponse
 import rfm.com.dto.UpdateGroupRequest
-import rfm.com.entity.Ministry
+import rfm.com.entity.MinistryType
 import rfm.com.service.GroupService
 
 @RestController
@@ -40,7 +40,7 @@ class AdminGroupController(
 
     @GetMapping
     fun listGroups(
-        @RequestParam(required = false) ministry: Ministry?,
+        @RequestParam(required = false) ministry: MinistryType?,
         @RequestParam(required = false) city: String?,
         @RequestParam(required = false, name = "q") query: String?,
         @RequestParam(defaultValue = "true") includeInactive: Boolean,

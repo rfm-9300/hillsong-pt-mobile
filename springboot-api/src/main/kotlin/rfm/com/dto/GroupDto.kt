@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import jakarta.validation.Valid
 import jakarta.validation.constraints.*
 import rfm.com.entity.MeetingFrequency
-import rfm.com.entity.Ministry
+import rfm.com.entity.MinistryType
 import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -49,7 +49,7 @@ data class CreateGroupRequest(
     val name: String,
 
     @field:NotNull(message = "Ministry is required")
-    val ministry: Ministry,
+    val ministry: MinistryType,
 
     @field:NotBlank(message = "Description is required")
     @field:Size(max = 2000)
@@ -95,7 +95,7 @@ data class UpdateGroupRequest(
     @field:Size(max = 120)
     val name: String? = null,
 
-    val ministry: Ministry? = null,
+    val ministry: MinistryType? = null,
 
     @field:Size(max = 2000)
     val description: String? = null,
@@ -144,7 +144,9 @@ data class GroupLocationResponse(
 data class GroupResponse(
     val id: String,
     val name: String,
-    val ministry: Ministry,
+    val ministry: MinistryType,
+    val ministryId: String?,
+    val leaderUserId: String?,
     val description: String,
     val leaderName: String,
     val leaderContact: String,
@@ -168,7 +170,8 @@ data class GroupResponse(
 data class GroupSummaryResponse(
     val id: String,
     val name: String,
-    val ministry: Ministry,
+    val ministry: MinistryType,
+    val ministryId: String?,
     val description: String,
     val leaderName: String,
     val meetingDay: DayOfWeek,
@@ -186,7 +189,7 @@ data class GroupSummaryResponse(
 )
 
 data class MinistryOption(
-    val value: Ministry,
+    val value: MinistryType,
     val labelEn: String,
     val labelPt: String
 )

@@ -68,7 +68,12 @@ data class Group(
     val name: String,
 
     @Indexed
-    val ministry: Ministry,
+    val ministry: MinistryType,
+
+    @Indexed
+    val ministryId: String? = null,
+
+    val leaderUserId: String? = null,
 
     val description: String,
 
@@ -113,5 +118,5 @@ data class Group(
     override fun hashCode(): Int = id?.hashCode() ?: 0
 
     override fun toString(): String =
-        "Group(id=$id, name='$name', ministry=$ministry, city='${location.city}')"
+        "Group(id=$id, name='$name', ministry=$ministry, ministryId=$ministryId, city='${location.city}')"
 }
